@@ -78,10 +78,10 @@ export function resetRound(s, first = false) {
       // (path sudah dikosongkan) dan berdiri diam sepanjang ronde
       a.bot.targetId = null; a.bot.targetPos = null; a.bot.lastSeenAt = -99;
       a.bot.visibleSince = 0; a.bot.reactAt = 0; a.bot.hearPos = null; a.bot.hearAt = -99;
-      a.bot.path = []; a.bot.pathIdx = 0; a.bot.destNode = -1; a.bot.repathAt = 0;
+      a.bot.path = []; a.bot.pathIdx = 0; a.bot.destNode = -1; a.bot.repathAt = 0; a.bot.goal = -1;
       a.bot.burstLeft = 0; a.bot.burstUntil = 0; a.bot.state = 'patrol';
       a.bot.defuseDuty = false; a.bot.holdBomb = false; a.bot.retakeRoute = 0;
-      a.bot.stuckAt = 0; a.bot.movedAcc = 0; a.bot.nudges = 0;
+      a.bot.stuckAt = 0; a.bot.nudges = 0;
       a.bot.lastPX = a.x; a.bot.lastPZ = a.z;
     }
     if (first || !wasAlive) { a.kevlar = false; a.weapons.primary = null; a.weapons.secondary = { key: 'P9', mag: 12, reserve: 48 }; a.current = 'secondary'; }

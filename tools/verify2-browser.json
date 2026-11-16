@@ -1,0 +1,114 @@
+{
+  "startOverlay": {
+    "visible": true,
+    "text": "EMBERLINE\n\n5v5 Bomb Defuse. Penyerang: tanam bom di Site A atau B, atau eliminasi semua defender. Defender: cegah plant, atau defuse bom sebelum meledak. Pertama sampai 8 ronde menang.\n\nWASD gerak • Mouse bidik • Klik tembak • R reload • Ctrl crouch • Space lompat\nB menu beli • E tahan plant/defuse • F ambil senjata • G jatuhkan primer\n1 primer • 2 P9 • 3 Frag • 4 Smoke • 5 Flash • Klik kanan scop"
+  },
+  "main": {
+    "phase": "buy",
+    "paused": false,
+    "started": true,
+    "stats": {
+      "tickAvg": 0.129,
+      "tickP99": 2.1,
+      "calls": 172,
+      "tris": 11766,
+      "fps": 1
+    },
+    "errors": [],
+    "audioCtx": null,
+    "hud": {
+      "hp": "100",
+      "ammo": "12",
+      "timer": "00:11",
+      "scoreAtk": "0",
+      "money": "$800",
+      "teamIcons": "● ● ● ● ●  vs  ● ● ● ● ●"
+    }
+  },
+  "pauseTest": {
+    "lockedBefore": true,
+    "paused": true,
+    "pauseVisible": "flex"
+  },
+  "banner": {
+    "banner": "",
+    "killfeed": ""
+  },
+  "shot_start": {
+    "ready": true,
+    "phase": "buy",
+    "stats": {
+      "tickAvg": 0,
+      "tickP99": 0,
+      "calls": 174,
+      "tris": 12378,
+      "fps": 1
+    }
+  },
+  "shot_play": {
+    "ready": true,
+    "phase": "live",
+    "stats": {
+      "tickAvg": 0,
+      "tickP99": 0,
+      "calls": 132,
+      "tris": 10640,
+      "fps": 1
+    }
+  },
+  "shot_buy": {
+    "ready": true,
+    "phase": "buy",
+    "stats": {
+      "tickAvg": 0,
+      "tickP99": 0,
+      "calls": 156,
+      "tris": 9794,
+      "fps": 1
+    }
+  },
+  "shot_bomb": {
+    "ready": true,
+    "phase": "bomb",
+    "stats": {
+      "tickAvg": 0,
+      "tickP99": 0,
+      "calls": 78,
+      "tris": 9092,
+      "fps": 1
+    }
+  },
+  "shot_win": {
+    "ready": true,
+    "phase": "end",
+    "stats": {
+      "tickAvg": 0,
+      "tickP99": 0,
+      "calls": 118,
+      "tris": 10392,
+      "fps": 1
+    }
+  },
+  "debug": {
+    "phase": "buy",
+    "stats": {
+      "tickAvg": 0.062,
+      "tickP99": 1.1,
+      "calls": 177,
+      "tris": 15290,
+      "fps": 1
+    }
+  },
+  "bench": {
+    "fpsMedian": 1.2,
+    "fps1pct": 0.6,
+    "tickAvg": 0.057,
+    "tickP99": 0.2,
+    "drawCalls": 176,
+    "tris": 12446,
+    "frames": 150
+  },
+  "errors": [],
+  "warnings": [],
+  "failedReqs": []
+}

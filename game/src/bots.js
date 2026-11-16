@@ -8,12 +8,12 @@ import { pushEvent, currentWeapon, aliveAgents } from './state.js';
 export function createBotBrain(role) {
   const r = BOT_ROLES[role];
   return { role, kind: r.kind, site: r.site || null, state: 'patrol',
-    path: [], pathIdx: 0, destNode: -1, repathAt: 0,
+    path: [], pathIdx: 0, destNode: -1, repathAt: 0, goal: -1,
     targetId: null, targetPos: null, lastSeenAt: -99, visibleSince: 0, reactAt: 0,
     losAt: Math.random() * 0.12, hearPos: null, hearAt: -99,
     burstLeft: 0, burstUntil: 0, round: 1, holdNode: -1, plantSite: 'A', routeDoor: false,
     strafeT: 0, strafeDir: 1, retakeRoute: 0, lastBuyRound: 0,
-    holdBomb: false, stuckAt: 0, lastPX: 0, lastPZ: 0, movedAcc: 0, nudges: 0 };
+    holdBomb: false, stuckAt: 0, lastPX: 0, lastPZ: 0, nudges: 0 };
 }
 export function ensureBrains(s) {
   for (const a of s.agents) if (!a.isPlayer && !a.bot) a.bot = createBotBrain(a.role);
@@ -144,18 +144,42 @@ function goalNode(s, a) {
 export function moveAlongPath(s, a, dt) {
   const b = a.bot;
   if (!b.path.length || b.pathIdx >= b.path.length) return;
-  // Unstuck: tak maju >1,5 dtk padahal path tersisa -> repath; bila masih macet
-  // 1,5 dtk lagi -> geser kecil ke node path berikutnya (maju, bukan mundur).
-  // "Maju" diukur akumulasi 0,5 m (lurker crouch hanya 0,043 m/tick, jangan dikira macet).
-  const moved = Math.hypot(a.x - b.lastPX, a.z - b.lastPZ);
-  b.lastPX = a.x; b.lastPZ = a.z; b.movedAcc += moved;
-  if (b.movedAcc > 0.5) { b.movedAcc = 0; b.stuckAt = s.now; b.nudges = 0; }
-  else if (s.now - b.stuckAt > 1.5 && b.destNode >= 0) {
+  // Unstuck (jarak NETO dari anchor, bukan akumulasi absolut): bot yang bergetar
+  // di tempat (separate() vs moveAlongPath saling dorong) mengakumulasi movedAcc
+  // tapi tak maju — D3 mengukur perpindahan neto, jadi unstuck harus sama.
+  // Neto <0,5 m selama >0,8 dtk -> repath; 0,8 dtk lagi -> snap ke node LOS-bersih.
+  // Batas D3 = 2 dtk, jadi total maks ~1,6 dtk + 0,2 dtk jalan.
+  const netMoved = Math.hypot(a.x - b.lastPX, a.z - b.lastPZ);
+  if (netMoved > 0.5) { b.lastPX = a.x; b.lastPZ = a.z; b.stuckAt = s.now; b.nudges = 0; }
+  else if (s.now - b.stuckAt > 0.8 && b.destNode >= 0) {
     b.stuckAt = s.now;
     if (b.nudges === 0) { setPath(a, b.destNode); b.nudges = 1; }
     else {
-      const n = NODES[b.path[b.pathIdx]];
-      if (n && !losBlocked(a.x, 1, a.z, n.x, 1, n.z, [], s.door.open)) { a.x = n.x; a.z = n.z; }
+      // coba 3 node berikut, ambil yang LOS-nya bersih dari posisi bot
+      let snapped = false;
+      for (let k = b.pathIdx; k < Math.min(b.pathIdx + 3, b.path.length); k++) {
+        const n = NODES[b.path[k]];
+        if (n && !losBlocked(a.x, 1, a.z, n.x, 1, n.z, [], s.door.open)) { a.x = n.x; a.z = n.z; b.pathIdx = k; snapped = true; break; }
+      }
+      if (!snapped) {
+        // D3 (17 Nov): pilar pintu S(29.7,21,30.3,23)/(27,29) di tengah tunnel —
+        // rantai tunnel paksa 50->51 (world.js force) jalurnya lurus menembus
+        // pilar, jadi LOS ke node berikut terhalang dan repath mengembalikan
+        // jalur yang sama. Bot soliter (tanpa dorongan separate()) macet di
+        // pilar. Geser menyamping ~1,2 m (tegak lurus arah node) lewat
+        // collideMove agar masuk lajur samping tunnel (x 28-29,7 / 30,3-32)
+        // yang selalu terbuka; dari sana bot bisa jalan lurus ke node berikut.
+        const n = NODES[b.path[b.pathIdx]];
+        if (n) {
+          const dx = n.x - a.x, dz = n.z - a.z, len = Math.hypot(dx, dz) || 1;
+          const px = -dz / len, pz = dx / len;
+          const side = (a.id % 2 === 0) ? 1 : -1;
+          const h = a.crouch ? CONFIG.agentHeightCrouch : CONFIG.agentHeight;
+          let r = collideMove(a, px * side * 1.2, 0, pz * side * 1.2, CONFIG.agentRadius, h, s.door.open);
+          if (r.x === a.x && r.z === a.z) r = collideMove(a, -px * side * 1.2, 0, -pz * side * 1.2, CONFIG.agentRadius, h, s.door.open);
+          a.x = r.x; a.z = r.z;
+        }
+      }
       b.nudges = 0; setPath(a, b.destNode);
     }
   }
@@ -175,7 +199,7 @@ export function moveAlongPath(s, a, dt) {
   // bila sudah dekat node tapi tertahan solid, anggap node tercapai dan lanjut ke
   // node berikut — arah ke node berikut punya komponen menyamping yang menggeser
   // bot mengitari sudut (collideMove sudah slide per sumbu).
-  if ((r.hitX || r.hitZ) && d < 2.5) { b.pathIdx++; b.stuckAt = s.now; b.movedAcc = 0; }
+  if ((r.hitX || r.hitZ) && d < 2.5) { b.pathIdx++; b.stuckAt = s.now; b.lastPX = a.x; b.lastPZ = a.z; }
   else if ((r.hitX || r.hitZ) && s.now > b.repathAt) { b.repathAt = s.now + 1; setPath(a, b.destNode); }
 }
 // Pisah antar-bot 0,6 m (AMB-17); penanam/pen-defuse diprioritaskan (tak digeser).
@@ -236,6 +260,16 @@ export function updateBots(s, dt) {
     // Carrier terus maju ke site (tugasnya menanam); duel penuh hanya bila musuh <20 m.
     if (t && t.alive && s.now >= b.reactAt && s.now >= a.blindUntil && (!isCarrier || dist(a, t) < 20)) {
       // engage: hadap target, strafe, tembak; jangan jalan saat menembak jarak dekat
+      // Path lama DIBERSIHKAN: bot yang duel bukan "macet" — ia berhenti di rute untuk
+      // bertarung, dan strafe 1,5 m/s < ambang gerak D3 (0,05 m/tick). Tujuan dihitung
+      // ulang saat duel selesai (patrol/plant branch memanggil setPath).
+      // D3 (17 Nov): goal dilacak terpisah dari destNode. setPath() punya fallback
+      // (tujuan terisolasi, mis. node siteA 40 (59,33) 0 link di balik kontainer)
+      // yang mengubah destNode ke node terdekat yang terjangkau (mis. 57), sehingga
+      // perbandingan g !== destNode SELALU benar -> setPath dipanggil tiap tick ->
+      // pathIdx di-reset ke 0 terus -> bot beku di tempat dengan velocity stale.
+      // Dengan b.goal, setPath hanya dipanggil bila TUJUAN (goalNode) berubah.
+      if (b.path.length) { b.path = []; b.pathIdx = 0; b.destNode = -1; b.goal = -1; }
       a.yaw = angleTo(a, t.x, t.z);
       b.strafeT -= dt;
       if (b.strafeT <= 0) { b.strafeT = 0.7 + Math.random(); b.strafeDir *= -1; }
@@ -255,19 +289,19 @@ export function updateBots(s, dt) {
     if (!planted && s.bomb && s.bomb.carrierId === a.id) {
       const site = b.plantSite === 'A' ? 'plantA' : 'plantB';
       if (inZone(a, site)) { a.planting = true; }
-      else { a.planting = false; const g = goalNode(s, a); if (g !== b.destNode) setPath(a, g); moveAlongPath(s, a, dt); if (t && t.alive && s.now >= b.reactAt) botShoot(s, a, dt); }
+      else { a.planting = false; const g = goalNode(s, a); if (g >= 0 && g !== b.goal) { b.goal = g; setPath(a, g); } moveAlongPath(s, a, dt); if (t && t.alive && s.now >= b.reactAt) botShoot(s, a, dt); }
       continue;
     }
     if (planted && b.defuseDuty) {
       const site = s.bomb.site === 'A' ? 'plantA' : 'plantB';
       if (inZone(a, site)) a.defusing = true;
-      else { a.defusing = false; const g = goalNode(s, a); if (g !== b.destNode) setPath(a, g); moveAlongPath(s, a, dt); }
+      else { a.defusing = false; const g = goalNode(s, a); if (g >= 0 && g !== b.goal) { b.goal = g; setPath(a, g); } moveAlongPath(s, a, dt); }
       continue;
     }
     // patrol / investigate / retake
     let g = goalNode(s, a);
     if (b.state === 'investigate' && b.hearPos) g = nearestNode(b.hearPos.x, b.hearPos.z);
-    if (g >= 0 && g !== b.destNode) setPath(a, g);
+    if (g >= 0 && g !== b.goal) { b.goal = g; setPath(a, g); }
     if (g >= 0) moveAlongPath(s, a, dt);
     else { a.vx = 0; a.vz = 0; }
   }
@@ -307,7 +341,15 @@ export function bombPlaybook(s) {
   const planted = s.bomb && s.bomb.status === 'planted';
   if (planted) {
     const defs = aliveAgents(s, 'def').sort((p, q) => dist(p, s.bomb) - dist(q, s.bomb));
-    defs.forEach((d, i) => { d.bot.defuseDuty = i === 0; d.bot.retakeRoute = i % 2; });
+    // D4 (17 Nov): defuser MELEKAT sampai mati. Ia harus MENJAUH dari bom
+    // (memutar via Mid/A-long mengitari kontainer) untuk masuk site, jadi
+    // jaraknya ke bom membesar saat memutar — "terdekat" akan terus berganti
+    // dan tak ada yang sampai site. Histeresis jarak tak cukup; hanya ganti
+    // bila defuser lama mati (atau belum ada).
+    const cur = defs.find(d => d.bot.defuseDuty);
+    let lead = defs[0];
+    if (cur && cur.alive) lead = cur;
+    defs.forEach((d, i) => { d.bot.defuseDuty = d === lead; d.bot.retakeRoute = i % 2; });
     return;
   }
   if (s.bomb && s.bomb.status === 'dropped') {

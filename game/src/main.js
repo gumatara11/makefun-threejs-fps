@@ -30,17 +30,23 @@ window.addEventListener('unhandledrejection', (e) => errors.push('reject: ' + St
 
 const canvas = $('game');
 const R = createRender(canvas);
+let audioIdx = 0, started = false, benchDone = false, lastDoor = 0; // di atas blok DEBUG (TDZ: DEBUG memakai `started`)
 if (DEBUG) R.setDebug(true);
+// menu: 5 robot figure tampil di layar awal (bukan di shot/bench/debug); HUD disembunyikan
+const setMenuUI = (on) => { R.setMenu(on); document.body.classList.toggle('menu', on); };
+setMenuUI(!SHOT && !BENCH && !DEBUG);
+if (DEBUG) { // ?debug=1: overlay start JANGAN menutupi waypoint graph
+  $('start-overlay').style.display = 'none'; started = true; state.paused = false;
+}
 input.attach(canvas);
 const hud = createHud(state);
 const simSamples = []; // ms per simStep
 const frameTimes = []; // ms per rAF (bench)
 const simStats = { tickAvg: 0, tickP99: 0, calls: 0, tris: 0, fps: 0 };
-let audioIdx = 0, started = false, benchDone = false, lastDoor = 0;
 
 function startGame() {
   initAudio(); resumeAudio();
-  started = true;
+  started = true; setMenuUI(false);
   state.paused = false; input.paused = false;
   $('start-overlay').style.display = 'none';
   $('pause-overlay').style.display = 'none';
@@ -50,7 +56,7 @@ function startGame() {
 }
 $('start-btn').addEventListener('click', startGame);
 $('resume-btn').addEventListener('click', () => { canvas.requestPointerLock?.(); });
-$('again-btn').addEventListener('click', () => { playAgain(state); $('end-overlay').style.display = 'none'; $('start-overlay').style.display = 'flex'; started = false; });
+$('again-btn').addEventListener('click', () => { playAgain(state); $('end-overlay').style.display = 'none'; $('start-overlay').style.display = 'flex'; started = false; setMenuUI(true); });
 document.addEventListener('pointerlockchange', () => {
   const locked = document.pointerLockElement === canvas;
   if (locked) { input.paused = false; if (started) { state.paused = false; $('pause-overlay').style.display = 'none'; } }
@@ -148,7 +154,7 @@ function loop(now) {
     simStats.tickP99 = +s[Math.floor(s.length * 0.99)].toFixed(3);
   }
   audioIdx = drainAudio(state, audioIdx);
-  R.render(state, 1 / 60, now / 1000);
+  R.render(state, SHOT ? 0 : 1 / 60, SHOT ? 1.0 : now / 1000); // ?shot=: waktu beku (deterministik)
   const rs = R.stats();
   simStats.calls = rs.calls; simStats.tris = rs.tris;
   syncViewmodel();
