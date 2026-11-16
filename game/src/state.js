@@ -15,7 +15,7 @@ export function makeAgent(id, team, role, isPlayer, x, z) {
     reloadUntil: 0, reloadSlot: null, switchUntil: 0, nextShotAt: 0,
     recoilShots: 0, lastShotAt: -99, spraySeed: Math.random() * 1000,
     scoped: false, blindUntil: 0, planting: false, defusing: false,
-    plantProg: 0, defuseProg: 0, stepAt: 0,
+    plantProg: 0, defuseProg: 0, stepAt: 0, ePrev: false,
     bot: null, // diisi bots.createBotBrain(role) untuk bot
   };
 }
@@ -71,8 +71,19 @@ export function resetRound(s, first = false) {
     a.reloadUntil = 0; a.reloadSlot = null; a.switchUntil = 0; a.nextShotAt = 0;
     a.recoilShots = 0; a.scoped = false; a.blindUntil = 0;
     a.planting = false; a.defusing = false; a.plantProg = 0; a.defuseProg = 0;
-    a.grenades = { Frag: 0, Smoke: 0, Flash: 0 };
-    if (a.bot) { a.bot.target = null; a.bot.lastSeen = null; a.bot.path = []; a.bot.state = 'patrol'; a.bot.heard = null; }
+    // granat: survivor pertahankan yang tak terpakai (§2); hanya yang mati yang kehilangan
+    if (first || !wasAlive) a.grenades = { Frag: 0, Smoke: 0, Flash: 0 };
+    if (a.bot) { // reset penuh otak: destNode/pathIdx HARUS ikut direset, kalau tidak
+      // bot yang tujuannya sama dengan ronde lalu tak pernah memanggil setPath lagi
+      // (path sudah dikosongkan) dan berdiri diam sepanjang ronde
+      a.bot.targetId = null; a.bot.targetPos = null; a.bot.lastSeenAt = -99;
+      a.bot.visibleSince = 0; a.bot.reactAt = 0; a.bot.hearPos = null; a.bot.hearAt = -99;
+      a.bot.path = []; a.bot.pathIdx = 0; a.bot.destNode = -1; a.bot.repathAt = 0;
+      a.bot.burstLeft = 0; a.bot.burstUntil = 0; a.bot.state = 'patrol';
+      a.bot.defuseDuty = false; a.bot.holdBomb = false; a.bot.retakeRoute = 0;
+      a.bot.stuckAt = 0; a.bot.movedAcc = 0; a.bot.nudges = 0;
+      a.bot.lastPX = a.x; a.bot.lastPZ = a.z;
+    }
     if (first || !wasAlive) { a.kevlar = false; a.weapons.primary = null; a.weapons.secondary = { key: 'P9', mag: 12, reserve: 48 }; a.current = 'secondary'; }
     else { // selamat: magasin primer diisi penuh gratis, cadangan tidak ditambah
       const p = a.weapons.primary;

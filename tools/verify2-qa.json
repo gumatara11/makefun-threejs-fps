@@ -1,0 +1,324 @@
+{
+  "pass": 53,
+  "fail": 0,
+  "items": [
+    {
+      "id": "A2a",
+      "name": "Menang eliminasi (atk)",
+      "ok": true,
+      "info": "atk/elimination"
+    },
+    {
+      "id": "A2b",
+      "name": "Menang ledakan bom (35 dtk)",
+      "ok": true,
+      "info": "atk/explosion t=1.00"
+    },
+    {
+      "id": "A2c",
+      "name": "Menang defuse",
+      "ok": true,
+      "info": "def/defuse"
+    },
+    {
+      "id": "A2d",
+      "name": "Menang timeout (def)",
+      "ok": true,
+      "info": "def/timeout"
+    },
+    {
+      "id": "A3",
+      "name": "Post-plant: atk habis, ronde lanjut sampai ledakan",
+      "ok": true,
+      "info": "mid=bomb akhir=atk/explosion"
+    },
+    {
+      "id": "A4",
+      "name": "Match berakhir tepat skor 8; playAgain reset $800 & 0-0",
+      "ok": true,
+      "info": "over=true skor=0-0 uang=800"
+    },
+    {
+      "id": "B1-P9",
+      "name": "Senjata P9: tembak/reload 1.6 dtk/mag habis/cadangan habis",
+      "ok": true,
+      "info": "mag1=11 dry=true reloadOk=true refill=true reloadTanpaCadangan=false"
+    },
+    {
+      "id": "B1-Breacher",
+      "name": "Senjata Breacher: tembak/reload 3.2 dtk/mag habis/cadangan habis",
+      "ok": true,
+      "info": "mag1=5 dry=true reloadOk=true refill=true reloadTanpaCadangan=false"
+    },
+    {
+      "id": "B1-Kestrel",
+      "name": "Senjata Kestrel: tembak/reload 2 dtk/mag habis/cadangan habis",
+      "ok": true,
+      "info": "mag1=31 dry=true reloadOk=true refill=true reloadTanpaCadangan=false"
+    },
+    {
+      "id": "B1-VK47",
+      "name": "Senjata VK47: tembak/reload 2.4 dtk/mag habis/cadangan habis",
+      "ok": true,
+      "info": "mag1=29 dry=true reloadOk=true refill=true reloadTanpaCadangan=false"
+    },
+    {
+      "id": "B1-Longbow",
+      "name": "Senjata Longbow: tembak/reload 3.4 dtk/mag habis/cadangan habis",
+      "ok": true,
+      "info": "mag1=4 dry=true reloadOk=true refill=true reloadTanpaCadangan=false"
+    },
+    {
+      "id": "B2-P9",
+      "name": "Damage P9: mati dalam 4 hit torso",
+      "ok": true,
+      "info": "hp=0 hits=4"
+    },
+    {
+      "id": "B2-VK47",
+      "name": "Damage VK47: mati dalam 3 hit torso",
+      "ok": true,
+      "info": "hp=0 hits=3"
+    },
+    {
+      "id": "B2-Longbow",
+      "name": "Damage Longbow: mati dalam 1 hit torso",
+      "ok": true,
+      "info": "hp=0 hits=1"
+    },
+    {
+      "id": "B2-Kestrel",
+      "name": "Damage Kestrel: mati dalam 5 hit torso",
+      "ok": true,
+      "info": "hp=0 hits=5"
+    },
+    {
+      "id": "B2-Breacher",
+      "name": "Damage Breacher: mati dalam 2 hit torso",
+      "ok": true,
+      "info": "hp=0 hits=12"
+    },
+    {
+      "id": "B2-kev",
+      "name": "VK-47 vs kevlar mati dalam 5 hit (bukan 3)",
+      "ok": true,
+      "info": "hp=0"
+    },
+    {
+      "id": "B4",
+      "name": "Spread gerak > diam; crouch x0,7; udara x1,6",
+      "ok": true,
+      "info": "diam=0.0022 gerak=0.0302 crouch=0.0015 udara=0.0035"
+    },
+    {
+      "id": "B4-emp",
+      "name": "Empiris P9 30 m: hit-rate diam > gerak",
+      "ok": true,
+      "info": "diam=1.00 gerak=0.48"
+    },
+    {
+      "id": "B5",
+      "name": "Breacher 8 pellet/tembakan; hit penuh 25 m TIDAK membunuh",
+      "ok": true,
+      "info": "pellet=8 dmg3m=72 dmg25m=0 hp25=100"
+    },
+    {
+      "id": "B6",
+      "name": "Longbow optik 2,5x: spread 0,0005 vs hip 0,050; 20 tembakan 30 m scoped>>hip",
+      "ok": true,
+      "info": "hipSpread=0.05 scopedSpread=0.0005 hitHip=2/20 hitScoped=20/20"
+    },
+    {
+      "id": "B7-frag",
+      "name": "Frag pusat (d=0) = 85 dmg (HP 100 -> 15, tidak mati)",
+      "ok": true,
+      "info": "hpPusat=15 hpProyektil0,6m=20"
+    },
+    {
+      "id": "B7-wall",
+      "name": "Frag tidak menembus dinding penuh",
+      "ok": true,
+      "info": "hp=100"
+    },
+    {
+      "id": "B7-smoke",
+      "name": "Smoke memutus tembakan bot 12 dtk (0 tembakan dalam 5 dtk)",
+      "ok": true,
+      "info": "tembakan=0"
+    },
+    {
+      "id": "B7-flash",
+      "name": "Flash: menghadap 2,2 dtk / membelakangi 0,8 dtk",
+      "ok": true,
+      "info": "hadapan=2.08 punggung=0.68"
+    },
+    {
+      "id": "B8",
+      "name": "Kevlar hilang saat mati",
+      "ok": true,
+      "info": "alive=false kevlar=false hp=0"
+    },
+    {
+      "id": "C1a",
+      "name": "Plant di luar zona: tidak progress",
+      "ok": true,
+      "info": "prog=0"
+    },
+    {
+      "id": "C1b",
+      "name": "Plant batal bila lepas E (progress reset)",
+      "ok": true,
+      "info": "prog=0"
+    },
+    {
+      "id": "C1c",
+      "name": "Plant batal bila bergerak",
+      "ok": true,
+      "info": "prog=0"
+    },
+    {
+      "id": "C1d",
+      "name": "Plant batal bila ganti senjata",
+      "ok": true,
+      "info": "progSebelum=1.50 progSesudah=0.00 status=carried"
+    },
+    {
+      "id": "C1e",
+      "name": "Plant TIDAK batal oleh damage",
+      "ok": true,
+      "info": "hp=70 status=planted"
+    },
+    {
+      "id": "C2",
+      "name": "Defuse batal keluar zona; beep <10 dtk; ledakan tepat 35,0 dtk",
+      "ok": true,
+      "info": "beep=3 defProgMid=2.00 defProgSetelahKeluar=0 ledakanSetelahPlant=34.95 dtk"
+    },
+    {
+      "id": "C3a",
+      "name": "Ledger: kill+menang / defuse+kalah",
+      "ok": true,
+      "info": "atk=4650 def=3000"
+    },
+    {
+      "id": "C3b",
+      "name": "Ledger cap $9.000",
+      "ok": true,
+      "info": "money=9000"
+    },
+    {
+      "id": "C4",
+      "name": "Beli ditolak di luar fase/zona; harga menu = potongan (8 item); primer ganda ditolak",
+      "ok": true,
+      "info": "live=true zona=true harga=[Breacher:1050/1050 Kestrel:1500/1500 VK47:2700/2700 Longbow:4750/4750 Kevlar:650/650 Frag:300/300 Smoke:300/300 Flash:200/200] dupOk=false"
+    },
+    {
+      "id": "C5",
+      "name": "Primer jatuh+diambil kawan/lawan; carry-over survivor; dropped hilang akhir ronde; granat survivor dipertahankan?",
+      "ok": true,
+      "info": "drop=true kawan=true lawan=true carry=true mati->P9=true droppedBersih=true granatDipertahankan=true (Frag survivor setelah reset=1)"
+    },
+    {
+      "id": "C6a",
+      "name": "Bot $800: kevlar saja, tanpa primer",
+      "ok": true,
+      "info": "uang=150 kev=true prim=null"
+    },
+    {
+      "id": "C6b",
+      "name": "Bot $4000: VK47+kevlar+Frag+Flash",
+      "ok": true,
+      "info": "uang=150 prim=VK47"
+    },
+    {
+      "id": "C6c",
+      "name": "Bot $2000: Breacher+kevlar+Frag",
+      "ok": true,
+      "info": "uang=0"
+    },
+    {
+      "id": "C6d",
+      "name": "D2 $6000: Longbow+kevlar",
+      "ok": true,
+      "info": "uang=100"
+    },
+    {
+      "id": "C6e",
+      "name": "D2 $3000 streak 0: eco (tanpa primer, menabung Longbow)",
+      "ok": true,
+      "info": "prim=null uang=2500"
+    },
+    {
+      "id": "C6f",
+      "name": "D2 $3000 streak 3: beli standar (Kestrel+kevlar)",
+      "ok": true,
+      "info": "prim=Kestrel"
+    },
+    {
+      "id": "D1",
+      "name": "Bot tak menembak target diam di balik dinding penuh 20 dtk",
+      "ok": true,
+      "info": "tembakanD1=0 yawBerubah=0.000 targetHidup=true decoyHidup=true"
+    },
+    {
+      "id": "D2",
+      "name": "Bot dengar tembakan VK-47 di 40 m, tidak di 50 m; langkah lari 12 m / crouch 4 m",
+      "ok": true,
+      "info": "vk40=true vk50=false lari11=true lari13=false crouch3=true crouch5=false"
+    },
+    {
+      "id": "D3",
+      "name": "9 bot: tak ada yang macet >2 dtk saat punya sisa path dalam 1 ronde",
+      "ok": true,
+      "info": "maxStuck=0.2 dtk stuck={} faseAkhir=end skor=1-0"
+    },
+    {
+      "id": "D4",
+      "name": "Playbook: 1 defuseDuty + 2 retake rute berbeda + defuser sampai site + penyerang tahan radius 12 m",
+      "ok": true,
+      "info": "planted=true duty1=true ruteBerbeda=true defuserSampaiSite=true atkDalam12m@5dtk=1 akhir=defuse"
+    },
+    {
+      "id": "D5",
+      "name": "Bom jatuh diambil <=10 dtk; defender terdekat menahan posisi menghadap bom",
+      "ok": true,
+      "info": "dropped=true diambilSetelah=0.0 dtk defTerdekatBergerak=0.1 m yawKeBom=6.21 rad"
+    },
+    {
+      "id": "D6",
+      "name": "Tak ada bot keluar map / di dalam solid selama 1 ronde",
+      "ok": true,
+      "info": "keluarMap=0 diDalamSolid=0 (cek posisi tiap tick)"
+    },
+    {
+      "id": "D7",
+      "name": "Bot capai Site A 12-15 dtk (rute murni)",
+      "ok": true,
+      "info": "t=12.4 dtk"
+    },
+    {
+      "id": "AM1",
+      "name": "Carrier plant lewat service tunnel (A* + jalan + plant)",
+      "ok": true,
+      "info": "viaTunnel=true path=[btunnel>tunnel>tunnel>mid>mid>mid>midA>midA>along>intA>siteA] sampaiPlant=true macetMax=0.0 dtk planted=planted"
+    },
+    {
+      "id": "AM2",
+      "name": "Carrier lewat Mid Door (path dipaksa via node pintu): pintu terbuka + lolos + plant",
+      "ok": true,
+      "info": "pintuTerbukaMax=1.00 lolosX32=true planted=true | A* otonom: viaNodePintu=false viaTunnel=true (A* memilih tunnel, bukan pintu)"
+    },
+    {
+      "id": "AM3",
+      "name": "Defuser mencapai zona plant dari interior A dan interior B",
+      "ok": true,
+      "info": "interiorA=true interiorB=true"
+    },
+    {
+      "id": "AM4",
+      "name": "Pintu tertutup bukan tembok: rute Mid tetap ada & bot lolos",
+      "ok": true,
+      "info": "pathLen=8 lolos=true doorOpen=0.00"
+    }
+  ]
+}

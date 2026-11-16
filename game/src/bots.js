@@ -11,8 +11,9 @@ export function createBotBrain(role) {
     path: [], pathIdx: 0, destNode: -1, repathAt: 0,
     targetId: null, targetPos: null, lastSeenAt: -99, visibleSince: 0, reactAt: 0,
     losAt: Math.random() * 0.12, hearPos: null, hearAt: -99,
-    burstLeft: 0, burstUntil: 0, round: 1, holdNode: -1, plantSite: 'A',
-    strafeT: 0, strafeDir: 1, retakeRoute: 0, lastBuyRound: 0 };
+    burstLeft: 0, burstUntil: 0, round: 1, holdNode: -1, plantSite: 'A', routeDoor: false,
+    strafeT: 0, strafeDir: 1, retakeRoute: 0, lastBuyRound: 0,
+    holdBomb: false, stuckAt: 0, lastPX: 0, lastPZ: 0, movedAcc: 0, nudges: 0 };
 }
 export function ensureBrains(s) {
   for (const a of s.agents) if (!a.isPlayer && !a.bot) a.bot = createBotBrain(a.role);
@@ -69,8 +70,34 @@ function hear(s, a) {
   }
 }
 export function setPath(a, toNode) {
-  const from = nearestNode(a.x, a.z);
-  a.bot.path = aStar(from, toNode); a.bot.pathIdx = 0; a.bot.destNode = toNode;
+  // 'from' harus node yang terjangkau langsung (LOS jelas) — nearestNode mentah
+  // bisa menunjuk node di seberang dinding (mis. node tunnel (30,20) untuk bot
+  // di (33,20) di luar dinding tunnel), sehingga path diawali node yang tak bisa
+  // dicapai dan bot macet di balik dinding sampai ronde berakhir.
+  let from = nearestNode(a.x, a.z);
+  if (losBlocked(a.x, 1, a.z, NODES[from].x, 1, NODES[from].z, [], 1)) {
+    let best = -1, bd = Infinity;
+    NODES.forEach((n, i) => {
+      const d = (n.x - a.x) ** 2 + (n.z - a.z) ** 2;
+      if (d < bd && !losBlocked(a.x, 1, a.z, n.x, 1, n.z, [], 1)) { bd = d; best = i; }
+    });
+    if (best >= 0) from = best;
+  }
+  let path = aStar(from, toNode);
+  if (!path.length && from !== toNode) {
+    // Tujuan tak terjangkau (node terisolasi, mis. siteA (59,33)/(66,41) atau
+    // (57,42) yang hanya terhubung satu sama lain): pilih node terdekat dengan
+    // tujuan yang masih terjangkau dari posisi bot, agar bot tak diam dengan path kosong.
+    const seen = new Set([from]), q = [from];
+    while (q.length) { const c = q.pop(); for (const nb of LINKS[c]) if (!seen.has(nb)) { seen.add(nb); q.push(nb); } }
+    let best = from, bd = Infinity;
+    for (const i of seen) {
+      const d = (NODES[i].x - NODES[toNode].x) ** 2 + (NODES[i].z - NODES[toNode].z) ** 2;
+      if (d < bd) { bd = d; best = i; }
+    }
+    toNode = best; path = aStar(from, best);
+  }
+  a.bot.path = path; a.bot.pathIdx = 0; a.bot.destNode = toNode;
 }
 function nodeByTag(tag, x = null) {
   const list = NODES.map((n, i) => ({ n, i })).filter(o => o.n.tags.includes(tag));
@@ -86,6 +113,12 @@ function goalNode(s, a) {
       return b.destNode >= 0 ? b.destNode : nearestNode(a.x, a.z);
     }
     if (s.bomb && s.bomb.status === 'dropped') return nearestNode(s.bomb.x, s.bomb.z);
+    // AM2 (keputusan koordinator 17 Nov 01:51): service tunnel DITERIMA sebagai
+    // rute utama carrier — A* memilihnya karena itu rute TERPENDEK, bukan bug.
+    // Pintu Mid TIDAK dipaksa untuk carrier: rute lebih panjang + artifisial.
+    // Pintu tetap bernilai (memutus sightline + meredam suara saat tertutup, rute
+    // pemain); fungsinya sudah terbukti (path paksa via node pintu: pintu terbuka
+    // 1,00, bot lolos, plant sukses). Jadi: carrier ikut A* apa adanya.
     if (s.bomb && s.bomb.carrierId === a.id) return nodeByTag(b.plantSite === 'A' ? 'siteA' : 'siteB', 63);
     if (b.kind === 'rusher' || b.kind === 'rifleman') { // ikuti pemain (offset)
       const p = s.agents[0];
@@ -111,7 +144,23 @@ function goalNode(s, a) {
 export function moveAlongPath(s, a, dt) {
   const b = a.bot;
   if (!b.path.length || b.pathIdx >= b.path.length) return;
+  // Unstuck: tak maju >1,5 dtk padahal path tersisa -> repath; bila masih macet
+  // 1,5 dtk lagi -> geser kecil ke node path berikutnya (maju, bukan mundur).
+  // "Maju" diukur akumulasi 0,5 m (lurker crouch hanya 0,043 m/tick, jangan dikira macet).
+  const moved = Math.hypot(a.x - b.lastPX, a.z - b.lastPZ);
+  b.lastPX = a.x; b.lastPZ = a.z; b.movedAcc += moved;
+  if (b.movedAcc > 0.5) { b.movedAcc = 0; b.stuckAt = s.now; b.nudges = 0; }
+  else if (s.now - b.stuckAt > 1.5 && b.destNode >= 0) {
+    b.stuckAt = s.now;
+    if (b.nudges === 0) { setPath(a, b.destNode); b.nudges = 1; }
+    else {
+      const n = NODES[b.path[b.pathIdx]];
+      if (n && !losBlocked(a.x, 1, a.z, n.x, 1, n.z, [], s.door.open)) { a.x = n.x; a.z = n.z; }
+      b.nudges = 0; setPath(a, b.destNode);
+    }
+  }
   const n = NODES[b.path[b.pathIdx]];
+  if (!n) return; // path kosong (tak terjangkau) — setPath sudah fallback, jaga-jaga
   const d = Math.hypot(n.x - a.x, n.z - a.z);
   if (d < 0.8) { b.pathIdx++; return; }
   const w = currentWeapon(a);
@@ -122,9 +171,17 @@ export function moveAlongPath(s, a, dt) {
   const h = a.crouch ? CONFIG.agentHeightCrouch : CONFIG.agentHeight;
   const r = collideMove(a, a.vx * dt, 0, a.vz * dt, CONFIG.agentRadius, h, s.door.open);
   a.x = r.x; a.z = r.z;
-  if ((r.hitX || r.hitZ) && s.now > b.repathAt) { b.repathAt = s.now + 1; setPath(a, b.destNode); }
+  // Terjepit di sudut/dinding (mis. node (57,40) tepat di bibir celah pintu Site A):
+  // bila sudah dekat node tapi tertahan solid, anggap node tercapai dan lanjut ke
+  // node berikut — arah ke node berikut punya komponen menyamping yang menggeser
+  // bot mengitari sudut (collideMove sudah slide per sumbu).
+  if ((r.hitX || r.hitZ) && d < 2.5) { b.pathIdx++; b.stuckAt = s.now; b.movedAcc = 0; }
+  else if ((r.hitX || r.hitZ) && s.now > b.repathAt) { b.repathAt = s.now + 1; setPath(a, b.destNode); }
 }
 // Pisah antar-bot 0,6 m (AMB-17); penanam/pen-defuse diprioritaskan (tak digeser).
+// Dorongan HARUS sadar collision: dorongan mentah bisa mendorong bot ke dalam
+// solid (mis. dinding S(45.5,29,46,36) konektor Mid-A) lalu collideMove tak bisa
+// mengeluarkannya lagi -> macet puluhan detik. Dorong lewat collideMove per sumbu.
 function separate(s) {
   const list = aliveAgents(s);
   for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
@@ -132,8 +189,16 @@ function separate(s) {
     const d = Math.hypot(a.x - b.x, a.z - b.z);
     if (d < CONFIG.bot.separation && d > 0.001) {
       const push = (CONFIG.bot.separation - d) / 2, ux = (a.x - b.x) / d, uz = (a.z - b.z) / d;
-      if (!a.planting && !a.defusing) { a.x += ux * push; a.z += uz * push; }
-      if (!b.planting && !b.defusing) { b.x -= ux * push; b.z -= uz * push; }
+      if (!a.planting && !a.defusing) {
+        const h = a.crouch ? CONFIG.agentHeightCrouch : CONFIG.agentHeight;
+        const r = collideMove(a, ux * push, 0, uz * push, CONFIG.agentRadius, h, s.door.open);
+        a.x = r.x; a.z = r.z;
+      }
+      if (!b.planting && !b.defusing) {
+        const h = b.crouch ? CONFIG.agentHeightCrouch : CONFIG.agentHeight;
+        const r = collideMove(b, -ux * push, 0, -uz * push, CONFIG.agentRadius, h, s.door.open);
+        b.x = r.x; b.z = r.z;
+      }
     }
   }
 }

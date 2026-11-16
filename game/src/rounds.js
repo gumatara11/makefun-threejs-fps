@@ -66,11 +66,14 @@ export function buyItem(s, a, key) {
 // --- plant / defuse: tahan E, batal bila gerak/ganti/lepas E; damage tak membatalkan ---
 function plantDefuseTick(s, input) {
   const p = s.agents[0];
+  const eDown = input.down('KeyE');
+  const eEdge = eDown && !p.ePrev; // tekan E baru: plant/defuse hanya mulai dari
+  p.ePrev = eDown; // tekanan baru; setelah batal (gerak/ganti/lepas E) harus tekan ulang
   // pemain: E ditahan + carrier + di zona plant + fase live
   if (s.round.phase === 'live' && p.alive && s.bomb && s.bomb.carrierId === 0) {
     const site = inZone(p, 'plantA') ? 'A' : inZone(p, 'plantB') ? 'B' : null;
     const moving = input.down('KeyW') || input.down('KeyA') || input.down('KeyS') || input.down('KeyD');
-    if (site && input.down('KeyE') && !moving) {
+    if (site && eDown && !moving && (p.planting || eEdge)) {
       p.planting = true; p.plantProg += s.dt;
       p.vx = 0; p.vz = 0;
       if (p.plantProg >= CONFIG.timePlant) {
@@ -105,7 +108,7 @@ function plantDefuseTick(s, input) {
     for (const a of s.agents) {
       if (!a.alive || a.team !== 'def') continue;
       const isPlayer = a.isPlayer;
-      const want = isPlayer ? input.down('KeyE') : a.defusing;
+      const want = isPlayer ? (eDown && (a.defusing || eEdge)) : a.defusing;
       const moving = isPlayer && (input.down('KeyW') || input.down('KeyA') || input.down('KeyS') || input.down('KeyD'));
       if (want && !moving && inZone(a, siteZone)) {
         a.defusing = true; a.defuseProg += s.dt; a.vx = 0; a.vz = 0;

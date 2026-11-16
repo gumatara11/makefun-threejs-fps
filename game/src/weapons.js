@@ -90,10 +90,12 @@ export function startReload(a, now) {
   return true;
 }
 // AMB-04: ganti senjata membatalkan reload (ulang dari nol).
+// Spec §2: ganti senjata juga membatalkan plant/defuse (progress reset).
 export function switchWeapon(a, slot, now) {
   if (slot === a.current) return false;
   if (slot === 'primary' && !a.weapons.primary) return false;
   a.reloadUntil = 0; a.reloadSlot = null;
+  a.planting = false; a.plantProg = 0; a.defusing = false; a.defuseProg = 0;
   a.current = slot;
   a.switchUntil = now + WEAPONS[(slot === 'primary' ? a.weapons.primary : a.weapons.secondary).key].draw;
   a.scoped = false;
@@ -115,6 +117,7 @@ export function dropWeapon(a, state) {
   state.dropped.push({ key: p.key, mag: p.mag, reserve: p.reserve, x: a.x, z: a.z });
   a.weapons.primary = null; a.current = 'secondary';
   a.reloadUntil = 0; a.reloadSlot = null;
+  a.planting = false; a.plantProg = 0; a.defusing = false; a.defuseProg = 0; // ganti senjata = batal
   return true;
 }
 export function pickupWeapon(a, state) {
@@ -128,6 +131,7 @@ export function pickupWeapon(a, state) {
   a.weapons.primary = { key: best.key, mag: best.mag, reserve: best.reserve };
   state.dropped.splice(state.dropped.indexOf(best), 1);
   a.current = 'primary';
+  a.planting = false; a.plantProg = 0; a.defusing = false; a.defuseProg = 0; // ganti senjata = batal
   a.switchUntil = state.now + WEAPONS[best.key].draw;
   return true;
 }
