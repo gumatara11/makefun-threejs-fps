@@ -147,7 +147,7 @@ export { GRENADES };
 // Geometri di-merge per material (tangan 7 mesh, senjata <=5) agar draw calls rendah.
 // Senjata: P9 1 tangan + support hand; rifle 2 tangan (grip + foregrip).
 import { part, mergeParts } from './palette.js';
-const VB = { x: 0.17, y: -0.21, z: -0.66, s: 0.68 };
+const VB = { x: 0.12, y: -0.23, z: -0.6, s: 0.78, yaw: -0.25 }; // yaw: sisi kiri (jari melingkar) menghadap kamera
 let sleeveMat = null;
 function weaveMat() {
   if (sleeveMat) return sleeveMat;
@@ -196,22 +196,27 @@ function forearm(slim, wristR, wristZ) {
 }
 function robotHand(cfg, isLeft, armRot) {
   const g = new THREE.Group();
-  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.085, 0.07, 0.05), PAL.palm));
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.085, 0.055), PAL.hand)); // telapak metal TERANG (bukan kotak hitam)
   const hand = [], tips = [];
   for (let i = 0; i < 4; i++) {
     const bx = -0.027 + i * 0.018;
-    if (i === 0) { // telunjuk lurus di sisi frame
-      hand.push(part(new THREE.BoxGeometry(0.011, 0.013, 0.032), PAL.hand, 0.045, 0.01, -0.06, -0.15, -0.5, 0));
-      hand.push(part(new THREE.BoxGeometry(0.011, 0.013, 0.026), PAL.hand, 0.045, 0.008, -0.082, -0.15, -0.5, 0));
-      tips.push(part(new THREE.BoxGeometry(0.011, 0.013, 0.02), PAL.accP, 0.045, 0.006, -0.1, -0.15, -0.5, 0));
+    if (i === 0) { // telunjuk lurus di sisi frame (jari picu)
+      hand.push(part(new THREE.BoxGeometry(0.016, 0.018, 0.04), PAL.hand, 0.045, 0.01, -0.06, -0.15, -0.5, 0));
+      hand.push(part(new THREE.BoxGeometry(0.016, 0.018, 0.034), PAL.hand, 0.045, 0.008, -0.088, -0.15, -0.5, 0));
+      tips.push(part(new THREE.BoxGeometry(0.016, 0.018, 0.026), PAL.accP, 0.045, 0.006, -0.11, -0.15, -0.5, 0));
       continue;
     }
-    hand.push(part(new THREE.BoxGeometry(0.011, 0.013, 0.032), PAL.hand, bx, -0.028, -0.044, 0.35));
-    hand.push(part(new THREE.BoxGeometry(0.011, 0.013, 0.026), PAL.hand, bx, -0.036, -0.06, 0.7));
-    tips.push(part(new THREE.BoxGeometry(0.011, 0.013, 0.02), PAL.accP, bx, -0.048, -0.074, 1.05));
+    // 3 jari CHUNKY melingkar di depan grip (muka grip di z lokal -0,08): ruas 1
+    // maju-turun, ruas 2 turun di depan muka grip, ujung balik ke telapak di bawah grip
+    hand.push(part(new THREE.BoxGeometry(0.016, 0.018, 0.04), PAL.hand, bx, -0.02, -0.075, -0.5));
+    hand.push(part(new THREE.BoxGeometry(0.016, 0.018, 0.034), PAL.hand, bx, -0.042, -0.09, -1.15));
+    tips.push(part(new THREE.BoxGeometry(0.018, 0.02, 0.03), PAL.accP, bx, -0.068, -0.078, -1.85));
   }
-  const tx = isLeft ? -0.05 : 0.05;
-  hand.push(part(new THREE.BoxGeometry(0.013, 0.013, 0.05), PAL.hand, tx, 0.005, -0.01, 0, isLeft ? 0.6 : -0.6, 0));
+  // buku jari di tepi depan telapak
+  for (let i = 1; i < 4; i++) hand.push(part(new THREE.BoxGeometry(0.018, 0.016, 0.014), PAL.hand, -0.027 + i * 0.018, -0.005, -0.028));
+  // ibu jari menekan sisi grip (sisi kamera)
+  const tx = isLeft ? -0.055 : 0.055;
+  hand.push(part(new THREE.BoxGeometry(0.018, 0.018, 0.055), PAL.hand, tx, -0.015, -0.045, -0.3, isLeft ? 0.5 : -0.5, 0));
   g.add(...mergeParts(hand, false), ...mergeParts(tips, false));
   const arm = forearm(cfg.slim, cfg.wristR || 0.03, cfg.wristZ || 0.004);
   arm.position.set(0, -0.048, 0.004);
@@ -232,6 +237,7 @@ function buildGun(key) {
   } else if (key === 'Breacher') {
     add(cyl(0.026, 0.5), PAL.steel, 0, 0.05, -0.22, Math.PI / 2);
     add(box(0.07, 0.09, 0.3), PAL.steel, 0, 0.02, 0);
+    add(box(0.072, 0.015, 0.24), PAL.accP, 0, 0.068, 0); // strip pink
     add(box(0.06, 0.07, 0.18), PAL.crate, 0, -0.01, -0.25);
     add(box(0.05, 0.12, 0.06), PAL.palm, 0, -0.05, 0.08, 0.2);
     add(box(0.06, 0.09, 0.16), PAL.crate, 0, 0.01, 0.2);
@@ -243,16 +249,18 @@ function buildGun(key) {
     mag = new THREE.Mesh(box(0.04, 0.13, 0.06), PAL.steel); mag.position.set(0, -0.08, -0.05); mag.rotation.x = 0.15;
   } else if (key === 'VK47') {
     add(box(0.07, 0.1, 0.42), PAL.steel, 0, 0.03, -0.08);
-    add(box(0.072, 0.015, 0.3), PAL.accY, 0, 0.085, -0.08);
+    add(box(0.072, 0.015, 0.3), PAL.accP, 0, 0.085, -0.08); // strip PINK (foto gameplay)
+    add(box(0.012, 0.06, 0.28), PAL.accB, 0.038, 0.03, -0.08); // panel samping BIRU (sisi kamera)
     add(cyl(0.018, 0.42), PAL.steel, 0, 0.04, -0.48, Math.PI / 2);
     add(box(0.05, 0.06, 0.14), PAL.palm, 0, -0.045, -0.3);
     add(box(0.055, 0.12, 0.06), PAL.palm, 0, -0.045, 0.1, 0.2);
-    add(box(0.06, 0.09, 0.18), PAL.crate, 0, 0.01, 0.22);
+    add(box(0.035, 0.06, 0.08), PAL.crate, 0, 0.01, 0.25); // stock ramping (tangan kanan terlihat)
     mag = new THREE.Mesh(box(0.045, 0.16, 0.07), PAL.steel); mag.position.set(0, -0.09, -0.08); mag.rotation.x = 0.35;
   } else { // Longbow
     add(cyl(0.014, 0.72), PAL.steel, 0, 0.04, -0.42, Math.PI / 2);
     add(cyl(0.028, 0.2), PAL.palm, 0, 0.1, -0.05, Math.PI / 2);
     add(box(0.06, 0.09, 0.4), PAL.steel, 0, 0.03, -0.05);
+    add(box(0.062, 0.015, 0.3), PAL.accB, 0, 0.078, -0.05); // strip biru
     add(box(0.06, 0.09, 0.2), PAL.crate, 0, 0.01, 0.22);
     add(box(0.05, 0.11, 0.06), PAL.palm, 0, -0.04, 0.1, 0.2);
     add(box(0.05, 0.06, 0.12), PAL.palm, 0, -0.04, -0.32);
@@ -264,24 +272,25 @@ function buildGun(key) {
   return { group: g, mag };
 }
 const VM_CFG = {
-  P9: { slim: 0.88, left: 'support', rRot: 0.38, lRot: -0.62 },
-  Breacher: { slim: 1, left: 'fore', rRot: 0.15, lRot: -0.5 },
-  Kestrel: { slim: 0.95, left: 'fore', rRot: 0.22, lRot: -0.55 },
-  VK47: { slim: 1, left: 'fore', rRot: 0.02, lRot: -0.45, wristR: 0.038, wristZ: 0.01 },
-  Longbow: { slim: 1, left: 'fore', rRot: 0.1, lRot: -0.5 },
+  // rhZ/lhZ: posisi tangan agar muka grip/foregrip di z lokal tangan -0,08 (jari membungkus)
+  P9: { slim: 0.88, left: 'support', rRot: 0.38, lRot: -0.62, rhZ: 0.07, lhZ: -0.02 },
+  Breacher: { slim: 1, left: 'fore', rRot: 0.15, lRot: -0.5, rhZ: 0.13, lhZ: -0.26 },
+  Kestrel: { slim: 0.95, left: 'fore', rRot: 0.22, lRot: -0.55, rhZ: 0.11, lhZ: -0.3 },
+  VK47: { slim: 1, left: 'fore', rRot: 0.02, lRot: -0.45, wristR: 0.038, wristZ: 0.01, rhZ: 0.15, lhZ: -0.29 },
+  Longbow: { slim: 1, left: 'fore', rRot: 0.1, lRot: -0.5, rhZ: 0.15, lhZ: -0.3 },
 };
 export function buildViewmodel(camera, key) {
   const cfg = VM_CFG[key] || VM_CFG.P9;
   const group = new THREE.Group();
-  group.position.set(VB.x, VB.y, VB.z); group.scale.setScalar(VB.s);
+  group.position.set(VB.x, VB.y, VB.z); group.scale.setScalar(VB.s); group.rotation.y = VB.yaw;
   const gun = buildGun(key);
   group.add(gun.group);
   const rh = robotHand(cfg, false, cfg.rRot);
-  rh.position.set(0.02, -0.05, 0.07); rh.rotation.y = -0.3;
+  rh.position.set(0, -0.065, cfg.rhZ); rh.rotation.y = 0; // di tengah grip, jari membungkus
   group.add(rh);
   const lh = robotHand(cfg, true, cfg.lRot);
-  if (cfg.left === 'support') { lh.position.set(-0.06, -0.14, -0.02); lh.rotation.set(0.5, 0.9, cfg.lRot); }
-  else { lh.position.set(0, -0.05, -0.3); lh.rotation.set(0.15, 0.35, cfg.lRot); }
+  if (cfg.left === 'support') { lh.position.set(-0.06, -0.14, cfg.lhZ); lh.rotation.set(0.5, 0.5, cfg.lRot); }
+  else { lh.position.set(0, -0.05, cfg.lhZ); lh.rotation.set(0.15, 0, cfg.lRot); }
   group.add(lh);
   return { group, key, mag: gun.mag, kick: 0, lastShot: -99, phase: 0 };
 }
@@ -305,7 +314,7 @@ export function updateViewmodel(dt, state, vm) {
   }
   const bob = Math.hypot(p.vx, p.vz) > 0.5 ? Math.sin(state.now * 9) * 0.005 : 0;
   vm.group.position.set(VB.x, VB.y - dip - sw + bob, VB.z + vm.kick * 0.03);
-  vm.group.rotation.x = tilt + vm.kick * 0.05;
+  vm.group.rotation.x = tilt + vm.kick * 0.05 + 0.12; // miring ke bawah: muka grip + jari menghadap kamera
   if (vm.mag) vm.mag.position.y = (vm.mag.userData.y0 ??= vm.mag.position.y) - magDrop;
   void dt;
 }

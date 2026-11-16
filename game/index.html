@@ -43,6 +43,10 @@
   #scope { left: 50%; top: 50%; transform: translate(-50%,-50%); width: 100vmin; height: 100vmin; border-radius: 50%; border: 90vmax solid rgba(0,0,0,.92); display: none; }
   #minimap { right: 14px; bottom: 110px; border: 2px solid rgba(255,255,255,.5); border-radius: 6px; background: rgba(0,0,0,.4); }
   .overlay { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: linear-gradient(160deg, rgba(20,60,110,.92), rgba(120,30,90,.88)); text-align: center; padding: 20px; }
+  #start-overlay { justify-content: space-between; padding: 30px 20px 26px; background: linear-gradient(180deg, rgba(12,35,70,.94) 0%, rgba(12,35,70,.55) 24%, rgba(12,35,70,.12) 44%, rgba(12,35,70,.12) 60%, rgba(12,35,70,.92) 100%); }
+  #start-overlay .spacer { flex: 1; }
+  body.menu .hud { display: none !important; }
+  #start-overlay .menu-top, #start-overlay .menu-bottom { display: flex; flex-direction: column; align-items: center; gap: 14px; }
   .overlay h1 { font-size: 54px; letter-spacing: 6px; color: #ffd23c; text-shadow: 0 3px 0 #e83a2f, 0 6px 18px #000; }
   .overlay h2 { font-size: 30px; letter-spacing: 3px; }
   .overlay p { max-width: 560px; font-size: 15px; line-height: 1.5; }
@@ -76,10 +80,15 @@
 <canvas class="hud" id="minimap" width="180" height="120"></canvas>
 <div id="buy-menu"><h3>🛒 BELI <span id="buy-money">$800</span></h3><div id="buy-list"></div><div id="buy-hint">Klik item atau tekan 1–8 • B tutup • hanya di fase beli &amp; di spawn</div></div>
 <div class="overlay" id="start-overlay">
-  <h1>EMBERLINE</h1>
-  <p><b>5v5 Bomb Defuse.</b> Penyerang: tanam bom di Site A atau B, atau eliminasi semua defender. Defender: cegah plant, atau defuse bom sebelum meledak. Pertama sampai <b>8 ronde</b> menang.</p>
-  <div class="controls">WASD gerak • Mouse bidik • Klik tembak • R reload • Ctrl crouch • Space lompat<br>B menu beli • E tahan plant/defuse • F ambil senjata • G jatuhkan primer<br>1 primer • 2 P9 • 3 Frag • 4 Smoke • 5 Flash • Klik kanan scope Longbow</div>
-  <button id="start-btn">▶ &nbsp;MULAI</button>
+  <div class="menu-top">
+    <h1>EMBERLINE</h1>
+    <p><b>5v5 Bomb Defuse.</b> Penyerang: tanam bom di Site A atau B, atau eliminasi semua defender. Defender: cegah plant, atau defuse bom sebelum meledak. Pertama sampai <b>8 ronde</b> menang.</p>
+  </div>
+  <div class="spacer"></div>
+  <div class="menu-bottom">
+    <div class="controls">WASD gerak • Mouse bidik • Klik tembak • R reload • Ctrl crouch • Space lompat<br>B menu beli • E tahan plant/defuse • F ambil senjata • G jatuhkan primer<br>1 primer • 2 P9 • 3 Frag • 4 Smoke • 5 Flash • Klik kanan scope Longbow</div>
+    <button id="start-btn">▶ &nbsp;MULAI</button>
+  </div>
 </div>
 <div class="overlay" id="pause-overlay"><h2>⏸ JEDA</h2><p>Pointer lock lepas — simulasi berhenti.</p><button id="resume-btn">▶ &nbsp;LANJUTKAN</button></div>
 <div class="overlay" id="end-overlay"><h2>🏁 MATCH SELESAI</h2><div id="end-score" style="font-size:40px;font-weight:800">0 — 0</div><div id="end-stats"></div><button id="again-btn">↻ &nbsp;MAIN LAGI</button></div>
