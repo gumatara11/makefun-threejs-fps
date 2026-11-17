@@ -162,7 +162,7 @@ function hug(geo, slim) {
 function forearm(slim, wristR, wristZ) {
   const g = new THREE.Group();
   const prof = [[0.066, -0.31], [0.064, -0.26], [0.074, -0.19], [0.072, -0.13],
-    [0.062, -0.07], [0.048, -0.02], [0.040, 0.03], [0.036, 0.06]];
+    [0.062, -0.07], [0.048, -0.02], [0.040, 0.03], [0.038, 0.07], [0.034, 0.10]];
   const pts = prof.map(([r, y]) => new THREE.Vector2(r * slim, y));
   g.add(new THREE.Mesh(hug(new THREE.LatheGeometry(pts, 12), slim), weaveMat()));
   const fold = [part(hug(new THREE.CylinderGeometry(0.0555 * slim, 0.0605 * slim, 0.018, 12, 1, true), slim), PAL.fold, 0, -0.048, 0)];
@@ -170,31 +170,32 @@ function forearm(slim, wristR, wristZ) {
     fold.push(part(hug(new THREE.TorusGeometry(r * slim, 0.005, 6, 16).rotateX(Math.PI / 2), slim), PAL.fold, 0, y, 0));
   g.add(...mergeParts(fold, false));
   const wrist = new THREE.Mesh(new THREE.SphereGeometry(wristR, 10, 8), PAL.hand);
-  wrist.scale.set(1.05, 0.42, 0.85); wrist.position.set(0, 0.058, wristZ); g.add(wrist);
+  wrist.scale.set(1.05, 0.6, 0.85); wrist.position.set(0, 0.07, wristZ); g.add(wrist);
   const cuff = new THREE.Mesh(new THREE.CylinderGeometry(0.046, 0.05, 0.04, 12), PAL.neonO);
   cuff.position.y = 0.02; g.add(cuff);
   return g;
 }
 function robotHand(cfg, isLeft, armRot) {
   const g = new THREE.Group();
-  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.088, 0.075, 0.05), PAL.steel));
+  const pm = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.075, 0.05), PAL.steel);
+  pm.position.z = 0.025; g.add(pm);
   const hand = [], tips = [];
   const sx = isLeft ? 1 : -1;
   for (let i = 0; i < 3; i++) {
     const fy = -0.006 - i * 0.031, fx = sx * 0.036;
     hand.push(part(new THREE.BoxGeometry(0.028, 0.024, 0.042), PAL.hand, fx, fy, -0.048, -0.35, sx * 0.35, 0));
-    hand.push(part(new THREE.BoxGeometry(0.028, 0.066, 0.024), PAL.hand, fx + sx * 0.012, fy - 0.032, -0.08, -0.15));
-    tips.push(part(new THREE.BoxGeometry(0.04, 0.026, 0.038), PAL.accP, fx + sx * 0.022, fy - 0.058, -0.066, -1.1));
+    hand.push(part(new THREE.BoxGeometry(0.1, 0.024, 0.024), PAL.hand, 0, fy, -0.055));
+    tips.push(part(new THREE.BoxGeometry(0.024, 0.045, 0.024), PAL.accP, -sx * 0.05, fy - 0.032, -0.038, -0.4));
     hand.push(part(new THREE.BoxGeometry(0.026, 0.02, 0.02), PAL.hand, fx, fy + 0.014, -0.03));
   }
   hand.push(part(new THREE.BoxGeometry(0.024, 0.024, 0.052), PAL.hand, 0.055, 0.014, -0.065, -0.15, -0.5, 0));
   hand.push(part(new THREE.BoxGeometry(0.024, 0.024, 0.044), PAL.hand, 0.055, 0.012, -0.098, -0.15, -0.5, 0));
   tips.push(part(new THREE.BoxGeometry(0.024, 0.024, 0.034), PAL.accP, 0.055, 0.01, -0.122, -0.15, -0.5, 0));
   const tx = isLeft ? -0.062 : 0.062;
-  hand.push(part(new THREE.BoxGeometry(0.022, 0.022, 0.06), PAL.hand, tx, -0.015, -0.05, -0.3, isLeft ? 0.5 : -0.5, 0));
+  hand.push(part(new THREE.BoxGeometry(0.022, 0.022, 0.09), PAL.hand, tx, -0.005, -0.05, -0.3, isLeft ? 0.5 : -0.5, 0));
   g.add(...mergeParts(hand, false), ...mergeParts(tips, false));
-  const arm = forearm(cfg.slim, cfg.wristR || 0.03, cfg.wristZ || 0.004);
-  arm.position.set(0, -0.048, 0.004);
+  const arm = forearm(cfg.slim, cfg.wristR || 0.038, cfg.wristZ || 0.004);
+  arm.position.set(0, -0.02, 0.004);
   arm.rotation.x = -0.35; arm.rotation.z = armRot;
   g.add(arm);
   return g;
@@ -207,7 +208,7 @@ function buildGun(key) {
   if (key === 'P9') {
     add(box(0.05, 0.045, 0.24), PAL.steel, 0, 0.06, -0.08);
     add(box(0.052, 0.012, 0.24), PAL.accP, 0, 0.085, -0.08);
-    add(box(0.045, 0.14, 0.06), PAL.palm, 0, -0.04, 0.02, 0.25);
+    add(box(0.068, 0.14, 0.08), PAL.palm, 0, -0.04, 0.02, 0.25);
     add(cyl(0.013, 0.035), PAL.steel, 0, 0.06, -0.205, Math.PI / 2);
     add(box(0.008, 0.022, 0.012), PAL.accP, 0, 0.096, -0.185);
     add(box(0.032, 0.016, 0.012), PAL.steel, 0, 0.094, 0.025);
@@ -221,18 +222,18 @@ function buildGun(key) {
     add(box(0.07, 0.09, 0.3), PAL.steel, 0, 0.02, 0);
     add(box(0.072, 0.015, 0.24), PAL.accP, 0, 0.068, 0);
     add(box(0.06, 0.07, 0.18), PAL.crate, 0, -0.01, -0.25);
-    add(box(0.05, 0.12, 0.06), PAL.palm, 0, -0.05, 0.08, 0.2);
+    add(box(0.07, 0.12, 0.08), PAL.palm, 0, -0.05, 0.08, 0.2);
     add(box(0.06, 0.09, 0.16), PAL.crate, 0, 0.01, 0.2);
     add(cyl(0.032, 0.04), PAL.accP, 0, 0.05, -0.46, Math.PI / 2);
-    add(box(0.075, 0.05, 0.12), PAL.palm, 0, -0.035, -0.16);
+    add(box(0.08, 0.08, 0.12), PAL.palm, 0, -0.035, -0.16);
     add(box(0.01, 0.03, 0.02), PAL.steel, 0, 0.075, 0.12);
   } else if (key === 'Kestrel') {
     add(box(0.06, 0.09, 0.34), PAL.steel, 0, 0.03, -0.1);
     add(box(0.062, 0.02, 0.2), PAL.accB, 0, 0.08, -0.1);
     add(cyl(0.02, 0.22), PAL.steel, 0, 0.03, -0.36, Math.PI / 2);
-    add(box(0.05, 0.11, 0.06), PAL.palm, 0, -0.04, 0.06, 0.2);
+    add(box(0.07, 0.11, 0.08), PAL.palm, 0, -0.04, 0.06, 0.2);
     add(box(0.05, 0.08, 0.14), PAL.palm, 0, 0.01, 0.24);
-    add(box(0.045, 0.09, 0.05), PAL.palm, 0, -0.05, -0.28, 0.15);
+    add(box(0.07, 0.09, 0.07), PAL.palm, 0, -0.05, -0.28, 0.15);
     add(box(0.03, 0.03, 0.06), PAL.steel, 0, 0.095, -0.05);
     mag = new THREE.Mesh(box(0.04, 0.13, 0.06), PAL.steel); mag.position.set(0, -0.08, -0.05); mag.rotation.x = 0.15;
   } else if (key === 'VK47') {
@@ -240,8 +241,8 @@ function buildGun(key) {
     add(box(0.072, 0.015, 0.3), PAL.accP, 0, 0.085, -0.08);
     add(box(0.012, 0.06, 0.28), PAL.accB, 0.038, 0.03, -0.08);
     add(cyl(0.018, 0.42), PAL.steel, 0, 0.04, -0.48, Math.PI / 2);
-    add(box(0.05, 0.06, 0.14), PAL.palm, 0, -0.045, -0.3);
-    add(box(0.055, 0.12, 0.06), PAL.palm, 0, -0.045, 0.1, 0.2);
+    add(box(0.07, 0.1, 0.14), PAL.palm, 0, -0.045, -0.3);
+    add(box(0.075, 0.12, 0.085), PAL.palm, 0, -0.045, 0.1, 0.2);
     add(box(0.035, 0.06, 0.08), PAL.crate, 0, 0.01, 0.25);
     add(cyl(0.024, 0.07), PAL.steel, 0, 0.04, -0.68, Math.PI / 2);
     add(box(0.02, 0.012, 0.03), PAL.steel, 0, 0.055, -0.6);
@@ -259,8 +260,8 @@ function buildGun(key) {
     add(box(0.06, 0.09, 0.4), PAL.steel, 0, 0.03, -0.05);
     add(box(0.062, 0.015, 0.3), PAL.accB, 0, 0.078, -0.05);
     add(box(0.06, 0.09, 0.2), PAL.crate, 0, 0.01, 0.22);
-    add(box(0.05, 0.11, 0.06), PAL.palm, 0, -0.04, 0.1, 0.2);
-    add(box(0.05, 0.06, 0.12), PAL.palm, 0, -0.04, -0.32);
+    add(box(0.07, 0.11, 0.08), PAL.palm, 0, -0.04, 0.1, 0.2);
+    add(box(0.07, 0.09, 0.12), PAL.palm, 0, -0.04, -0.32);
     add(cyl(0.02, 0.16), PAL.steel, 0, 0.11, -0.05, Math.PI / 2);
     add(cyl(0.016, 0.012), PAL.neonB, 0, 0.11, -0.135, Math.PI / 2);
     add(box(0.05, 0.03, 0.16), PAL.palm, 0, 0.08, 0.18);
@@ -289,7 +290,7 @@ export function buildViewmodel(camera, key) {
   group.add(rh);
   const lh = robotHand(cfg, true, cfg.lRot);
   if (cfg.left === 'support') { lh.position.set(-0.09, -0.15, cfg.lhZ); lh.rotation.set(0.5, 0.5, cfg.lRot); }
-  else { lh.position.set(0, -0.09, cfg.lhZ); lh.rotation.set(0.35, 0, cfg.lRot); }
+  else { lh.position.set(0, -0.11, cfg.lhZ); lh.rotation.set(0.35, 0, cfg.lRot); }
   group.add(lh);
   return { group, key, mag: gun.mag, kick: 0, lastShot: -99, phase: 0 };
 }
