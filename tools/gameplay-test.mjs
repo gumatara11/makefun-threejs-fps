@@ -77,5 +77,44 @@ function freshInput() {
   check('(a) kontrol: model lama memang kehilangan tekan-cepat', oldPressed === false);
 }
 
+// ---------- (b) mouse fase beli tak melompat saat live ----------
+class BuyMouseInput {
+  constructor() { this.keys = new Set(); this.mouseDown = false; this.rightDown = false; this._dx = 0; this._click = false; }
+  down(c) { return this.keys.has(c); }
+  pressed(c) { return false; }
+  consumeMouse() { const r = { dx: this._dx, dy: 0 }; this._dx = 0; return r; }
+  consumeClick() { const c = this._click; this._click = false; return c; }
+  move(dx) { this._dx += dx; }
+}
+const DT = 1 / 60;
+{
+  const s = createState();
+  const inp = new BuyMouseInput();
+  s.round.timer = 0.2; // 12 tick buy lalu live
+  const yaw0 = s.agents[0].yaw;
+  for (let i = 0; i < 12; i++) { inp.move(70); simStep(s, DT, inp); } // 840 px selama buy (~106 derajat)
+  for (let i = 0; i < 5; i++) simStep(s, DT, inp);
+  const dyaw = Math.abs(s.agents[0].yaw - yaw0);
+  check('(b) gerak mouse selama buy tak melompatkan yaw saat live', dyaw < 0.01, `dyaw=${dyaw.toFixed(3)} rad (tanpa fix: ~1,85 rad / 106 derajat)`);
+}
+{
+  const s = createState();
+  s.round.phase = 'live'; s.round.timer = 100;
+  const inp = new BuyMouseInput();
+  const yaw0 = s.agents[0].yaw;
+  inp.move(100); simStep(s, DT, inp);
+  const dyaw = s.agents[0].yaw - yaw0;
+  check('(b) gerak mouse saat live tetap memutar pandangan', Math.abs(dyaw + 100 * 0.0022) < 0.001, `dyaw=${dyaw.toFixed(3)} rad`);
+}
+{
+  const s = createState();
+  const inp = new BuyMouseInput();
+  s.round.timer = 0.2;
+  inp._click = true; // klik kanvas selama fase beli
+  for (let i = 0; i < 12; i++) simStep(s, DT, inp);
+  for (let i = 0; i < 5; i++) simStep(s, DT, inp);
+  check('(b) klik selama buy tak menembak saat live', s.agents[0].weapons.secondary.mag === 12, `mag=${s.agents[0].weapons.secondary.mag}`);
+}
+
 console.log(`\n${pass} PASS, ${fail} FAIL`);
 process.exit(fail ? 1 : 0);

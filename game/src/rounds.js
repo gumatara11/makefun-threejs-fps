@@ -201,6 +201,10 @@ export function simStep(s, dt, input) {
     if (!s.round.buyDone) { buyBots(s); bombPlaybook(s); s.round.buyDone = true; }
     s.round.timer -= dt;
     bombPickupTick(s);
+    // (b) buang gerak mouse + klik selama fase beli: updatePlayer tak jalan di
+    // fase ini, jadi tanpa drain akumulasinya diterapkan sekaligus saat live.
+    if (input.consumeMouse) input.consumeMouse();
+    if (input.consumeClick) input.consumeClick();
     if (s.round.timer <= 0) { s.round.phase = 'live'; s.round.timer = CONFIG.timeRound; }
   } else if (ph === 'live' || ph === 'bomb') {
     if (ph === 'live') s.round.timer -= dt;
