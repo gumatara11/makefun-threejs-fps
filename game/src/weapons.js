@@ -138,14 +138,12 @@ export function pickupWeapon(a, state) {
 export { GRENADES };
 
 
-// ---- VIEWMODEL TANGAN ROBOT (Builder B) — teknik tangan v8–v15 ----
-// Jari metal terang di grip gelap (v9); jari bersegmen + gap lebar, ujung capai
-// sudut depan grip (v8/v9); lengan lathe belly asimetris Gaussian peak 0,024
-// sigma 0,10 (v14), shadow band + 3 ring (v12), weave canvas (v13), wrist ball
-// rata tersembunyi di cuff (v11); lengan panjang keluar tepi bawah frame (v10).
-// KRITIS v15: cuff OVERLAP tepi bawah jari 0,027 — tanpa gap gelap.
-// Geometri di-merge per material (tangan 7 mesh, senjata <=5) agar draw calls rendah.
-// Senjata: P9 1 tangan + support hand; rifle 2 tangan (grip + foregrip).
+// ---- VIEWMODEL TANGAN ROBOT — v4-hands: JARI DITUMPUK (v3 GAGAL: ruas vertikal
+// di muka grip tetap di belakang telapak+grip, foreshorten dari kamera).
+// v4: 3 jari menumpuk sepanjang grip (y -0,006/-0,037/-0,068, celah 0,007),
+// tiap jari ruas maju di sisi grip + turun di muka grip + ujung pink balik
+// ke kamera; telunjuk di frame; lengan lathe belly v14 + cuff overlap v15.
+// Geometri di-merge per material (tanpa material/mesh baru, draw calls tetap).
 import { part, mergeParts } from './palette.js';
 const VB = { x: 0.18, y: -0.16, z: -0.58, s: 0.95, yaw: -0.35 }; // kompromi ukur: stock menjauh dari kamera (tak menutupi tangan), telapak di frame
 let sleeveMat = null;
@@ -196,24 +194,22 @@ function forearm(slim, wristR, wristZ) {
 }
 function robotHand(cfg, isLeft, armRot) {
   const g = new THREE.Group();
-  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.085, 0.055), PAL.hand)); // telapak metal TERANG (bukan kotak hitam)
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.088, 0.075, 0.05), PAL.hand)); // telapak ramping
   const hand = [], tips = [];
-  for (let i = 0; i < 4; i++) {
-    const bx = -0.033 + i * 0.022;
-    if (i === 0) { // telunjuk lurus di sisi frame (jari picu)
-      hand.push(part(new THREE.BoxGeometry(0.02, 0.022, 0.05), PAL.hand, 0.055, 0.012, -0.065, -0.15, -0.5, 0));
-      hand.push(part(new THREE.BoxGeometry(0.02, 0.022, 0.042), PAL.hand, 0.055, 0.01, -0.098, -0.15, -0.5, 0));
-      tips.push(part(new THREE.BoxGeometry(0.02, 0.022, 0.032), PAL.accP, 0.055, 0.008, -0.122, -0.15, -0.5, 0));
-      continue;
-    }
-    // 3 jari BESAR melingkar di depan grip (muka grip di z lokal -0,08): ruas
-    // maju-turun, ruas 2 turun di depan muka grip, ujung balik ke telapak di bawah grip
-    hand.push(part(new THREE.BoxGeometry(0.021, 0.023, 0.05), PAL.hand, bx, -0.02, -0.082, -0.5));
-    hand.push(part(new THREE.BoxGeometry(0.021, 0.023, 0.042), PAL.hand, bx, -0.046, -0.098, -1.15));
-    tips.push(part(new THREE.BoxGeometry(0.026, 0.026, 0.036), PAL.accP, bx, -0.076, -0.088, -1.85));
+  const sx = isLeft ? 1 : -1; // sisi tumpukan jari: tangan kanan -x (sisi kamera), kiri cermin
+  // v4: 3 jari DITUMPUK sepanjang grip — ruas maju di sisi grip, ruas 2 turun
+  // di muka grip, ujung pink balik ke kamera di bawah grip; buku jari di atas tiap akar
+  for (let i = 0; i < 3; i++) {
+    const fy = -0.006 - i * 0.031, fx = sx * 0.026;
+    hand.push(part(new THREE.BoxGeometry(0.026, 0.024, 0.042), PAL.hand, fx, fy, -0.048, -0.35));
+    hand.push(part(new THREE.BoxGeometry(0.026, 0.046, 0.024), PAL.hand, fx, fy - 0.028, -0.078, -0.15));
+    tips.push(part(new THREE.BoxGeometry(0.028, 0.024, 0.038), PAL.accP, fx, fy - 0.052, -0.064, -1.1));
+    hand.push(part(new THREE.BoxGeometry(0.024, 0.02, 0.02), PAL.hand, fx, fy + 0.014, -0.03));
   }
-  // buku jari di tepi depan telapak
-  for (let i = 1; i < 4; i++) hand.push(part(new THREE.BoxGeometry(0.022, 0.02, 0.016), PAL.hand, -0.033 + i * 0.022, -0.005, -0.028));
+  // telunjuk lurus di sisi frame (jari picu), lebih besar
+  hand.push(part(new THREE.BoxGeometry(0.024, 0.024, 0.052), PAL.hand, 0.055, 0.014, -0.065, -0.15, -0.5, 0));
+  hand.push(part(new THREE.BoxGeometry(0.024, 0.024, 0.044), PAL.hand, 0.055, 0.012, -0.098, -0.15, -0.5, 0));
+  tips.push(part(new THREE.BoxGeometry(0.024, 0.024, 0.034), PAL.accP, 0.055, 0.01, -0.122, -0.15, -0.5, 0));
   // ibu jari menekan sisi grip (sisi kamera)
   const tx = isLeft ? -0.062 : 0.062;
   hand.push(part(new THREE.BoxGeometry(0.022, 0.022, 0.06), PAL.hand, tx, -0.015, -0.05, -0.3, isLeft ? 0.5 : -0.5, 0));
@@ -300,12 +296,12 @@ export function updateViewmodel(dt, state, vm) {
   if (!w) return;
   if (p.lastShotAt !== vm.lastShot) { vm.lastShot = p.lastShotAt; vm.kick = 1; }
   vm.kick = Math.max(0, vm.kick - dt * 6);
-  let dip = 0, tilt = 0, magDrop = 0;
+  let dip = 0, tilt = 0, magDrop = 0, ryaw = 0;
   if (p.reloadUntil > state.now) {
     const total = WEAPONS[w.key].reload;
     const prog = 1 - (p.reloadUntil - state.now) / total;
     const s = Math.sin(Math.min(1, Math.max(0, prog)) * Math.PI);
-    dip = s * 0.1; tilt = s * 0.35; magDrop = s * 0.09;
+    dip = s * 0.1; tilt = s * 0.45; magDrop = s * 0.09; ryaw = s * 0.5; // v4: putar senjata ke kamera saat reload — tangan terlihat profil, bukan vertikal
   }
   let sw = 0;
   if (state.now < p.switchUntil) {
@@ -315,6 +311,7 @@ export function updateViewmodel(dt, state, vm) {
   const bob = Math.hypot(p.vx, p.vz) > 0.5 ? Math.sin(state.now * 9) * 0.005 : 0;
   vm.group.position.set(VB.x, VB.y - dip - sw + bob, VB.z + vm.kick * 0.03);
   vm.group.rotation.x = tilt + vm.kick * 0.05 + 0.06; // senjata nyaris datar: jari tidak foreshorten
+  vm.group.rotation.y = VB.yaw + ryaw;
   if (vm.mag) vm.mag.position.y = (vm.mag.userData.y0 ??= vm.mag.position.y) - magDrop;
   void dt;
 }
