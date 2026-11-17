@@ -1,0 +1,80 @@
+{
+  "menu": {
+    "tickAvg": 0,
+    "tickP99": 0,
+    "calls": 102,
+    "tris": 23384,
+    "fps": 1
+  },
+  "robots": {
+    "tickAvg": 0,
+    "tickP99": 0,
+    "calls": 160,
+    "tris": 34248,
+    "fps": 1
+  },
+  "robotsZoom": {
+    "tickAvg": 0,
+    "tickP99": 0,
+    "calls": 148,
+    "tris": 33120,
+    "fps": 2
+  },
+  "cover": {
+    "tickAvg": 0,
+    "tickP99": 0,
+    "calls": 125,
+    "tris": 26804,
+    "fps": 1
+  },
+  "mid": {
+    "tickAvg": 0,
+    "tickP99": 0,
+    "calls": 130,
+    "tris": 27246,
+    "fps": 1
+  },
+  "p9idle": {
+    "tickAvg": 0,
+    "tickP99": 0,
+    "calls": 111,
+    "tris": 24364,
+    "fps": 1
+  },
+  "p9reload": {
+    "tickAvg": 0,
+    "tickP99": 0,
+    "calls": 111,
+    "tris": 24364,
+    "fps": 1
+  },
+  "vkidle": {
+    "tickAvg": 0,
+    "tickP99": 0,
+    "calls": 125,
+    "tris": 26804,
+    "fps": 1
+  },
+  "vkreload": {
+    "tickAvg": 0,
+    "tickP99": 0,
+    "calls": 113,
+    "tris": 24456,
+    "fps": 0
+  },
+  "benchCalls": {
+    "tickAvg": 0.246,
+    "tickP99": 2.3,
+    "calls": 133,
+    "tris": 28240,
+    "fps": 1
+  },
+  "debug": {
+    "tickAvg": 0.056,
+    "tickP99": 0.7,
+    "calls": 149,
+    "tris": 33766,
+    "fps": 1
+  },
+  "errors": []
+}

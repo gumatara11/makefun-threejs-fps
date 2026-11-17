@@ -1,0 +1,31 @@
+{
+  "p9full": {
+    "tickAvg": 0,
+    "tickP99": 0,
+    "calls": 111,
+    "tris": 24364,
+    "fps": 1
+  },
+  "vkfull": {
+    "tickAvg": 0,
+    "tickP99": 0,
+    "calls": 125,
+    "tris": 26804,
+    "fps": 1
+  },
+  "robots": {
+    "tickAvg": 0,
+    "tickP99": 0,
+    "calls": 160,
+    "tris": 34248,
+    "fps": 1
+  },
+  "menu": {
+    "tickAvg": 0,
+    "tickP99": 0,
+    "calls": 102,
+    "tris": 23384,
+    "fps": 1
+  },
+  "errors": []
+}

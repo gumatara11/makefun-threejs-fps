@@ -177,6 +177,10 @@ export function createRender(canvas) {
   gp.push(part(new THREE.BoxGeometry(4, 0.08, 0.1), P.accB, 64, 0.9, 9.44));
   for (const [x, z, w, d] of [[27.44, 17.5, 0.07, 2.2], [27.44, 32.5, 0.07, 2.2], [29.64, 22, 0.07, 1.6], [29.64, 28, 0.07, 1.6]])
     gp.push(part(new THREE.BoxGeometry(w, 1.6, d), P.accB, x, 1.6, z));
+  for (let i = 0; i < 4; i++) { const z = [15.5, 20, 30, 34.5][i]; gp.push(part(new THREE.BoxGeometry(0.07, 1.5, 1.8), [P.accB, P.accP, P.accY][i % 3], 27.44, 1.6, z)); }
+  gp.push(part(new THREE.BoxGeometry(0.07, 0.18, 6.5), P.trimC, 27.44, 2.5, 17.75));
+  gp.push(part(new THREE.BoxGeometry(0.07, 0.18, 6.5), P.trimC, 27.44, 2.5, 32.25));
+  for (let i = 0; i < 4; i++) { const z = [16, 19.5, 30, 34][i]; gp.push(part(new THREE.BoxGeometry(0.07, 1.6, 2), [P.accP, P.accY, P.accB, P.accP][i], 27.94, 3.8, z)); }
   planterAt(14, 44.5); planterAt(50, 44.5); planterAt(14, 3.5); planterAt(50, 3.5);
   for (const px of [27.9, 32.1]) {
     gp.push(part(new THREE.BoxGeometry(0.06, 0.9, 9), P.steel, px, 5.85, 25));

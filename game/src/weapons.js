@@ -129,7 +129,7 @@ export function pickupWeapon(a, state) {
 }
 export { GRENADES };
 import { part, mergeParts } from './palette.js';
-const VB = { x: 0.18, y: -0.16, z: -0.55, s: 1.05, yaw: -0.35 };
+const VB = { x: 0.2, y: -0.16, z: -0.68, s: 0.95, yaw: 0.55 };
 let sleeveMat = null;
 function weaveMat() {
   if (sleeveMat) return sleeveMat;
@@ -272,7 +272,7 @@ function buildGun(key) {
   return { group: g, mag };
 }
 const VM_CFG = {
-  P9: { slim: 0.88, left: 'support', rRot: 0.38, lRot: -0.35, rhZ: 0.07, lhZ: -0.02 },
+  P9: { slim: 0.88, left: 'fore', rRot: 0.38, lRot: -0.35, rhZ: 0.07, lhZ: -0.02 },
   Breacher: { slim: 1, left: 'fore', rRot: 0.15, lRot: -0.35, rhZ: 0.13, lhZ: -0.26 },
   Kestrel: { slim: 0.95, left: 'fore', rRot: 0.22, lRot: -0.35, rhZ: 0.11, lhZ: -0.3 },
   VK47: { slim: 1, left: 'fore', rRot: 0.02, lRot: -0.3, wristR: 0.038, wristZ: 0.01, rhZ: 0.15, lhZ: -0.3 },
