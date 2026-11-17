@@ -49,7 +49,7 @@ async function hands(browser, weapon, reload, file) {
     let page = await newPage(browser);
     await page.goto(BASE, { waitUntil: 'load', timeout: 60000 });
     await sleep(2000);
-    await page.click('#start-btn').catch((e) => console.log('start click failed:', e.message));
+    await page.click('#play-btn').catch((e) => console.log('start click failed:', e.message));
     await sleep(2500);
     out.mainStats = await page.evaluate(() => window.__EMBERLINE__ && window.__EMBERLINE__.simStats);
     out.mainPhase = await page.evaluate(() => window.__EMBERLINE__.state.round.phase);

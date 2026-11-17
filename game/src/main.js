@@ -54,7 +54,7 @@ function startGame() {
   canvas.focus();
   canvas.requestPointerLock?.();
 }
-$('start-btn').addEventListener('click', startGame);
+$('play-btn').addEventListener('click', startGame);
 // SETTINGS: panel VOLUME saja (slider + mute).
 $('settings-btn').addEventListener('click', () => { $('settings-panel').style.display = 'block'; });
 $('settings-close').addEventListener('click', () => { $('settings-panel').style.display = 'none'; });
