@@ -114,7 +114,7 @@
       "id": "B4-emp",
       "name": "Empiris P9 30 m: hit-rate diam > gerak",
       "ok": true,
-      "info": "diam=1.00 gerak=0.41"
+      "info": "diam=1.00 gerak=0.47"
     },
     {
       "id": "B5",
@@ -126,7 +126,7 @@
       "id": "B6",
       "name": "Longbow optik 2,5x: spread 0,0005 vs hip 0,050; 20 tembakan 30 m scoped>>hip",
       "ok": true,
-      "info": "hipSpread=0.05 scopedSpread=0.0005 hitHip=0/20 hitScoped=20/20"
+      "info": "hipSpread=0.05 scopedSpread=0.0005 hitHip=5/20 hitScoped=20/20"
     },
     {
       "id": "B7-frag",
@@ -306,7 +306,7 @@
       "id": "AM2",
       "name": "Carrier lewat Mid Door (path dipaksa via node pintu): pintu terbuka + lolos + plant",
       "ok": false,
-      "info": "pintuTerbukaMax=0.00 lolosX32=true planted=false | A* otonom: viaNodePintu=false viaTunnel=true (A* memilih tunnel, bukan pintu)"
+      "info": "pintuTerbukaMax=0.00 lolosX32=true planted=true | A* otonom: viaNodePintu=false viaTunnel=true (A* memilih tunnel, bukan pintu)"
     },
     {
       "id": "AM3",
