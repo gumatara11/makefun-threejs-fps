@@ -138,14 +138,13 @@ export function pickupWeapon(a, state) {
 export { GRENADES };
 
 
-// ---- VIEWMODEL TANGAN ROBOT — v4-hands: JARI DITUMPUK (v3 GAGAL: ruas vertikal
-// di muka grip tetap di belakang telapak+grip, foreshorten dari kamera).
-// v4: 3 jari menumpuk sepanjang grip (y -0,006/-0,037/-0,068, celah 0,007),
-// tiap jari ruas maju di sisi grip + turun di muka grip + ujung pink balik
-// ke kamera; telunjuk di frame; lengan lathe belly v14 + cuff overlap v15.
-// Geometri di-merge per material (tanpa material/mesh baru, draw calls tetap).
+// ---- VIEWMODEL TANGAN ROBOT + SENJATA — v4-hands (tangan) + detail senjata ----
+// v4: 3 jari ditumpuk sepanjang grip, cascade ke sisi kamera, telapak gunmetal
+// gelap (jari terang terbaca), lengan lathe belly v14 + cuff overlap v15.
+// Senjata: detail laras/pisir/picu/rel (material lama saja, merge -> 0 draw call baru).
+// Reload: tilt + yaw ke kamera, dip kecil agar tangan tetap di frame.
 import { part, mergeParts } from './palette.js';
-const VB = { x: 0.18, y: -0.16, z: -0.58, s: 0.95, yaw: -0.35 }; // kompromi ukur: stock menjauh dari kamera (tak menutupi tangan), telapak di frame
+const VB = { x: 0.18, y: -0.16, z: -0.55, s: 1.05, yaw: -0.35 }; // v4r2: viewmodel lebih besar/dekat (+10%) — tangan terbaca
 let sleeveMat = null;
 function weaveMat() {
   if (sleeveMat) return sleeveMat;
@@ -194,17 +193,17 @@ function forearm(slim, wristR, wristZ) {
 }
 function robotHand(cfg, isLeft, armRot) {
   const g = new THREE.Group();
-  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.088, 0.075, 0.05), PAL.hand)); // telapak ramping
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.088, 0.075, 0.05), PAL.steel)); // telapak gunmetal GELAP (v4r2): jari terang terbaca di atasnya, bukan menyatu
   const hand = [], tips = [];
   const sx = isLeft ? 1 : -1; // sisi tumpukan jari: tangan kanan -x (sisi kamera), kiri cermin
-  // v4: 3 jari DITUMPUK sepanjang grip — ruas maju di sisi grip, ruas 2 turun
-  // di muka grip, ujung pink balik ke kamera di bawah grip; buku jari di atas tiap akar
+  // v4r3: jari CASCADE menyamping — ruas 2 + ujung bergeser ke luar (sisi
+  // kamera) agar keluar dari siluet telapak; ujung pink lebih besar
   for (let i = 0; i < 3; i++) {
-    const fy = -0.006 - i * 0.031, fx = sx * 0.026;
-    hand.push(part(new THREE.BoxGeometry(0.026, 0.024, 0.042), PAL.hand, fx, fy, -0.048, -0.35));
-    hand.push(part(new THREE.BoxGeometry(0.026, 0.046, 0.024), PAL.hand, fx, fy - 0.028, -0.078, -0.15));
-    tips.push(part(new THREE.BoxGeometry(0.028, 0.024, 0.038), PAL.accP, fx, fy - 0.052, -0.064, -1.1));
-    hand.push(part(new THREE.BoxGeometry(0.024, 0.02, 0.02), PAL.hand, fx, fy + 0.014, -0.03));
+    const fy = -0.006 - i * 0.031, fx = sx * 0.036;
+    hand.push(part(new THREE.BoxGeometry(0.028, 0.024, 0.042), PAL.hand, fx, fy, -0.048, -0.35, sx * 0.35, 0));
+    hand.push(part(new THREE.BoxGeometry(0.028, 0.056, 0.024), PAL.hand, fx + sx * 0.012, fy - 0.032, -0.08, -0.15));
+    tips.push(part(new THREE.BoxGeometry(0.034, 0.026, 0.038), PAL.accP, fx + sx * 0.022, fy - 0.058, -0.066, -1.1));
+    hand.push(part(new THREE.BoxGeometry(0.026, 0.02, 0.02), PAL.hand, fx, fy + 0.014, -0.03));
   }
   // telunjuk lurus di sisi frame (jari picu), lebih besar
   hand.push(part(new THREE.BoxGeometry(0.024, 0.024, 0.052), PAL.hand, 0.055, 0.014, -0.065, -0.15, -0.5, 0));
@@ -229,6 +228,13 @@ function buildGun(key) {
     add(box(0.05, 0.045, 0.24), PAL.steel, 0, 0.06, -0.08);
     add(box(0.052, 0.012, 0.24), PAL.accP, 0, 0.085, -0.08);
     add(box(0.045, 0.14, 0.06), PAL.palm, 0, -0.04, 0.02, 0.25);
+    add(cyl(0.013, 0.035), PAL.steel, 0, 0.06, -0.205, Math.PI / 2); // laras
+    add(box(0.008, 0.022, 0.012), PAL.accP, 0, 0.096, -0.185); // pisir depan
+    add(box(0.032, 0.016, 0.012), PAL.steel, 0, 0.094, 0.025); // pisir belakang
+    add(box(0.004, 0.028, 0.05), PAL.palm, -0.026, 0.06, -0.03); // serration kiri
+    add(box(0.004, 0.028, 0.05), PAL.palm, 0.026, 0.06, -0.03); // serration kanan
+    add(box(0.008, 0.028, 0.014), PAL.steel, 0, -0.008, -0.03, 0.25); // picu
+    add(box(0.01, 0.008, 0.05), PAL.steel, 0, -0.028, -0.015); // guard picu
     mag = new THREE.Mesh(box(0.04, 0.1, 0.05), PAL.steel); mag.position.set(0, -0.08, 0.03); mag.rotation.x = 0.25;
   } else if (key === 'Breacher') {
     add(cyl(0.026, 0.5), PAL.steel, 0, 0.05, -0.22, Math.PI / 2);
@@ -245,12 +251,21 @@ function buildGun(key) {
     mag = new THREE.Mesh(box(0.04, 0.13, 0.06), PAL.steel); mag.position.set(0, -0.08, -0.05); mag.rotation.x = 0.15;
   } else if (key === 'VK47') {
     add(box(0.07, 0.1, 0.42), PAL.steel, 0, 0.03, -0.08);
-    add(box(0.072, 0.015, 0.3), PAL.accP, 0, 0.085, -0.08); // strip PINK (foto gameplay)
-    add(box(0.012, 0.06, 0.28), PAL.accB, 0.038, 0.03, -0.08); // panel samping BIRU (sisi kamera)
+    add(box(0.072, 0.015, 0.3), PAL.accP, 0, 0.085, -0.08);
+    add(box(0.012, 0.06, 0.28), PAL.accB, 0.038, 0.03, -0.08);
     add(cyl(0.018, 0.42), PAL.steel, 0, 0.04, -0.48, Math.PI / 2);
     add(box(0.05, 0.06, 0.14), PAL.palm, 0, -0.045, -0.3);
     add(box(0.055, 0.12, 0.06), PAL.palm, 0, -0.045, 0.1, 0.2);
-    add(box(0.035, 0.06, 0.08), PAL.crate, 0, 0.01, 0.25); // stock ramping (tangan kanan terlihat)
+    add(box(0.035, 0.06, 0.08), PAL.crate, 0, 0.01, 0.25);
+    add(cyl(0.024, 0.07), PAL.steel, 0, 0.04, -0.68, Math.PI / 2); // muzzle brake
+    add(box(0.02, 0.012, 0.03), PAL.steel, 0, 0.055, -0.6); // alas pisir depan
+    add(box(0.008, 0.035, 0.01), PAL.steel, 0, 0.075, -0.6); // pisir depan
+    add(box(0.03, 0.018, 0.025), PAL.steel, 0, 0.088, 0.06); // pisir belakang
+    add(box(0.024, 0.01, 0.2), PAL.steel, 0, 0.065, -0.33); // rel atas
+    add(box(0.008, 0.028, 0.014), PAL.steel, 0, -0.015, 0.03, 0.2); // picu
+    add(box(0.01, 0.008, 0.05), PAL.steel, 0, -0.035, 0.045); // guard picu
+    add(box(0.04, 0.07, 0.015), PAL.palm, 0, 0.01, 0.295); // butt plate
+    add(box(0.022, 0.014, 0.03), PAL.steel, 0.042, 0.05, -0.02); // charging handle
     mag = new THREE.Mesh(box(0.045, 0.16, 0.07), PAL.steel); mag.position.set(0, -0.09, -0.08); mag.rotation.x = 0.35;
   } else { // Longbow
     add(cyl(0.014, 0.72), PAL.steel, 0, 0.04, -0.42, Math.PI / 2);
@@ -301,7 +316,7 @@ export function updateViewmodel(dt, state, vm) {
     const total = WEAPONS[w.key].reload;
     const prog = 1 - (p.reloadUntil - state.now) / total;
     const s = Math.sin(Math.min(1, Math.max(0, prog)) * Math.PI);
-    dip = s * 0.1; tilt = s * 0.45; magDrop = s * 0.09; ryaw = s * 0.5; // v4: putar senjata ke kamera saat reload — tangan terlihat profil, bukan vertikal
+    dip = s * 0.07; tilt = s * 0.45; magDrop = s * 0.09; ryaw = s * 0.5; // v4: putar senjata ke kamera saat reload — tangan terlihat profil, bukan vertikal; dip kecil
   }
   let sw = 0;
   if (state.now < p.switchUntil) {
