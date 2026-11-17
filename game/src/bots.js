@@ -357,6 +357,6 @@ export function bombPlaybook(s) {
     if (!atks.length) return;
     const near = atks.sort((p, q) => dist(p, s.bomb) - dist(q, s.bomb))[0];
     // dipaksa ambil bila 10 dtk tak diambil (cek di rounds.js via droppedAt)
-    if (s.now - s.bomb.droppedAt > CONFIG.bot.bombPickupForceAfter) near.bot.state = 'patrol';
+    if (s.now - s.bomb.droppedAt > CONFIG.bot.bombPickupForceAfter && near.bot) near.bot.state = 'patrol'; // pemain (bot null) tak punya state bot
   }
 }
