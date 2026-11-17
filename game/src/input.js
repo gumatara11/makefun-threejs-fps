@@ -5,12 +5,13 @@ export class InputState {
     this.keys = new Set(); this.mouseDX = 0; this.mouseDY = 0;
     this.mouseDown = false; this.rightDown = false; this.locked = false;
     this.paused = false; this._el = null; this._bound = false;
+    this._pressed = new Map(); this._click = false; // (a) buffer tekan antar-frame
   }
   attach(el) {
     if (this._bound || !el) return; this._el = el; this._bound = true;
-    this._kd = e => { if (e.repeat) return; this.keys.add(e.code); if (['Space'].includes(e.code)) e.preventDefault(); };
+    this._kd = e => { if (e.repeat) return; this.keys.add(e.code); this._pressed.set(e.code, performance.now()); if (['Space'].includes(e.code)) e.preventDefault(); };
     this._ku = e => this.keys.delete(e.code);
-    this._md = e => { if (e.button === 0) this.mouseDown = true; if (e.button === 2) this.rightDown = true; };
+    this._md = e => { if (e.button === 0) { this.mouseDown = true; this._click = true; } if (e.button === 2) this.rightDown = true; };
     this._mu = e => { if (e.button === 0) this.mouseDown = false; if (e.button === 2) this.rightDown = false; };
     this._mm = e => { if (this.locked) { this.mouseDX += e.movementX || 0; this.mouseDY += e.movementY || 0; } };
     this._lc = () => { this.locked = document.pointerLockElement === el; if (!this.locked) this.onFocusLoss(); };
@@ -31,10 +32,13 @@ export class InputState {
   }
   // AMB-31: kehilangan fokus bersihkan tombol + pause.
   onFocusLoss() {
-    this.keys.clear(); this.mouseDown = false; this.rightDown = false;
+    this.keys.clear(); this._pressed.clear(); this._click = false; this.mouseDown = false; this.rightDown = false;
     this.mouseDX = 0; this.mouseDY = 0; this.paused = true;
   }
   consumeMouse() { const r = { dx: this.mouseDX, dy: this.mouseDY }; this.mouseDX = 0; this.mouseDY = 0; return r; }
+  consumeClick() { const c = this._click; this._click = false; return c; }
   down(code) { return this.keys.has(code); }
-  pressed(code) { if (this.keys.has(code)) { this.keys.delete(code); return true; } return false; }
+  // (a) tekan-cepat antar-frame: keyup hanya melepas keys, buffer _pressed tetap
+  // dibaca loop (kedaluwarsa 1000 ms agar tak menembak ronde berikutnya).
+  pressed(code) { const t = this._pressed.get(code); if (t == null) return false; this._pressed.delete(code); return performance.now() - t < 1000; }
 }

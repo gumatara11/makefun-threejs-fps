@@ -161,12 +161,13 @@ function playerActions(s, input) {
   if (input.pressed('Digit5')) throwGrenade(p, s, 'Flash');
   if (input.pressed('KeyG')) dropWeapon(p, s);
   if (input.pressed('KeyF')) pickupWeapon(p, s);
-  if (input.mouseDown) {
+  const clicked = input.consumeClick ? input.consumeClick() : false; // (a) klik-cepat antar-frame
+  if (input.mouseDown || clicked) {
     const w = currentWeapon(p);
     if (w && WEAPONS[w.key].auto) fire(p, s);
     else if (w && !s._prevMouse) fire(p, s); // semi-otomatis: hanya rising edge
   }
-  s._prevMouse = input.mouseDown;
+  s._prevMouse = input.mouseDown || clicked;
 }
 function bombPickupTick(s) {
   const b = s.bomb;
@@ -200,6 +201,10 @@ export function simStep(s, dt, input) {
     if (!s.round.buyDone) { buyBots(s); bombPlaybook(s); s.round.buyDone = true; }
     s.round.timer -= dt;
     bombPickupTick(s);
+    // (b) buang gerak mouse + klik selama fase beli: updatePlayer tak jalan di
+    // fase ini, jadi tanpa drain akumulasinya diterapkan sekaligus saat live.
+    if (input.consumeMouse) input.consumeMouse();
+    if (input.consumeClick) input.consumeClick();
     if (s.round.timer <= 0) { s.round.phase = 'live'; s.round.timer = CONFIG.timeRound; }
   } else if (ph === 'live' || ph === 'bomb') {
     if (ph === 'live') s.round.timer -= dt;

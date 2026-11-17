@@ -22,7 +22,7 @@ export function makeAgent(id, team, role, isPlayer, x, z) {
 
 export function createState() {
   const s = {
-    now: 0, tick: 0, paused: false,
+    now: 0, tick: 0, paused: false, evSeq: 0, // evSeq: nomor urut event (c)
     match: { scoreAtk: 0, scoreDef: 0, round: 1, over: false, winner: null, d2LoseStreak: 0 },
     round: { phase: 'buy', timer: CONFIG.timeBuy, winner: null, reason: null,
       buyDone: false, plantedSite: null, endTimer: 0 },
@@ -100,7 +100,7 @@ export function aliveAgents(s, team) {
   return s.agents.filter(a => a.alive && (!team || a.team === team));
 }
 export function agentById(s, id) { return s.agents[id]; }
-export function pushEvent(s, ev) { ev.t = s.now; s.events.push(ev); if (s.events.length > 200) s.events.splice(0, s.events.length - 200); }
+export function pushEvent(s, ev) { ev.t = s.now; ev.seq = ++s.evSeq; s.events.push(ev); if (s.events.length > 200) s.events.splice(0, s.events.length - 200); }
 export function currentWeapon(a) {
   return a.current === 'primary' ? a.weapons.primary : a.weapons.secondary;
 }
