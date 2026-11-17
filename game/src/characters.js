@@ -39,6 +39,7 @@ export function buildRobot(designIdx, team) {
     part(B(0.52, 0.1, 0.1), visor, 0, 1.32, 0.17 * bk),
     part(B(0.52, 0.1, 0.1), visor, 0, 1.32, -0.17 * bk),
     part(B(0.3, 0.3, 0.3), P.wall, 0, 1.65, 0),
+    part(B(0.18, 0.24, 0.18), P.steel, 0, 1.42, 0), // leher: sambung torso (1,33) ke kepala (1,50), jangan melayang
     part(B(0.32, 0.14, 0.32), acc, 0, 1.8, 0), // helm aksen warna individu (terbaca dari jauh)
     part(B(0.05, 0.12, 0.26), visor, 0.16, 1.66, 0), // visor mata tim (lebar)
     part(B(0.2, 0.12, 0.2), acc, 0, 1.36, 0.18 * bk), // shoulder pad aksen
