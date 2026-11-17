@@ -32,38 +32,34 @@ export function buildRobot(designIdx, team) {
     part(B(0.1, 0.14, 0.14), visor, 0.28, 1.05, 0), // chest core tim menyala
     part(B(0.52, 0.1, 0.1), visor, 0, 1.32, 0.17 * bk),
     part(B(0.52, 0.1, 0.1), visor, 0, 1.32, -0.17 * bk),
-    part(B(0.3, 0.3, 0.3), P.wall, 0, 1.65, 0),
+    part(new THREE.SphereGeometry(0.15,10,8),P.wall,0,1.65,0), // kepala bulat, bukan kotak
     part(B(0.24, 0.24, 0.24), acc, 0, 1.42, 0),
     part(B(0.22, 0.08, 0.22), acc, 0.04, 1.52, 0),
-    part(B(0.32, 0.14, 0.32), acc, 0, 1.8, 0), // helm aksen warna individu (terbaca dari jauh)
-    part(B(0.05, 0.12, 0.26), visor, 0.16, 1.66, 0), // visor mata tim (lebar)
+    part(new THREE.SphereGeometry(0.158,10,6,0,6.29,0,1.1),acc,0,1.65,0), // kubah helm aksen
+    part(B(0.05,0.12,0.11),visor,0.14,1.64,0.06),part(B(0.05,0.12,0.11),visor,0.14,1.64,-0.06), // 2 mata besar tim
     part(B(0.2, 0.12, 0.2), acc, 0, 1.36, 0.18 * bk), // shoulder pad aksen
     part(B(0.2, 0.12, 0.2), acc, 0, 1.36, -0.18 * bk),
   ];
   // dekor
   if (d.decor === 'fin') { // R1: fin helm besar + pelat bahu kuning
     bp.push(part(B(0.4, 0.12, 0.06), acc, 0, 1.86, 0));
-    bp.push(part(B(0.34, 0.06, 0.06), acc, 0.14, 1.79, 0));
     bp.push(part(B(0.1, 0.2, 0.46 * bk), acc, 0, 1.3, 0));
   }
-  if (d.decor === 'ears') { // R2: telinga kucing besar
-    bp.push(part(B(0.1, 0.17, 0.1), acc, 0, 1.88, 0.11), part(B(0.1, 0.17, 0.1), acc, 0, 1.88, -0.11));
-    bp.push(part(B(0.05, 0.09, 0.07), visor, 0.16, 1.67, 0.07), part(B(0.05, 0.09, 0.07), visor, 0.16, 1.67, -0.07));
+  if (d.decor === 'ears') { // R2: telinga kucing besar, miring keluar
+    bp.push(part(B(0.11,0.19,0.11),acc,0,1.88,0.11,0.25,0,0),part(B(0.11,0.19,0.11),acc,0,1.88,-0.11,-0.25,0,0));
   }
   if (d.decor === 'antenna') { // R3 leader: antena tinggi + bola + fin dada
     bp.push(part(new THREE.CylinderGeometry(0.018, 0.018, 0.3, 6), P.steel, 0, 1.95, 0));
     bp.push(part(new THREE.SphereGeometry(0.06, 8, 6), acc, 0, 2.12, 0));
     bp.push(part(B(0.06, 0.2, 0.3), acc, 0.26, 1.05, 0));
-    bp.push(part(B(0.05, 0.09, 0.09), visor, 0.16, 1.67, 0.08), part(B(0.05, 0.09, 0.09), visor, 0.16, 1.67, -0.08));
   }
   if (d.decor === 'horn') { // R4: tanduk + jubah merah mengalir
-    bp.push(part(new THREE.ConeGeometry(0.06, 0.2, 6), acc, 0, 1.87, 0.12, -0.5));
-    bp.push(part(new THREE.ConeGeometry(0.06, 0.2, 6), acc, 0, 1.87, -0.12, 0.5));
+    bp.push(part(new THREE.ConeGeometry(0.07,0.24,6), acc, 0, 1.87, 0.12, -0.5));
+    bp.push(part(new THREE.ConeGeometry(0.07,0.24,6), acc, 0, 1.87, -0.12, 0.5));
     bp.push(part(B(0.06, 0.72, 0.5), acc, -0.3, 1.02, 0)); // jubah belakang
     bp.push(part(B(0.34, 0.1, 0.34), acc, 0, 1.38, 0));
-    bp.push(part(B(0.05, 0.06, 0.12), visor, 0.16, 1.68, 0.08, 0, 0, 0.35), part(B(0.05, 0.06, 0.12), visor, 0.16, 1.68, -0.08, 0, 0, -0.35));
   }
-  if (d.decor === 'visor') { bp.push(part(B(0.06, 0.06, 0.4), acc, 0.16, 1.74, 0)); bp.push(part(B(0.06, 0.05, 0.3), acc, 0.16, 1.56, 0)); }
+  if (d.decor === 'visor') { bp.push(part(B(0.06,0.06,0.3),acc,0.16,1.72,0)); bp.push(part(B(0.06,0.05,0.24),acc,0.16,1.56,0)); }
   // lengan
   bp.push(part(B(0.42, 0.14, 0.14), P.wall, 0.3, 1.23, 0.28 * bk, 0, 0, -0.25));
   bp.push(part(B(0.42, 0.14, 0.14), P.wall, 0.3, 1.23, -0.28 * bk, 0, 0, -0.25));
