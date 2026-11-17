@@ -1,5 +1,5 @@
-// EMBERLINE sim — input.js. State keyboard/mouse saja; tanpa DOM game.
-// main.js yang memasang listener (attach) dan melepaskan pointer lock.
+// EMBERLINE sim — input.js. State keyboard/mouse saja.
+// main.js memasang listener (attach) + lepas pointer lock.
 export class InputState {
   constructor() {
     this.keys = new Set(); this.mouseDX = 0; this.mouseDY = 0;
@@ -29,7 +29,7 @@ export class InputState {
     document.removeEventListener('pointerlockchange', this._lc);
     window.removeEventListener('blur', this._bl); this._bound = false;
   }
-  // AMB-31: kehilangan fokus membersihkan status tombol + pause.
+  // AMB-31: kehilangan fokus bersihkan tombol + pause.
   onFocusLoss() {
     this.keys.clear(); this.mouseDown = false; this.rightDown = false;
     this.mouseDX = 0; this.mouseDY = 0; this.paused = true;

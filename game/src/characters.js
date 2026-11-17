@@ -1,5 +1,5 @@
-// EMBERLINE characters: 5 robot chibi 1,80 m. v4-chars: badan berlapis, bukan balok polos.
-// Material/robot TETAP (body wall/visor/acc/steel/palm, kaki wall/acc) -> 0 draw call baru.
+// EMBERLINE characters: 5 robot chibi 1,80 m. v4-chars: badan berlapis.
+// Material/robot TETAP -> 0 draw call baru.
 import * as THREE from 'three';
 import { PAL, part, mergeParts } from './palette.js';
 
@@ -11,7 +11,7 @@ const DESIGNS = [
   { name: 'Hijau', accent: 'accG', decor: 'visor', bulk: 0.9, gun: 'rifle' },
 ];
 const B = (w, h, d) => new THREE.BoxGeometry(w, h, d);
-// Helper ringkas: W=wall A=aksen S=steel V=visor tim M=palm C=geometri lain.
+// Helper: W=wall A=aksen S=steel V=visor M=palm C=lain.
 const W = (w, h, d, x, y, z, rx = 0, ry = 0, rz = 0) => part(B(w, h, d), PAL.wall, x, y, z, rx, ry, rz);
 const S = (w, h, d, x, y, z, rx = 0, ry = 0, rz = 0) => part(B(w, h, d), PAL.steel, x, y, z, rx, ry, rz);
 const M = (w, h, d, x, y, z, rx = 0, ry = 0, rz = 0) => part(B(w, h, d), PAL.palm, x, y, z, rx, ry, rz);

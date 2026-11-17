@@ -18,7 +18,7 @@ export function spreadFor(a, w, moving) {
   let sp = base + (moving ? w.spreadMove : 0);
   if (a.crouch) sp *= CONFIG.crouchSpreadMul;
   if (!a.onGround) sp *= CONFIG.airSpreadMul;
-  // Recoil spray VK-47/Kestrel: +8%/tembakan s.d. x1,8, pulih 0,25 dtk (AMB-01: non-auto tanpa spray)
+  // Recoil spray VK-47/Kestrel: +8%/tembakan s.d. x1,8, pulih 0,25 dtk
   if (w.spray && a.recoilShots > 0) sp *= Math.min(CONFIG.recoilSprayMax, 1 + a.recoilShots * CONFIG.recoilSprayStep);
   if (a.bot) { // akurasi bot per ronde §4 (derajat -> radian)
     const r = a.bot.round || 1;
@@ -28,7 +28,7 @@ export function spreadFor(a, w, moving) {
   return sp;
 }
 function perturb(dir, spread) {
-  // simpangan acak simetris (AMB-03), pola vertikal dominan via bias y kecil
+  // simpangan acak simetris (AMB-03), bias y kecil
   const a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()) * spread;
   const ux = -dir.z, uz = dir.x; // vektor samping (tegak lurus, datar)
   const len = Math.hypot(ux, uz) || 1;
@@ -90,7 +90,7 @@ export function startReload(a, now) {
   return true;
 }
 // AMB-04: ganti senjata membatalkan reload (ulang dari nol).
-// Spec §2: ganti senjata juga membatalkan plant/defuse (progress reset).
+// Spec §2: ganti senjata batalkan plant/defuse.
 export function switchWeapon(a, slot, now) {
   if (slot === a.current) return false;
   if (slot === 'primary' && !a.weapons.primary) return false;
@@ -138,13 +138,12 @@ export function pickupWeapon(a, state) {
 export { GRENADES };
 
 
-// ---- VIEWMODEL TANGAN ROBOT + SENJATA — v4-hands (tangan) + detail senjata ----
-// v4: 3 jari ditumpuk sepanjang grip, cascade ke sisi kamera, telapak gunmetal
-// gelap (jari terang terbaca), lengan lathe belly v14 + cuff overlap v15.
-// Senjata: detail laras/pisir/picu/rel (material lama saja, merge -> 0 draw call baru).
-// Reload: tilt + yaw ke kamera, dip kecil agar tangan tetap di frame.
+// ---- VIEWMODEL TANGAN ROBOT + SENJATA — v4-hands ----
+// v4: 3 jari ditumpuk sepanjang grip, cascade ke kamera, telapak gunmetal gelap.
+// Senjata: detail laras/pisir/picu/rel (merge -> 0 draw call baru).
+// Reload: tilt + yaw ke kamera, dip kecil.
 import { part, mergeParts } from './palette.js';
-const VB = { x: 0.18, y: -0.16, z: -0.55, s: 1.05, yaw: -0.35 }; // v4r2: viewmodel lebih besar/dekat (+10%) — tangan terbaca
+const VB = { x: 0.18, y: -0.16, z: -0.55, s: 1.05, yaw: -0.35 }; // v4r2: viewmodel lebih besar/dekat (+10%)
 let sleeveMat = null;
 function weaveMat() {
   if (sleeveMat) return sleeveMat;
@@ -163,7 +162,7 @@ function weaveMat() {
   sleeveMat = new THREE.MeshStandardMaterial({ map: t, roughness: 0.85 });
   return sleeveMat;
 }
-// Displace geometri lengan ke arah kamera (+z lokal) dengan bump Gaussian.
+// Displace lengan ke arah kamera (+z) dgn bump Gaussian.
 function hug(geo, slim) {
   const p = geo.attributes.position;
   for (let i = 0; i < p.count; i++) {
@@ -193,11 +192,10 @@ function forearm(slim, wristR, wristZ) {
 }
 function robotHand(cfg, isLeft, armRot) {
   const g = new THREE.Group();
-  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.088, 0.075, 0.05), PAL.steel)); // telapak gunmetal GELAP (v4r2): jari terang terbaca di atasnya, bukan menyatu
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.088, 0.075, 0.05), PAL.steel)); // telapak gunmetal GELAP (v4r2)
   const hand = [], tips = [];
   const sx = isLeft ? 1 : -1; // sisi tumpukan jari: tangan kanan -x (sisi kamera), kiri cermin
-  // v4r3: jari CASCADE menyamping — ruas 2 + ujung bergeser ke luar (sisi
-  // kamera) agar keluar dari siluet telapak; ujung pink lebih besar
+  // v4r3: jari CASCADE menyamping — ruas 2 + ujung keluar siluet telapak
   for (let i = 0; i < 3; i++) {
     const fy = -0.006 - i * 0.031, fx = sx * 0.036;
     hand.push(part(new THREE.BoxGeometry(0.028, 0.024, 0.042), PAL.hand, fx, fy, -0.048, -0.35, sx * 0.35, 0));
@@ -283,7 +281,7 @@ function buildGun(key) {
   return { group: g, mag };
 }
 const VM_CFG = {
-  // rhZ/lhZ: posisi tangan agar muka grip/foregrip di z lokal tangan -0,08 (jari membungkus)
+  // rhZ/lhZ: muka grip/foregrip di z lokal tangan -0,08
   P9: { slim: 0.88, left: 'support', rRot: 0.38, lRot: -0.62, rhZ: 0.07, lhZ: -0.02 },
   Breacher: { slim: 1, left: 'fore', rRot: 0.15, lRot: -0.6, rhZ: 0.13, lhZ: -0.26 },
   Kestrel: { slim: 0.95, left: 'fore', rRot: 0.22, lRot: -0.62, rhZ: 0.11, lhZ: -0.3 },

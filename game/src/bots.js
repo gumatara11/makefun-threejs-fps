@@ -1,4 +1,4 @@
-// EMBERLINE sim — bots.js. AI §4: peran, persepsi, pendengaran, A*, playbook bom.
+// EMBERLINE sim — bots.js. AI §4: peran, persepsi, A*, playbook bom.
 import { CONFIG, WEAPONS, BOT_ROLES } from './config.js';
 import { NODES, LINKS, nearestNode, aStar, losBlocked, collideMove, inZone, ZONES } from './world.js';
 import { fire, startReload, createLoadout, throwGrenade } from './weapons.js';
@@ -84,7 +84,7 @@ export function setPath(a, toNode) {
   }
   let path = aStar(from, toNode);
   if (!path.length && from !== toNode) {
-    // Tujuan tak terjangkau (node terisolasi): pilih node terdekat yang masih terjangkau.
+    // Tujuan tak terjangkau: node terdekat yg terjangkau.
     const seen = new Set([from]), q = [from];
     while (q.length) { const c = q.pop(); for (const nb of LINKS[c]) if (!seen.has(nb)) { seen.add(nb); q.push(nb); } }
     let best = from, bd = Infinity;
@@ -153,9 +153,7 @@ export function moveAlongPath(s, a, dt) {
         if (n && !losBlocked(a.x, 1, a.z, n.x, 1, n.z, [], s.door.open)) { a.x = n.x; a.z = n.z; b.pathIdx = k; snapped = true; break; }
       }
       if (!snapped) {
-        // D3 (17 Nov): pilar pintu di tengah tunnel — rantai tunnel paksa jalurnya
-        // lurus menembus pilar, repath mengembalikan jalur sama. Geser menyamping
-        // ~1,2 m lewat collideMove ke lajur samping tunnel yang selalu terbuka.
+        // D3: pilar pintu di tengah tunnel — geser menyamping ~1,2 m via collideMove.
         const n = NODES[b.path[b.pathIdx]];
         if (n) {
           const dx = n.x - a.x, dz = n.z - a.z, len = Math.hypot(dx, dz) || 1;
@@ -182,13 +180,11 @@ export function moveAlongPath(s, a, dt) {
   const h = a.crouch ? CONFIG.agentHeightCrouch : CONFIG.agentHeight;
   const r = collideMove(a, a.vx * dt, 0, a.vz * dt, CONFIG.agentRadius, h, s.door.open);
   a.x = r.x; a.z = r.z;
-  // Terjepit di sudut (mis. node (57,40) di bibir celah Site A): bila sudah dekat
-  // node tapi tertahan solid, anggap tercapai — arah node berikut menggeser bot mengitari sudut.
+  // Terjepit di sudut: dekat node tapi tertahan solid = anggap tercapai.
   if ((r.hitX || r.hitZ) && d < 2.5) { b.pathIdx++; b.stuckAt = s.now; b.lastPX = a.x; b.lastPZ = a.z; }
   else if ((r.hitX || r.hitZ) && s.now > b.repathAt) { b.repathAt = s.now + 1; setPath(a, b.destNode); }
 }
-// Pisah antar-bot 0,6 m (AMB-17); penanam/pen-defuse tak digeser.
-// Dorongan HARUS lewat collideMove: dorongan mentah bisa mendorong bot ke dalam solid.
+// Pisah antar-bot 0,6 m (AMB-17); penanam/defuser tak digeser; dorongan via collideMove.
 function separate(s) {
   const list = aliveAgents(s);
   for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
@@ -214,7 +210,7 @@ function botShoot(s, a, dt) {
   if (s.now < b.reactAt || s.now < a.blindUntil) return;
   const t = s.agents[b.targetId];
   if (!t || !t.alive) return;
-  // bidik dada/kepala + spread ditangani weapons.fire (akurasi bot per ronde)
+  // bidik dada/kepala; spread di weapons.fire
   const ty = t.y + (t.crouch ? 0.8 : 1.35);
   const dx = t.x - a.x, dy = ty - eyeY(a), dz = t.z - a.z;
   const len = Math.hypot(dx, dy, dz) || 1;
@@ -240,13 +236,10 @@ export function updateBots(s, dt) {
     const t = b.targetId !== null ? s.agents[b.targetId] : null;
     const isCarrier = s.bomb && s.bomb.carrierId === a.id && s.round.phase === 'live'
       && !(s.bomb.status === 'planted');
-    // Carrier terus maju ke site (tugasnya menanam); duel penuh hanya bila musuh <20 m.
+    // Carrier maju ke site; duel penuh hanya bila musuh <20 m.
     if (t && t.alive && s.now >= b.reactAt && s.now >= a.blindUntil && (!isCarrier || dist(a, t) < 20)) {
-      // engage: hadap target, strafe, tembak. Path lama dibersihkan (bot duel bukan
-      // "macet"; tujuan dihitung ulang saat duel selesai).
-      // D3 (17 Nov): goal dilacak terpisah dari destNode — fallback setPath bisa
-      // mengubah destNode, sehingga g !== destNode selalu benar dan pathIdx
-      // di-reset tiap tick (bot beku). Dengan b.goal, setPath hanya bila tujuan berubah.
+      // engage: hadap target, strafe, tembak; path lama dibersihkan.
+      // D3: b.goal terpisah dari destNode — setPath hanya bila tujuan berubah.
       if (b.path.length) { b.path = []; b.pathIdx = 0; b.destNode = -1; b.goal = -1; }
       a.yaw = angleTo(a, t.x, t.z);
       b.strafeT -= dt;

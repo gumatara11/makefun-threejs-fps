@@ -1,5 +1,5 @@
-// EMBERLINE sim — rounds.js. Fase ronde, kondisi menang, ekonomi, plant/defuse.
-// simStep(state, dt, input) = orkestrator per tick (main.js memanggil tiap fixed-step).
+// EMBERLINE sim — rounds.js. Fase ronde, menang, ekonomi, plant/defuse.
+// simStep = orkestrator per tick (main.js, fixed-step).
 import { CONFIG, WEAPONS, GRENADES } from './config.js';
 import { inZone } from './world.js';
 import { updatePlayer } from './player.js';
@@ -38,7 +38,7 @@ function nextRound(s) {
   s.match.round++;
   resetRound(s);
 }
-// --- buy menu: hanya fase buy + di spawn sendiri; tanpa refund ---
+// --- buy menu: fase buy + di spawn sendiri; tanpa refund ---
 export function buyItem(s, a, key) {
   if (s.round.phase !== 'buy') return { ok: false, why: 'not-buy-phase' };
   const zone = a.team === 'atk' ? 'spawnAtk' : 'spawnDef';
@@ -63,13 +63,13 @@ export function buyItem(s, a, key) {
   a.switchUntil = s.now + w.draw;
   return { ok: true };
 }
-// --- plant / defuse: tahan E, batal bila gerak/ganti/lepas E; damage tak membatalkan ---
+// --- plant/defuse: tahan E; batal bila gerak/ganti/lepas E ---
 function plantDefuseTick(s, input) {
   const p = s.agents[0];
   const eDown = input.down('KeyE');
   const eEdge = eDown && !p.ePrev; // tekan E baru: plant/defuse hanya mulai dari
   p.ePrev = eDown; // tekanan baru; setelah batal (gerak/ganti/lepas E) harus tekan ulang
-  // pemain: E ditahan + carrier + di zona plant + fase live
+  // pemain: E ditahan + carrier + di zona plant + live
   if (s.round.phase === 'live' && p.alive && s.bomb && s.bomb.carrierId === 0) {
     const site = inZone(p, 'plantA') ? 'A' : inZone(p, 'plantB') ? 'B' : null;
     const moving = input.down('KeyW') || input.down('KeyA') || input.down('KeyS') || input.down('KeyD');
@@ -102,7 +102,7 @@ function plantDefuseTick(s, input) {
       pushEvent(s, { type: 'noise', kind: 'plant', x: a.x, y: 0, z: a.z, radius: CONFIG.hearing.plant, team: 'atk' });
     }
   }
-  // defuse (pemain + bot): fase bomb, di zona plant site yang ditanam
+  // defuse: fase bomb, di zona plant site yg ditanam
   if (s.round.phase === 'bomb' && s.bomb && s.bomb.status === 'planted') {
     const siteZone = s.bomb.site === 'A' ? 'plantA' : 'plantB';
     for (const a of s.agents) {
@@ -124,7 +124,7 @@ function plantDefuseTick(s, input) {
     }
   }
 }
-// Urutan menang beku per tick: ledakan -> defuse -> eliminasi (kecuali post-plant) -> timeout.
+// Urutan menang beku: ledakan -> defuse -> eliminasi -> timeout.
 function winCheck(s) {
   if (s.round.phase === 'end') return;
   const b = s.bomb;

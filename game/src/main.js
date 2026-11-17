@@ -1,6 +1,5 @@
 // EMBERLINE — main.js. Bootstrap + loop fixed-step 60 Hz + debug API.
-// Urutan import (spec §5): config, state, world, weapons, combat, bots,
-// rounds, player, input, grenades, characters, render, audio, hud, shots.
+// Urutan import (spec §5): config, state, world, weapons, combat, bots, rounds, player, input, grenades, characters, render, audio, hud, shots.
 import { CONFIG } from './config.js';
 import { createState } from './state.js';
 import './world.js';
@@ -32,7 +31,7 @@ const canvas = $('game');
 const R = createRender(canvas);
 let audioIdx = 0, started = false, benchDone = false, lastDoor = 0; // di atas blok DEBUG (TDZ: DEBUG memakai `started`)
 if (DEBUG) R.setDebug(true);
-// menu: 5 robot figure tampil di layar awal (bukan di shot/bench/debug); HUD disembunyikan
+// menu: 5 robot figure di layar awal; HUD disembunyikan
 const setMenuUI = (on) => { R.setMenu(on); document.body.classList.toggle('menu', on); };
 setMenuUI(!SHOT && !BENCH && !DEBUG);
 if (DEBUG) { // ?debug=1: overlay start JANGAN menutupi waypoint graph
@@ -56,7 +55,7 @@ function startGame() {
   canvas.requestPointerLock?.();
 }
 $('start-btn').addEventListener('click', startGame);
-// SETTINGS (menu start): panel VOLUME saja — slider + mute, via audio.js.
+// SETTINGS: panel VOLUME saja (slider + mute).
 $('settings-btn').addEventListener('click', () => { $('settings-panel').style.display = 'block'; });
 $('settings-close').addEventListener('click', () => { $('settings-panel').style.display = 'none'; });
 $('mute-btn').addEventListener('click', () => { const m = !isMuted(); setMuted(m); $('mute-btn').textContent = m ? '🔊 BUNYI' : '🔇 MUTE'; });
@@ -78,7 +77,7 @@ window.addEventListener('resize', () => {
 R.renderer.setSize(innerWidth, innerHeight);
 R.camera.aspect = innerWidth / innerHeight; R.camera.updateProjectionMatrix();
 
-// --- viewmodel: satu per senjata, tukar saat senjata aktif berubah ---
+// --- viewmodel: satu per senjata ---
 const vms = {};
 let activeVm = null, activeKey = null, lastReload = false;
 function syncViewmodel() {
@@ -97,7 +96,7 @@ function syncViewmodel() {
   if (reloading && !lastReload) playReload();
   lastReload = reloading;
 }
-// --- bench: skenario baku lalu ukur 150 frame ---
+// --- bench: skenario baku, ukur 150 frame ---
 function runBench() {
   const p = state.agents[0];
   p.weapons.primary = { key: 'VK47', mag: 30, reserve: 90 }; p.current = 'primary';
@@ -134,7 +133,7 @@ function loop(now) {
   frames++;
   if (now - fpsAt > 1000) { simStats.fps = Math.round(frames * 1000 / (now - fpsAt)); frames = 0; fpsAt = now; }
   if (BENCH && !benchDone) frameTimes.push(dtMs);
-  // kunci UI (sebelum simStep agar pressed() tidak dimakan playerActions)
+  // kunci UI (sebelum simStep)
   if (!SHOT && input.pressed('KeyB') && state.round.phase === 'buy') hud.setBuy(!hud.isBuyOpen());
   if (hud.isBuyOpen()) {
     for (const k of ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8'])
@@ -151,7 +150,7 @@ function loop(now) {
       acc -= 1 / 60; n++;
     }
   } else acc = 0;
-  // pintu Mid: bunyi slide saat mulai bergerak
+  // pintu Mid: bunyi slide
   if (Math.abs(state.door.target - state.door.open) > 0.01 && now - lastDoor > 900) { playDoor(); lastDoor = now; }
   // statistik sim
   if (simSamples.length > 20) {

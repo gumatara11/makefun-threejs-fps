@@ -1,4 +1,4 @@
-// EMBERLINE — render.js. Geometri DARI world.js SOLIDS agar render == collider sim.
+// EMBERLINE — render.js. Geometri dari SOLIDS; render == collider sim.
 import * as THREE from '../vendor/three/three.module.min.js';
 import { SOLIDS, DOOR_PANEL, NODES, LINKS, ZONES } from './world.js';
 import { PAL, part, mergeParts } from './palette.js';
@@ -43,11 +43,10 @@ export function createRender(canvas) {
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x8ec9ee);
-  scene.fog = new THREE.Fog(0xcfe8f5, 25, 110);
+  scene.fog = new THREE.Fog(0xcfe8f5, 25, 70); // spec §1: 25->70 m
   const camera = new THREE.PerspectiveCamera(74, 1280 / 800, 0.05, 200);
   camera.rotation.order = 'YXZ'; scene.add(camera);
-  // cahaya: 1 dir + 1 hemi + 3 point + 1 muzzle = 6. Target bayangan di
-  // tengah map (36,24): target lama (0,0,0) membuat timur map keluar frustum.
+  // cahaya: 1 dir + 1 hemi + 3 point + 1 muzzle = 6; target bayangan (36,24).
   const sun = new THREE.DirectionalLight(0xfff2d8, 2.8);
   sun.position.set(34, 30, -16); sun.castShadow = true;
   sun.target.position.set(36, 0, 24); scene.add(sun.target);
@@ -138,12 +137,12 @@ export function createRender(canvas) {
     gp.push(part(new THREE.BoxGeometry(0.08, 0.45, 0.45), P.steel, x + 0.7, 0.22, z));
   };
   benchAt(20, 46.5); benchAt(52, 1.5);
-  // skuter parkir (foto gameplay) di dekat spawn atk
+  // skuter parkir di dekat spawn atk
   gp.push(part(new THREE.BoxGeometry(0.9, 0.18, 0.3), P.accB, 4, 0.55, 32));
   gp.push(part(new THREE.CylinderGeometry(0.22, 0.22, 0.08, 10).rotateX(Math.PI / 2), P.palm, 3.6, 0.22, 32));
   gp.push(part(new THREE.CylinderGeometry(0.22, 0.22, 0.08, 10).rotateX(Math.PI / 2), P.palm, 4.4, 0.22, 32));
   gp.push(part(new THREE.CylinderGeometry(0.02, 0.02, 0.5, 6), P.steel, 4.45, 0.85, 32, 0, 0, 0.4));
-  // strip hazard kuning di kontainer Site A / tangki Site B / crate lane
+  // strip hazard kuning: kontainer A / tangki B / crate lane
   const haz = (x, y, z, w, d) => gp.push(part(new THREE.BoxGeometry(w, 0.03, d), P.accY, x, y, z));
   haz(61, 2.62, 35.2, 6, 0.3); haz(65, 2.62, 39.2, 6, 0.3); haz(61, 2.62, 42.2, 6, 0.3);
   haz(60.5, 3.02, 7.5, 3, 0.3); haz(65.5, 3.02, 12.5, 3, 0.3);
@@ -154,7 +153,7 @@ export function createRender(canvas) {
   // genangan ringan
   gp.push(part(new THREE.CircleGeometry(1.4, 12).rotateX(-Math.PI / 2), P.steel, 26, 0.012, 33));
   gp.push(part(new THREE.CircleGeometry(1.1, 12).rotateX(-Math.PI / 2), P.steel, 46, 0.012, 17));
-  // Dressing fasad v4-map (grup gp, 0 draw call baru; x hindari celah 28-32/46-50).
+  // Dressing fasad v4-map (0 draw call baru; hindari celah 28-32/46-50).
   for (const x of [13, 19, 25, 37, 43, 53]) {
     gp.push(part(new THREE.BoxGeometry(2.4, 1.5, 0.07), P.accB, x, 1.7, 36.06)); // muka A-long
     gp.push(part(new THREE.BoxGeometry(2.4, 0.12, 0.09), P.accY, x, 2.55, 36.06));
@@ -236,7 +235,7 @@ export function createRender(canvas) {
       }
     });
   }
-  // Jendela v4-map (grup winParts, 0 draw call baru).
+  // Jendela v4-map (0 draw call baru).
   for (const x of [14, 22, 30, 38, 46, 54, 62]) winParts.push(part(new THREE.BoxGeometry(2.6, 1, 0.1), P.neonB, x, 3.4, 47.94));
   for (const x of [14, 30, 46, 62]) winParts.push(part(new THREE.BoxGeometry(2.6, 1, 0.1), P.neonB, x, 3.4, 0.06));
   for (const z of [7, 13, 35, 41]) winParts.push(part(new THREE.BoxGeometry(0.1, 1, 2.2), P.neonB, 68.44, 3.2, z));
@@ -290,7 +289,7 @@ export function createRender(canvas) {
     scene.add(r.group); robots.push(r);
   }
   robots[0].group.visible = false; // robot pemain sendiri: kamera ada di dalamnya
-  // drone kecil melayang di atas Mid (prop ambient, foto menu)
+  // drone kecil melayang di atas Mid (prop ambient)
   const drone = buildDrone();
   drone.group.position.set(30, 6.8, 25); scene.add(drone.group);
   // menu: 5 robot + menara
@@ -371,7 +370,7 @@ export function createRender(canvas) {
       const targetFov = p.scoped ? 30 : 74;
       if (Math.abs(camera.fov - targetFov) > 0.1) { camera.fov += (targetFov - camera.fov) * Math.min(1, dt * 12); camera.updateProjectionMatrix(); }
     }
-    // robot (kecuali pemain sendiri — sudah disembunyikan); di menu, robot agen disembunyikan
+    // robot (kecuali pemain); di menu robot agen disembunyikan
     state.agents.forEach((a, i) => {
       if (i === 0) return;
       const r = robots[i]; if (!r) return;
@@ -379,12 +378,12 @@ export function createRender(canvas) {
       updateRobot(r, a, dt, now);
       r.pack.visible = state.bomb && state.bomb.carrierId === a.id && state.bomb.status === 'carried';
     });
-    // drone melayang (Mid) + airship melayang + drone menu
+    // drone (Mid) + airship + drone menu melayang
     drone.group.position.y = 6.8 + Math.sin(now * 1.1) * 0.3;
     drone.group.rotation.y = now * 0.3;
     ship.position.x = 70 + Math.sin(now * 0.05) * 8;
     if (menuMode) menuDrone.group.position.y = 3.2 + Math.sin(now * 1.2) * 0.25;
-    // pintu Mid mengikuti s.door.open (0 tutup -> 1 buka)
+    // pintu Mid mengikuti s.door.open
     const o = state.door.open;
     doorL.position.set(30, 1.6, 24 - o * 2); doorR.position.set(30, 1.6, 26 + o * 2);
     stripL.position.set(30.35, 1.6, 24 - o * 2); stripR.position.set(30.35, 1.6, 26 + o * 2);

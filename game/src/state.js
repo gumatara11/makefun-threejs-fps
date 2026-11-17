@@ -1,4 +1,4 @@
-// EMBERLINE sim — state.js. Satu tempat state; modul lain tidak menyimpan state.
+// EMBERLINE sim — state.js. Satu tempat state.
 import { CONFIG, WEAPONS, ROLE_ORDER } from './config.js';
 import { SPAWNS } from './world.js';
 
@@ -71,7 +71,7 @@ export function resetRound(s, first = false) {
     a.reloadUntil = 0; a.reloadSlot = null; a.switchUntil = 0; a.nextShotAt = 0;
     a.recoilShots = 0; a.scoped = false; a.blindUntil = 0;
     a.planting = false; a.defusing = false; a.plantProg = 0; a.defuseProg = 0;
-    // granat: survivor pertahankan yang tak terpakai (§2); hanya yang mati yang kehilangan
+    // granat: survivor pertahankan yg tak terpakai (§2)
     if (first || !wasAlive) a.grenades = { Frag: 0, Smoke: 0, Flash: 0 };
     if (a.bot) { // reset penuh otak; destNode/pathIdx HARUS ikut direset, kalau tidak
       // bot yang tujuannya sama dengan ronde lalu tak pernah memanggil setPath lagi
@@ -90,8 +90,8 @@ export function resetRound(s, first = false) {
       a.weapons.secondary.mag = 12;
     }
   });
-  // carry-over: yang hidup pertahankan primer+kevlar+granat; yang mati -> P9.
-  // (Dipanggil setelah ekonomi ronde lalu; resetRound dipakai juga di awal match.)
+  // carry-over: hidup pertahankan primer+kevlar+granat; mati -> P9.
+  // (Dipanggil setelah ekonomi ronde lalu; resetRound jg di awal match.)
   s.bomb = { carrierId: 4, status: 'carried', x: 0, y: 0, z: 0, site: null,
     timer: CONFIG.timeBomb, planterId: null, defuserId: null, droppedAt: 0 };
 }

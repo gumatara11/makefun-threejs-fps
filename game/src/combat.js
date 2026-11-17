@@ -1,4 +1,4 @@
-// EMBERLINE sim — combat.js. Raycast hit, zona tubuh, damage, kill. Tanpa render.
+// EMBERLINE sim — combat.js. Raycast hit, zona tubuh, damage, kill.
 import { CONFIG, WEAPONS } from './config.js';
 import { raySolids, losBlocked } from './world.js';
 import { pushEvent } from './state.js';
@@ -11,7 +11,7 @@ export function eyePos(a) {
   const h = a.crouch ? CONFIG.agentHeightCrouch : CONFIG.agentHeight;
   return { x: a.x, y: a.y + h - 0.12, z: a.z };
 }
-// Ray vs silinder agen (r 0,4). Kembalikan {t, zone} atau null.
+// Ray vs silinder agen (r 0,4).
 function rayAgent(ox, oy, oz, dx, dy, dz, a) {
   const h = a.crouch ? CONFIG.agentHeightCrouch : CONFIG.agentHeight;
   const cx = a.x - ox, cz = a.z - oz;
@@ -34,7 +34,7 @@ function falloff(w, dist) {
   const k = (dist - w.falloffStart) / (w.falloffEnd - w.falloffStart);
   return 1 + (w.falloffMin - 1) * k;
 }
-// Satu peluru. opts: {spreadRad} sudah diterapkan pemanggil ke dir.
+// Satu peluru. opts: {spreadRad} diterapkan pemanggil.
 export function shoot(state, shooter, dir, weapon) {
   const o = eyePos(shooter);
   const maxDist = 120;
@@ -81,7 +81,7 @@ export function applyDamage(state, target, dmg, attacker, zone, cause) {
   }
   if (target.kevlar) target.kevlar = false;
 }
-// Damage ledakan Frag (dipakai grenades.js): LOS dari titik ledak, kevlar x0,75.
+// Damage ledakan Frag: LOS dari titik ledak, kevlar x0,75.
 export function explosiveDamage(state, x, y, z, radius, dmgCenter, dmgEdge, attacker) {
   for (const a of state.agents) {
     if (!a.alive || (attacker && a.id === attacker.id)) continue;

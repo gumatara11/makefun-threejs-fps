@@ -1,6 +1,5 @@
-// EMBERLINE — audio.js. Synth WebAudio SEMUA (tanpa aset).
-// Satu sumber kebenaran: events type 'noise' (radius = radius reaksi bot),
-// 'muzzle', 'explosion', 'beep', 'plant', 'defuse', 'round-end', 'hit'.
+// EMBERLINE — audio.js. Synth WebAudio SEMUA.
+// Satu sumber kebenaran: events 'noise'/'muzzle'/'explosion'/'beep'/'plant'/'defuse'/'round-end'/'hit'.
 import { CONFIG } from './config.js';
 
 let ctx = null, master = null, noiseBuf = null, active = 0, vol = 0.5, muted = false;
@@ -16,7 +15,7 @@ function ensure() {
 }
 export function resumeAudio() { if (ctx && ctx.state === 'suspended') ctx.resume(); }
 export function initAudio() { ensure(); resumeAudio(); }
-// Volume + mute (panel SETTINGS): simpan nilai bila ctx belum ada, terapkan ke master gain.
+// Volume + mute (panel SETTINGS).
 export function setVolume(v) { vol = Math.max(0, Math.min(1, v)); if (master) master.gain.value = muted ? 0 : vol; }
 export function setMuted(m) { muted = !!m; if (master) master.gain.value = muted ? 0 : vol; }
 export function isMuted() { return muted; }
@@ -54,7 +53,7 @@ const SHOT = {
   Longbow: () => { burst(0.3, 700, 'lowpass', 0.8); tone(70, 0.25, 'sine', 0.3, 35); },
 };
 function volFor(dist) { return Math.max(0.05, 1 / (1 + dist / 18)); }
-// Konsumsi events baru sejak idx; kembalikan idx baru. p = pemain (untuk jarak).
+// Konsumsi events baru sejak idx. p = pemain.
 export function drainAudio(state, idx) {
   if (!ctx) return state.events.length;
   const p = state.agents[0];

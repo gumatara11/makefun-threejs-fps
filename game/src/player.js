@@ -1,4 +1,4 @@
-// EMBERLINE sim — player.js. Gerakan pemain (WASD, crouch, lompat, scope).
+// EMBERLINE sim — player.js. Gerakan pemain.
 import { CONFIG, WEAPONS } from './config.js';
 import { collideMove } from './world.js';
 import { currentWeapon } from './state.js';
@@ -11,12 +11,12 @@ export function updatePlayer(s, input, dt) {
   p.pitch -= m.dy * 0.0022 * CONFIG.mouseSens;
   p.pitch = Math.max(-1.5, Math.min(1.5, p.pitch));
   p.crouch = input.down('ControlLeft') || input.down('ControlRight');
-  // Scope Longbow: klik kanan (FOV dipakai render; sim menyimpan status).
+  // Scope Longbow: klik kanan.
   const w = currentWeapon(p);
   p.scoped = !!(w && w.key === 'Longbow' && input.rightDown);
 
   const speed = (w ? WEAPONS[w.key].speed : 5.2) * (p.crouch ? CONFIG.moveCrouch / 5.2 : 1);
-  // yaw: 0 = menghadap +X (timur, ke site), PI = menghadap -X. Maju = (cos yaw, sin yaw).
+  // yaw: 0 = +X (timur), PI = -X. Maju = (cos yaw, sin yaw).
   const fwd = (input.down('KeyW') ? 1 : 0) - (input.down('KeyS') ? 1 : 0);
   const str = (input.down('KeyD') ? 1 : 0) - (input.down('KeyA') ? 1 : 0);
   let wx = Math.cos(p.yaw) * fwd - Math.sin(p.yaw) * str;
@@ -38,7 +38,7 @@ export function updatePlayer(s, input, dt) {
   if (r.hitY && p.vy < 0) { p.vy = 0; p.onGround = true; }
   if (r.hitY && p.vy > 0) p.vy = 0;
   if (r.onGround) p.onGround = true;
-  // langkah kaki (audio + pendengaran bot): tiap 0.45 dtk saat bergerak di tanah
+  // langkah kaki: tiap 0.45 dtk saat bergerak di tanah
   if (p.onGround && Math.hypot(p.vx, p.vz) > 1 && s.now - p.stepAt > 0.45) {
     p.stepAt = s.now;
     const r0 = p.crouch ? CONFIG.hearing.crouchStep : CONFIG.hearing.runStep;

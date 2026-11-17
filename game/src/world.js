@@ -27,26 +27,25 @@ export const SOLIDS = [
   // perimeter (tebal 1, tinggi 5)
   S(-1, -1, 0, 49, 0, WALL_H), S(72, -1, 73, 49, 0, WALL_H),
   S(0, -1, 72, 0, 0, WALL_H), S(0, 48, 72, 49, 0, WALL_H),
-  // dinding selatan A-long (Z36), celah: tunnel X28-32, Pintu Mid-A X46-50
+  // dinding selatan A-long (Z36), celah tunnel + Pintu Mid-A
   S(10, 35.5, 28, 36), S(32, 35.5, 46, 36), S(50, 35.5, 56, 36),
-  // dinding utara B-tunnel (Z14), celah: tunnel X28-32, Pintu Mid-B X46-50
+  // dinding utara B-tunnel (Z14), celah tunnel + Pintu Mid-B
   S(10, 14, 28, 14.5), S(32, 14, 46, 14.5), S(50, 14, 56, 14.5),
   // konektor Mid-A (X46-50, Z29-36) dinding samping
   S(45.5, 29, 46, 36), S(50, 29, 50.5, 36),
   // konektor Mid-B (X46-50, Z13-21) dinding samping
   S(45.5, 13, 46, 21), S(50, 13, 50.5, 21),
-  // service tunnel: dinding samping X28 / X32 — DIPISAH di Z21-29 (underpass
-  // DI BAWAH koridor Mid; dinding penuh akan menutup Mid di sim 2D)
+  // service tunnel: dinding X28/X32 dipisah Z21-29 (underpass di bawah Mid)
   S(27.5, 14, 28, 21), S(27.5, 29, 28, 36), S(32, 14, 32.5, 21), S(32, 29, 32.5, 36),
-  // langit-langit B-tunnel 3,0 m + service tunnel 2,6 m (collider; atap interior TIDAK collider)
+  // langit-langit B-tunnel 3,0 m + service tunnel 2,6 m (collider)
   S(10, 6, 56, 14, 3.0, 5.0), S(28, 14, 32, 36, 2.6, 5.0),
-  // rangka pintu Mid: segmen permanen Z21-23 & Z27-29 (celah Z23-27 = panel pintu)
+  // rangka pintu Mid: segmen Z21-23 & Z27-29 (celah Z23-27 = panel)
   S(29.7, 21, 30.3, 23), S(29.7, 27, 30.3, 29),
-  // interior Site A: dinding barat (celah A-long Z36-40), selatan (celah Mid Z60-64)
+  // interior Site A: barat (celah Z36-40), selatan (celah Z60-64)
   S(55.5, 32, 56, 36), S(55.5, 40, 56, 44),
   S(56, 31.5, 60, 32), S(64, 31.5, 69, 32),
   S(56, 43.5, 69, 44), S(68.5, 32, 69, 44),
-  // interior Site B: barat (celah B-tunnel Z8-12), selatan (celah Mid Z60-64)
+  // interior Site B: barat (celah Z8-12), selatan (celah Z60-64)
   S(55.5, 4, 56, 8), S(55.5, 12, 56, 16),
   S(56, 15.5, 60, 16), S(64, 15.5, 69, 16),
   S(56, 3.5, 69, 4), S(68.5, 4, 69, 16),
@@ -59,11 +58,10 @@ export const SOLIDS = [
   S(57.5, 12, 58.7, 13.2, 0, 1.2), S(62.5, 5, 63.7, 6.2, 0, 1.2),
   S(66, 7, 67.2, 8.2, 0, 1.2), S(59, 13.5, 60.2, 14.7, 0, 1.2),
   S(62, 9.5, 66, 10.7, 0, 1.0),
-  // crate lane: A-long X24 & X40 (geser ke Z38 agar tak memutus lane Z40),
-  // Mid X20 & X42 (geser ke Z27 agar tak memutus lane Z25)
+  // crate lane: A-long X24/X40 (Z38), Mid X20/X42 (Z27) — jaga lane
   S(23.4, 37.4, 24.6, 38.6, 0, 1.2), S(39.4, 37.4, 40.6, 38.6, 0, 1.2),
   S(19.4, 26.4, 20.6, 27.6, 0, 1.2), S(41.4, 26.4, 42.6, 27.6, 0, 1.2),
-  // pipa tegak di belokan B-tunnel (geser ke Z12,5 agar tak menutup node Z10)
+  // pipa tegak belokan B-tunnel (Z12,5, jaga node Z10)
   S(11.5, 12.2, 12.5, 13.2, 0, 3.0), S(53.5, 12.2, 54.5, 13.2, 0, 3.0),
 ];
 // Panel pintu Mid (solid bila tertutup, doorOpen < 0.5)
@@ -139,7 +137,7 @@ export function inZone(p, name) {
   return p.x >= z.x0 && p.x <= z.x1 && p.z >= z.z0 && p.z <= z.z1;
 }
 
-// ---- Waypoint graph: 48 beku + 9 amendemen + 2 penghubung spawn-def = 59 node ----
+// ---- Waypoint graph: 59 node (48 beku + 9 amendemen + 2 spawn-def) ----
 const N = (x, z, tags = []) => ({ x, z, tags });
 export const NODES = [
   // spawn atk 3, spawn def 3
@@ -159,21 +157,20 @@ export const NODES = [
   N(52, 10, ['btunnel']), N(57, 10, ['btunnel']),
   // pintu Mid 4 (konektor A/B)
   N(48, 32, ['midA']), N(48, 35, ['midA']), N(48, 18, ['midB']), N(48, 15, ['midB']),
-  // site 8 (node TIDAK boleh di dalam cover solid)
+  // site 8 (node tak boleh di dalam cover solid)
   N(59, 33, ['siteA']), N(63, 37, ['siteA']), N(66, 41, ['siteA']), N(57, 42, ['siteA']),
   N(58, 7, ['siteB']), N(63, 11, ['siteB']), N(66, 15, ['siteB']), N(58, 14, ['siteB']),
   // amendemen: pintu Mid 1
   N(30, 25, ['door']),
-  // amendemen: service tunnel 4 (2 mulut + 2 dalam)
+  // amendemen: service tunnel 4
   N(30, 14, ['tunnel']), N(30, 20, ['tunnel']), N(30, 30, ['tunnel']), N(30, 36, ['tunnel']),
-  // amendemen: interior A 2, interior B 2 (di luar kontainer/tangki)
+  // amendemen: interior A 2, interior B 2
   N(60, 37, ['intA']), N(65, 37, ['intA']), N(60, 11, ['intB']), N(63, 13, ['intB']),
-  // penghubung spawn defender -> site (pintu selatan interior, celah Z32 / Z16)
+  // penghubung spawn defender -> site (celah Z32/Z16)
   N(61, 31, ['defA']), N(61, 16, ['defB']),
 ];
 NODES.forEach((n, i) => { n.id = i; });
-// Link otomatis: jarak <= 9.5 m dan segmen (y=1) tidak tertembus dinding
-// (panel pintu diabaikan: pintu tertutup = cover, bukan tembok — rute tak putus).
+// Link otomatis: jarak <= 9.5 m, segmen (y=1) tak tertembus dinding (panel pintu = cover).
 export const LINKS = NODES.map(() => []);
 for (let i = 0; i < NODES.length; i++) for (let j = i + 1; j < NODES.length; j++) {
   const a = NODES[i], b = NODES[j];

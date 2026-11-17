@@ -1,4 +1,4 @@
-// EMBERLINE — hud.js. HUD DOM + minimap live + buy menu (baca state tiap frame).
+// EMBERLINE — hud.js. HUD DOM + minimap live + buy menu.
 import { WEAPONS, GRENADES, CONFIG } from './config.js';
 import { buyItem } from './rounds.js';
 import { currentWeapon } from './state.js';

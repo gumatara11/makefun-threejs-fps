@@ -1,5 +1,4 @@
-// EMBERLINE — shots.js. Mode ?shot=start|play|buy|bomb|win&seed=1:
-// pose kamera + state deterministik (seeded) agar screenshot bisa diulang.
+// EMBERLINE — shots.js. Mode ?shot=start|play|buy|bomb|win&seed=1: pose deterministik.
 // Dipanggil sekali saat boot; sim dibekukan sesudahnya (main.js).
 import { CONFIG, WEAPONS } from './config.js';
 import { createLoadout } from './weapons.js';
@@ -20,7 +19,6 @@ export function applyShot(state, mode, seed = 1) {
     state.round.phase = 'live'; state.round.timer = 62;
     give(p, 'VK47'); p.weapons.primary.mag = 27;
     // COVER: dari A-long menghadap timur — musuh 12 m, kontainer merah Site A + huruf A
-    // putih + sakura + skyline di depan (foto map Gito)
     place(p, 18, 42, 0.1);
     state.door.open = 1; state.door.target = 1;
     place(state.agents[8], 28, 42, Math.PI); // D4 rotator di A-long, menghadap pemain
@@ -28,7 +26,7 @@ export function applyShot(state, mode, seed = 1) {
     place(state.agents[6], 58, 40, Math.PI); // D2 jauh di Site A (depth)
     state.agents[8].hp = 100;
   } else if (mode === 'robots') {
-    // close-up 5 desain robot: baris 3,5 m di depan kamera, menghadap kamera
+    // close-up 5 robot: baris 3,5 m di depan kamera
     state.round.phase = 'live'; state.round.timer = 62;
     give(p, 'VK47'); p.weapons.primary.mag = 27;
     place(p, 30, 40, 0);

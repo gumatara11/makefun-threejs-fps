@@ -1,8 +1,6 @@
 // EMBERLINE sim — config.js
-// Satu sumber angka beku (spec §2-§4 + AMB §10). Semua modul sim membaca dari sini.
-// Satuan: meter, detik, radian, dolar. Falloff: dmg penuh s.d. falloffStart,
-// lalu linear ke falloffMin di falloffEnd (default AMB: end = start + 35 m,
-// kecuali Breacher 10->20 m per spec).
+// Satu sumber angka beku (spec §2-§4 + AMB §10).
+// Satuan: meter, detik, radian, dolar. Falloff: penuh s.d. falloffStart, linear ke falloffMin di falloffEnd.
 export const CONFIG = {
   tickHz: 60, dt: 1 / 60,
   hpMax: 100, teamSize: 5, firstTo: 8, maxRounds: 15,
@@ -64,7 +62,7 @@ export const GRENADES = {
   Flash: { key: 'Flash', price: 200, fuse: 1.2, radius: 15, blindFace: 2.2, blindBack: 0.8, slot: 5 },
 };
 
-// Urutan beli bot §4 (harga ambang, item). D2 punya jalur Longbow sendiri (lihat bots.js).
+// Urutan beli bot §4 (harga ambang, item).
 export const BUY_TABLE = [
   { min: 3350, weapon: 'VK47', kevlar: true },
   { min: 2150, weapon: 'Kestrel', kevlar: true },
