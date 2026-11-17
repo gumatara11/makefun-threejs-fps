@@ -177,8 +177,8 @@ function forearm(slim, wristR, wristZ) {
 }
 function robotHand(cfg, isLeft, armRot) {
   const g = new THREE.Group();
-  const pm = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.075, 0.05), PAL.steel);
-  pm.position.z = 0.025; g.add(pm);
+  const pm = new THREE.Mesh(new THREE.SphereGeometry(0.048, 10, 8), PAL.hand);
+  pm.scale.set(1.1, 0.9, 0.9); pm.position.set(0, -0.005, 0.028); g.add(pm);
   const hand = [], tips = [];
   const sx = isLeft ? 1 : -1;
   for (let i = 0; i < 3; i++) {
@@ -206,17 +206,20 @@ function buildGun(key) {
   const add = (geo, mat, x, y, z, rx = 0) => parts.push(part(geo, mat, x, y, z, rx));
   const cyl = (r, len) => new THREE.CylinderGeometry(r, r, len, 8);
   if (key === 'P9') {
-    add(box(0.05, 0.045, 0.24), PAL.steel, 0, 0.06, -0.08);
-    add(box(0.052, 0.012, 0.24), PAL.accP, 0, 0.085, -0.08);
-    add(box(0.068, 0.14, 0.08), PAL.palm, 0, -0.04, 0.02, 0.25);
-    add(cyl(0.013, 0.035), PAL.steel, 0, 0.06, -0.205, Math.PI / 2);
-    add(box(0.008, 0.022, 0.012), PAL.accP, 0, 0.096, -0.185);
+    add(box(0.05, 0.045, 0.26), PAL.steel, 0, 0.06, -0.09);
+    add(box(0.054, 0.02, 0.26), PAL.accP, 0, 0.088, -0.09);
+    add(box(0.054, 0.018, 0.2), PAL.accB, 0, 0.042, -0.09);
+    add(box(0.068, 0.14, 0.08), PAL.steel, 0, -0.04, 0.02, 0.25);
+    add(box(0.07, 0.016, 0.085), PAL.accP, 0, -0.105, 0.045, 0.25);
+    add(cyl(0.017, 0.05), PAL.steel, 0, 0.06, -0.225, Math.PI / 2);
+    add(cyl(0.021, 0.02), PAL.accP, 0, 0.06, -0.245, Math.PI / 2);
+    add(box(0.008, 0.022, 0.012), PAL.accP, 0, 0.096, -0.21);
     add(box(0.032, 0.016, 0.012), PAL.steel, 0, 0.094, 0.025);
     add(box(0.004, 0.028, 0.05), PAL.palm, -0.026, 0.06, -0.03);
     add(box(0.004, 0.028, 0.05), PAL.palm, 0.026, 0.06, -0.03);
     add(box(0.008, 0.028, 0.014), PAL.steel, 0, -0.008, -0.03, 0.25);
     add(box(0.01, 0.008, 0.05), PAL.steel, 0, -0.028, -0.015);
-    mag = new THREE.Mesh(box(0.04, 0.1, 0.05), PAL.steel); mag.position.set(0, -0.08, 0.03); mag.rotation.x = 0.25;
+    mag = new THREE.Mesh(box(0.04, 0.1, 0.05), PAL.accP); mag.position.set(0, -0.08, 0.03); mag.rotation.x = 0.25;
   } else if (key === 'Breacher') {
     add(cyl(0.026, 0.5), PAL.steel, 0, 0.05, -0.22, Math.PI / 2);
     add(box(0.07, 0.09, 0.3), PAL.steel, 0, 0.02, 0);
@@ -237,14 +240,14 @@ function buildGun(key) {
     add(box(0.03, 0.03, 0.06), PAL.steel, 0, 0.095, -0.05);
     mag = new THREE.Mesh(box(0.04, 0.13, 0.06), PAL.steel); mag.position.set(0, -0.08, -0.05); mag.rotation.x = 0.15;
   } else if (key === 'VK47') {
-    add(box(0.07, 0.1, 0.42), PAL.steel, 0, 0.03, -0.08);
-    add(box(0.072, 0.015, 0.3), PAL.accP, 0, 0.085, -0.08);
-    add(box(0.012, 0.06, 0.28), PAL.accB, 0.038, 0.03, -0.08);
-    add(cyl(0.018, 0.42), PAL.steel, 0, 0.04, -0.48, Math.PI / 2);
-    add(box(0.07, 0.1, 0.14), PAL.palm, 0, -0.045, -0.3);
+    add(box(0.07, 0.085, 0.4), PAL.steel, 0, 0.03, -0.08);
+    add(box(0.074, 0.03, 0.32), PAL.accP, 0, 0.085, -0.08);
+    add(box(0.014, 0.055, 0.3), PAL.accB, 0.038, 0.03, -0.08);
+    add(cyl(0.022, 0.42), PAL.steel, 0, 0.04, -0.48, Math.PI / 2);
+    add(cyl(0.032, 0.06), PAL.accP, 0, 0.04, -0.68, Math.PI / 2);
+    add(cyl(0.046, 0.16), PAL.crate, 0, 0.03, -0.3, Math.PI / 2);
     add(box(0.075, 0.12, 0.085), PAL.palm, 0, -0.045, 0.1, 0.2);
     add(box(0.035, 0.06, 0.08), PAL.crate, 0, 0.01, 0.25);
-    add(cyl(0.024, 0.07), PAL.steel, 0, 0.04, -0.68, Math.PI / 2);
     add(box(0.02, 0.012, 0.03), PAL.steel, 0, 0.055, -0.6);
     add(box(0.008, 0.035, 0.01), PAL.steel, 0, 0.075, -0.6);
     add(box(0.03, 0.018, 0.025), PAL.steel, 0, 0.088, 0.06);
@@ -253,7 +256,7 @@ function buildGun(key) {
     add(box(0.01, 0.008, 0.05), PAL.steel, 0, -0.035, 0.045);
     add(box(0.04, 0.07, 0.015), PAL.palm, 0, 0.01, 0.295);
     add(box(0.022, 0.014, 0.03), PAL.steel, 0.042, 0.05, -0.02);
-    mag = new THREE.Mesh(box(0.045, 0.16, 0.07), PAL.steel); mag.position.set(0, -0.09, -0.08); mag.rotation.x = 0.35;
+    mag = new THREE.Mesh(box(0.045, 0.16, 0.07), PAL.accP); mag.position.set(0, -0.09, -0.08); mag.rotation.x = 0.35;
   } else {
     add(cyl(0.014, 0.72), PAL.steel, 0, 0.04, -0.42, Math.PI / 2);
     add(cyl(0.028, 0.2), PAL.palm, 0, 0.1, -0.05, Math.PI / 2);
