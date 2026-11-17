@@ -32,8 +32,9 @@ export function buildRobot(designIdx, team) {
     const piv = new THREE.Group(); piv.position.set(0, 0.5, z);
     piv.add(...mergeParts([
       W(0.2 * bk, 0.3, 0.17 * bk, 0, -0.11, 0),
-      part(B(0.22 * bk, 0.09, 0.19 * bk), acc, 0, -0.29, 0),
+      part(B(0.22 * bk, 0.1, 0.19 * bk), acc, 0, -0.29, 0),
       W(0.15 * bk, 0.2, 0.13 * bk, 0, -0.4, 0),
+      part(B(0.05, 0.14, 0.13 * bk), acc, 0.09, -0.4, 0),
       part(B(0.05, 0.16, 0.14 * bk), acc, 0.09, -0.4, 0),
       part(B(0.26 * bk, 0.08, 0.2 * bk), acc, 0.03, -0.46, 0),
     ], false));
@@ -41,8 +42,9 @@ export function buildRobot(designIdx, team) {
   };
   const legL = mkLeg(0.13 * bk), legR = mkLeg(-0.13 * bk);
   const bp = [
-    W(0.44, 0.62, 0.38 * bk, 0, 1.03, 0),
-    a(0.4, 0.3, 0.07, 0.225, 1.2, 0), // pelat dada utama aksen
+    W(0.46, 0.36, 0.4 * bk, 0, 1.16, 0),
+    W(0.36, 0.28, 0.3 * bk, 0, 0.86, 0),
+    a(0.44, 0.32, 0.07, 0.23, 1.2, 0, 0, 0, -0.15), // pelat dada utama aksen
     S(0.34, 0.14, 0.05, 0.245, 1.37, 0, 0, 0, -0.12), // pelat dada atas steel
     W(0.34, 0.14, 0.05, 0.235, 0.94, 0, 0, 0, 0.1), // pelat perut terang
     S(0.05, 0.18, 0.3 * bk, 0, 0.96, 0.2 * bk),
@@ -60,17 +62,18 @@ export function buildRobot(designIdx, team) {
     C(CYL(0.09, 0.09, 0.1), P.steel, 0, 0.56, 0.13 * bk, Math.PI / 2),
     C(CYL(0.09, 0.09, 0.1), P.steel, 0, 0.56, -0.13 * bk, Math.PI / 2),
     C(SPH(0.15), P.wall, 0, 1.65, 0),
-    part(B(0.24, 0.24, 0.24), acc, 0, 1.42, 0),
+    part(B(0.15, 0.22, 0.15), acc, 0, 1.43, 0),
     part(B(0.22, 0.08, 0.22), acc, 0.04, 1.52, 0),
     C(new THREE.SphereGeometry(0.158, 10, 6, 0, 6.29, 0, 1.1), acc, 0, 1.65, 0),
-    v(0.05, 0.12, 0.11, 0.14, 1.64, 0.06), v(0.05, 0.12, 0.11, 0.14, 1.64, -0.06),
+    v(0.05, 0.14, 0.075, 0.145, 1.64, 0.088, 0.25), v(0.05, 0.14, 0.075, 0.145, 1.64, -0.088, -0.25),
+    S(0.02, 0.15, 0.05, 0.15, 1.64, 0),
   ];
   for (const s of [1, -1]) {
-    bp.push(C(CYL(0.1, 0.14, 0.12), acc, 0, 1.4, s * 0.24 * bk, Math.PI / 2));
+    bp.push(C(CYL(0.11, 0.16, 0.14), acc, 0, 1.42, s * 0.24 * bk, Math.PI / 2));
     bp.push(C(CYL(0.145, 0.145, 0.03), P.steel, 0, 1.4, s * 0.185 * bk, Math.PI / 2));
     bp.push(a(0.18, 0.06, 0.18, 0, 1.48, s * 0.24 * bk));
     bp.push(W(0.13, 0.28, 0.13, 0.2, 1.26, s * 0.24 * bk, 0, s * 0.35, -0.35));
-    bp.push(a(0.14, 0.09, 0.14, 0.32, 1.19, s * 0.18 * bk));
+    bp.push(a(0.14, 0.09, 0.14, 0.32, 1.19, s * 0.18 * bk, 0, s * 0.35, 0));
     bp.push(S(0.12, 0.26, 0.12, 0.42, 1.15, s * 0.11 * bk, 0, s * 0.25, -1.35));
     bp.push(M(0.11, 0.12, 0.11, 0.5, 1.14, s * 0.06 * bk));
   }
