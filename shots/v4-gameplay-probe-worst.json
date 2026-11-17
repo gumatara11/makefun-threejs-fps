@@ -1,0 +1,279 @@
+{
+ "buySpawnEast": 148,
+ "liveSmokePlantSamples": [
+  148,
+  167,
+  166,
+  166,
+  168,
+  172,
+  172,
+  175,
+  175,
+  177,
+  177,
+  177,
+  173,
+  173,
+  173,
+  173,
+  173,
+  173,
+  173,
+  173,
+  173,
+  173,
+  173,
+  173,
+  172,
+  172,
+  172,
+  172,
+  172,
+  172
+ ],
+ "liveSmokePlantMax": 177,
+ "diag": [
+  {
+   "calls": 148,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "carried"
+  },
+  {
+   "calls": 167,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 166,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 166,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 168,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 172,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 172,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 175,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 175,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 177,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 177,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 177,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 173,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 173,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 173,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 173,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 173,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 173,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 173,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 173,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 173,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 173,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 173,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 173,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 172,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 172,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 172,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 172,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 172,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  },
+  {
+   "calls": 172,
+   "dropped": 0,
+   "gren": 0,
+   "smokes": 2,
+   "alive": 10,
+   "planted": "planted"
+  }
+ ],
+ "errors": []
+}
