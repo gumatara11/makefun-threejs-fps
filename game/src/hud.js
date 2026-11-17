@@ -11,7 +11,7 @@ const BUY_ROWS = [
 ];
 export function createHud(state, onBuyOpen) {
   const mm = $('minimap').getContext('2d');
-  let lastFeed = 0, lastMm = 0, dmgAt = 0, dmgAng = 0, hitAt = 0, hitKill = false, buyOpen = false, stickyBanner = false;
+  let lastSeq = 0, lastMm = 0, dmgAt = 0, dmgAng = 0, hitAt = 0, hitKill = false, buyOpen = false, stickyBanner = false;
   const list = $('buy-list');
   BUY_ROWS.forEach((r, i) => {
     const d = document.createElement('div');
@@ -83,8 +83,11 @@ export function createHud(state, onBuyOpen) {
     $('crosshair').style.setProperty('--gap', gap + 'px');
     $('crosshair').style.display = p.scoped ? 'none' : 'block';
     $('scope').style.display = p.scoped ? 'block' : 'none';
-    for (let i = lastFeed; i < state.events.length; i++) {
-      const ev = state.events[i];
+    // (c) lacak event via seq, bukan indeks: array events disambung/difilter
+    // (cap 200 + buang noise lama) sehingga indeks lama menunjuk event salah.
+    for (const ev of state.events) {
+      if (ev.seq == null || ev.seq <= lastSeq) continue;
+      lastSeq = ev.seq;
       if (ev.type === 'kill') {
         const k = ev.killer >= 0 ? state.agents[ev.killer].name : '—';
         const v = state.agents[ev.victim].name;
@@ -101,7 +104,6 @@ export function createHud(state, onBuyOpen) {
       if (ev.type === 'hitmarker' && ev.shooter === 0) { hitAt = now; hitKill = ev.kill; }
       if (ev.type === 'round-end' && !stickyBanner) showBanner(ev);
     }
-    lastFeed = state.events.length;
     const hm = $('hitmarker');
     hm.style.opacity = now - hitAt < 0.18 ? 1 : 0;
     hm.style.color = hitKill ? '#ff2222' : '#fff';
