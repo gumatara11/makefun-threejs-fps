@@ -26,9 +26,8 @@ function instanced(scene, mat, list) {
   im.castShadow = true; im.receiveShadow = true; scene.add(im); return im;
 }
 function letter(scene, mat, x, z, isA) {
-  const B = (w, h, d) => new THREE.BoxGeometry(w, h, d);
   const parts = [];
-  const add = (w, h, d, px, py, pz, rz = 0) => parts.push(part(B(w, h, d), mat, px, py, pz, 0, 0, rz));
+  const add = (w, h, d, px, py, pz, rz = 0) => parts.push(part(new THREE.BoxGeometry(w, h, d), mat, px, py, pz, 0, 0, rz));
   if (isA) { add(0.3, 3, 0.3, -0.62, 1.5, 0, -0.42); add(0.3, 3, 0.3, 0.62, 1.5, 0, 0.42); add(1.3, 0.25, 0.3, 0, 1.1, 0); }
   else { add(0.3, 3, 0.3, -0.55, 1.5, 0); add(1, 0.25, 0.3, 0, 2.85, 0); add(1, 0.25, 0.3, 0, 1.5, 0); add(1, 0.25, 0.3, 0, 0.15, 0); add(0.3, 1.25, 0.3, 0.5, 2.18, 0); add(0.3, 1.25, 0.3, 0.5, 0.83, 0); }
   const g = new THREE.Group();
@@ -40,47 +39,48 @@ export function createRender(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
   renderer.setSize(1280, 800);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x8ec9ee);
   scene.fog = new THREE.Fog(0xcfe8f5, 25, 110);
   const camera = new THREE.PerspectiveCamera(74, 1280 / 800, 0.05, 200);
   camera.rotation.order = 'YXZ'; scene.add(camera);
-  // cahaya: 1 dir + 1 hemi + 3 point + 1 muzzle = 6
-  const sun = new THREE.DirectionalLight(0xfff2d8, 2.4);
-  sun.position.set(20, 42, -6); sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
+  // cahaya: 1 dir + 1 hemi + 3 point + 1 muzzle = 6. Target bayangan di
+  // tengah map (36,24): target lama (0,0,0) membuat timur map keluar frustum.
+  const sun = new THREE.DirectionalLight(0xfff2d8, 2.8);
+  sun.position.set(34, 30, -16); sun.castShadow = true;
+  sun.target.position.set(36, 0, 24); scene.add(sun.target);
+  sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0004;
   Object.assign(sun.shadow.camera, { left: -42, right: 42, top: 42, bottom: -42, far: 120 });
-  scene.add(sun); scene.add(new THREE.HemisphereLight(0xbfd9ff, 0x9a8a68, 0.95));
-  const pt = (x, y, z, c) => { const l = new THREE.PointLight(c, 14, 16, 1.6); l.position.set(x, y, z); scene.add(l); return l; };
-  pt(62, 2.8, 38, 0xffd9a0); pt(62, 2.8, 10, 0x9fd4ff); pt(30, 2.2, 25, 0x9ff5e8);
+  scene.add(sun); scene.add(new THREE.HemisphereLight(0xbfd9ff, 0x9a8a68, 0.75));
+  const pt = (x, y, z, c, i) => { const l = new THREE.PointLight(c, i, 16, 1.6); l.position.set(x, y, z); scene.add(l); return l; };
+  pt(62, 2.8, 38, 0xffd9a0, 20); pt(62, 2.8, 10, 0x9fd4ff, 18); pt(30, 2.2, 25, 0x9ff5e8, 16);
   const muzzleLight = new THREE.PointLight(0xffc860, 0, 9, 2); scene.add(muzzleLight);
   // --- lantai + marka ---
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(72, 48), P.ground);
   ground.rotation.x = -Math.PI / 2; ground.position.set(36, 0, 24); ground.receiveShadow = true; scene.add(ground);
-  const apron = new THREE.Mesh(new THREE.PlaneGeometry(110, 86), P.crate);
-  apron.rotation.x = -Math.PI / 2; apron.position.set(36, -0.05, 24); scene.add(apron);
-  const mark = (x0, z0, x1, z1) => { // garis lantai (marka / zona site)
-    const w = Math.abs(x1 - x0) || 0.18, d = Math.abs(z1 - z0) || 0.18;
-    const m = new THREE.Mesh(new THREE.BoxGeometry(w, 0.02, d), P.accY);
-    m.position.set((x0 + x1) / 2, 0.01, (z0 + z1) / 2); scene.add(m);
+  const markParts = []; // marka+zona gabung: 3 mesh
+  const mark = (x0, z0, x1, z1, mat = P.accY, y = 0.01, w0 = 0.18) => {
+    const w = Math.abs(x1 - x0) || w0, d = Math.abs(z1 - z0) || w0;
+    markParts.push(part(new THREE.BoxGeometry(w, 0.02, d), mat, (x0 + x1) / 2, y, (z0 + z1) / 2));
   };
   for (let x = 12; x < 56; x += 6) { mark(x, 39.9, x + 3, 40.1); mark(x, 24.9, x + 3, 25.1); mark(x, 9.9, x + 3, 10.1); }
   const zoneLine = (z, mat) => {
-    const mk = (x0, z0, x1, z1) => { const m = new THREE.Mesh(new THREE.BoxGeometry(Math.abs(x1 - x0) || 0.35, 0.02, Math.abs(z1 - z0) || 0.35), mat); m.position.set((x0 + x1) / 2, 0.02, (z0 + z1) / 2); scene.add(m); };
-    mk(z.x0, z.z0, z.x1, z.z0); mk(z.x0, z.z1, z.x1, z.z1); mk(z.x0, z.z0, z.x0, z.z1); mk(z.x1, z.z0, z.x1, z.z1);
+    mark(z.x0, z.z0, z.x1, z.z0, mat, 0.02, 0.35); mark(z.x0, z.z1, z.x1, z.z1, mat, 0.02, 0.35);
+    mark(z.x0, z.z0, z.x0, z.z1, mat, 0.02, 0.35); mark(z.x1, z.z0, z.x1, z.z1, mat, 0.02, 0.35);
   };
   zoneLine(ZONES.plantA, P.neonO); zoneLine(ZONES.plantB, P.neonB);
+  scene.add(...mergeParts(markParts, false));
   // solids per material
   const byClass = {};
   for (const s of SOLIDS) (byClass[classify(s)] ??= []).push(s);
   for (const [k, list] of Object.entries(byClass)) instanced(scene, P[k], list);
-  const trim = (x0, z0, x1, z1, mat) => {
-    const m = new THREE.Mesh(new THREE.BoxGeometry(Math.abs(x1 - x0) || 0.2, 0.18, Math.abs(z1 - z0) || 0.2), mat);
-    m.position.set((x0 + x1) / 2, 5.05, (z0 + z1) / 2); scene.add(m);
-  };
+  const trimParts = []; // trim gabung: 2 mesh
+  const trim = (x0, z0, x1, z1, mat) => trimParts.push(part(new THREE.BoxGeometry(Math.abs(x1 - x0) || 0.2, 0.18, Math.abs(z1 - z0) || 0.2), mat, (x0 + x1) / 2, 5.05, (z0 + z1) / 2));
   trim(0, 0, 72, 0, P.trimC); trim(0, 48, 72, 48, P.trimM); trim(0, 0, 0, 48, P.trimC); trim(72, 0, 72, 48, P.trimM);
-  // trim neon di atas dinding lane interior
+  scene.add(...mergeParts(trimParts, false));
+  // trim neon lane
   const laneTrim = [];
   laneTrim.push(part(new THREE.BoxGeometry(18, 0.18, 0.2), P.trimC, 19, 3.3, 35.75));
   laneTrim.push(part(new THREE.BoxGeometry(14, 0.18, 0.2), P.trimC, 39, 3.3, 35.75));
@@ -89,7 +89,7 @@ export function createRender(canvas) {
   laneTrim.push(part(new THREE.BoxGeometry(14, 0.18, 0.2), P.trimM, 39, 3.3, 14.25));
   laneTrim.push(part(new THREE.BoxGeometry(6, 0.18, 0.2), P.trimM, 53, 3.3, 14.25));
   scene.add(...mergeParts(laneTrim, false));
-  // huruf site + atap interior + lampu
+  // huruf + atap + lampu
   letter(scene, P.cloud, 61.8, 38.4, true); letter(scene, P.cloud, 58.8, 7.5, false);
   const roof = (x, z, w, d) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, 0.2, d), P.wall); m.position.set(x, 3.4, z); scene.add(m); };
   roof(67, 38, 5, 12); roof(67, 10, 5, 12);
@@ -120,7 +120,7 @@ export function createRender(canvas) {
   }
   trunkIM.castShadow = canIM.castShadow = true;
   scene.add(trunkIM, canIM, cloudIM);
-  // kelopak + planter + bangku + skuter + hazard + zebra + genangan
+  // props tanah
   const srand = (() => { let a = 1234567; return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; })();
   const gp = [];
   for (let i = 0; i < 46; i++) { // kelopak pink diam di tanah
@@ -154,7 +154,29 @@ export function createRender(canvas) {
   // genangan ringan
   gp.push(part(new THREE.CircleGeometry(1.4, 12).rotateX(-Math.PI / 2), P.steel, 26, 0.012, 33));
   gp.push(part(new THREE.CircleGeometry(1.1, 12).rotateX(-Math.PI / 2), P.steel, 46, 0.012, 17));
-  // jembatan + marka + strip
+  // Dressing fasad v4-map (grup gp, 0 draw call baru; x hindari celah 28-32/46-50).
+  for (const x of [13, 19, 25, 37, 43, 53]) {
+    gp.push(part(new THREE.BoxGeometry(2.4, 1.5, 0.07), P.accB, x, 1.7, 36.06)); // muka A-long
+    gp.push(part(new THREE.BoxGeometry(2.4, 0.12, 0.09), P.accY, x, 2.55, 36.06));
+    gp.push(part(new THREE.BoxGeometry(2.4, 1.5, 0.07), P.accB, x, 1.7, 14.56)); // muka Mid (selatan)
+    gp.push(part(new THREE.BoxGeometry(2.4, 1.5, 0.07), P.crate, x, 1.7, 35.44)); // muka strip utara Mid
+  }
+  for (let x = 12; x <= 60; x += 8) { // panel perimeter utara/selatan
+    gp.push(part(new THREE.BoxGeometry(2.4, 1.5, 0.07), P.accY, x, 1.7, 47.94));
+    gp.push(part(new THREE.BoxGeometry(2.4, 1.5, 0.07), P.accY, x, 1.7, 0.06));
+  }
+  // panel kontainer/tangki + interior site
+  for (const [x, z] of [[57.94, 35.2], [61.94, 39.2], [57.94, 42.2], [58.94, 7.5], [63.94, 12.5], [56.06, 34], [56.06, 42], [56.06, 6], [56.06, 14]])
+    gp.push(part(new THREE.BoxGeometry(0.07, 1.5, 1.8), P.steel, x, 1.5, z));
+  for (const [x, z] of [[61, 43.44], [66, 43.44], [61, 4.06], [66, 4.06]])
+    gp.push(part(new THREE.BoxGeometry(2.4, 1.5, 0.07), P.accB, x, 1.7, z));
+  for (const [x, z] of [[60.5, 5.94], [65.5, 14.06]]) // pita kuning tangki B
+    gp.push(part(new THREE.BoxGeometry(3.1, 0.18, 0.1), P.accY, x, 2.85, z));
+  gp.push(part(new THREE.BoxGeometry(4, 0.08, 0.1), P.accB, 64, 0.9, 9.44)); // strip meja bengkel B
+  for (const [x, z, w, d] of [[27.44, 17.5, 0.07, 2.2], [27.44, 32.5, 0.07, 2.2], [29.64, 22, 0.07, 1.6], [29.64, 28, 0.07, 1.6]])
+    gp.push(part(new THREE.BoxGeometry(w, 1.6, d), P.accB, x, 1.6, z)); // muka barat blok tunnel + rangka pintu Mid
+  planterAt(14, 44.5); planterAt(50, 44.5); planterAt(14, 3.5); planterAt(50, 3.5);
+  // jembatan + marka
   for (const px of [27.9, 32.1]) {
     gp.push(part(new THREE.BoxGeometry(0.06, 0.9, 9), P.steel, px, 5.85, 25));
     gp.push(part(new THREE.BoxGeometry(0.14, 0.1, 9), P.wall, px, 6.35, 25));
@@ -202,10 +224,10 @@ export function createRender(canvas) {
   const skyIM = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), P.wall, skyB.length);
   const winParts = [];
   { const m = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), p = new THREE.Vector3();
-    skyB.forEach((b) => {
+    skyB.forEach((b, bi) => {
       const cx = b[0] + b[2] / 2, cz = b[1] + b[2] / 2;
       p.set(cx, b[3] / 2, cz); sc.set(b[2], b[3], b[2]);
-      m.compose(p, q, sc); skyIM.setMatrixAt(skyB.indexOf(b), m);
+      m.compose(p, q, sc); skyIM.setMatrixAt(bi, m);
       const xFace = Math.abs(cx - 36) > Math.abs(cz - 24);
       for (let r = 0; r < 3; r++) for (let c = 0; c < 2; c++) {
         const wy = 3 + r * 4;
@@ -214,6 +236,10 @@ export function createRender(canvas) {
       }
     });
   }
+  // Jendela v4-map (grup winParts, 0 draw call baru).
+  for (const x of [14, 22, 30, 38, 46, 54, 62]) winParts.push(part(new THREE.BoxGeometry(2.6, 1, 0.1), P.neonB, x, 3.4, 47.94));
+  for (const x of [14, 30, 46, 62]) winParts.push(part(new THREE.BoxGeometry(2.6, 1, 0.1), P.neonB, x, 3.4, 0.06));
+  for (const z of [7, 13, 35, 41]) winParts.push(part(new THREE.BoxGeometry(0.1, 1, 2.2), P.neonB, 68.44, 3.2, z));
   scene.add(skyIM, ...mergeParts(winParts, false));
   // airship
   const ship = new THREE.Group();
@@ -222,7 +248,7 @@ export function createRender(canvas) {
     part(new THREE.BoxGeometry(2.2, 0.7, 1), P.wall, 0, -2.2, 0),
     part(new THREE.BoxGeometry(0.3, 1.6, 1.4), P.wall, -5.5, 0.6, 0)], false));
   ship.position.set(70, 26, 10); scene.add(ship);
-  // papan EMBERLINE (canvas, 1 mesh)
+  // papan EMBERLINE
   const signC = document.createElement('canvas'); signC.width = 512; signC.height = 96;
   const sg = signC.getContext('2d');
   sg.fillStyle = '#0a1a2c'; sg.fillRect(0, 0, 512, 96);
@@ -240,15 +266,24 @@ export function createRender(canvas) {
   const stripR = stripL.clone(); scene.add(stripL, stripR);
   const rail = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.02, 8), P.accY);
   rail.position.set(30, 0.015, 25); scene.add(rail);
-  // strip neon tunnel + pipa
+  // neon tunnel
   const stripParts = [], pipeParts = [];
   const neonStrip = (x, z0, z1) => stripParts.push(part(new THREE.BoxGeometry(0.08, 0.12, Math.abs(z1 - z0)), P.trimC, x, 2.2, (z0 + z1) / 2));
   neonStrip(28.1, 14, 21); neonStrip(28.1, 29, 36); neonStrip(31.9, 14, 21); neonStrip(31.9, 29, 36);
+  // Strip neon v4-map.
+  for (const x of [15, 22, 37, 43, 53]) {
+    stripParts.push(part(new THREE.BoxGeometry(4, 0.12, 0.08), P.trimC, x, 2.9, 36.08));
+    stripParts.push(part(new THREE.BoxGeometry(4, 0.12, 0.08), P.trimC, x, 2.9, 14.58));
+  }
+  stripParts.push(part(new THREE.BoxGeometry(0.08, 0.15, 8), P.trimC, 27.7, 5.6, 25)); // strip cyan muka barat jembatan
   scene.add(...mergeParts(stripParts, false));
   const pipeV = (x, z) => pipeParts.push(part(new THREE.CylinderGeometry(0.12, 0.12, 2.6, 8), P.pipe, x, 1.3, z));
   pipeV(28.2, 18); pipeV(31.8, 32); pipeV(28.2, 33); pipeV(31.8, 17);
+  // Pipa v4-map.
+  pipeV(16, 36.12); pipeV(34, 36.12); pipeV(44, 36.12); pipeV(54, 36.12);
+  pipeV(27.44, 17.5); pipeV(27.44, 32.5); pipeV(56.06, 34); pipeV(56.06, 42); pipeV(56.06, 6); pipeV(56.06, 14);
   scene.add(...mergeParts(pipeParts, false));
-  // robot, tracer, ledakan, asap, bom, granat, drop
+  // robot + efek
   const robots = [];
   for (let i = 0; i < 10; i++) {
     const r = buildRobot(i % 5, i < 5 ? 'atk' : 'def');
@@ -315,7 +350,7 @@ export function createRender(canvas) {
       exVel[i * 3] = Math.cos(a) * Math.cos(b) * s; exVel[i * 3 + 1] = Math.abs(Math.sin(b)) * s + 2; exVel[i * 3 + 2] = Math.sin(a) * Math.cos(b) * s;
     }
     exGeo.attributes.position.needsUpdate = true; exLife = 0.9;
-    explosion.material.opacity = 1;
+    explosion.visible = true; explosion.material.opacity = 1;
   }
   function spawnTracer(ax, ay, az, bx, by, bz) {
     const t = tracers.find((o) => o.life <= 0) || tracers[0];
@@ -324,7 +359,6 @@ export function createRender(canvas) {
     t.m.scale.set(1, 1, len);
     t.m.lookAt(bx, by, bz); t.m.visible = true; t.life = 0.07;
   }
-  const _v = new THREE.Vector3();
   function render(state, dt, now) {
     const p = state.agents[0];
     if (menuMode) { // menu: robot + kota + menara
@@ -406,7 +440,7 @@ export function createRender(canvas) {
       }
       exGeo.attributes.position.needsUpdate = true;
       explosion.material.opacity = Math.max(0, exLife / 0.9);
-    } else explosion.material.opacity = 0;
+    } else { explosion.material.opacity = 0; explosion.visible = false; }
     renderer.render(scene, camera);
   }
   function setDebug(on) { dbg.visible = on; dbgNodes.visible = on; }

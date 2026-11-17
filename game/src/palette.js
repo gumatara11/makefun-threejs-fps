@@ -6,13 +6,13 @@ export function makePalette() {
   const std = (c, o = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.85, metalness: 0.05, ...o });
   const bas = (c, o = {}) => new THREE.MeshBasicMaterial({ color: c, ...o });
   return {
-    ground: std(0xd8e2e8), wall: std(0xf2f5f6), trimC: std(0x19c8e8, { emissive: 0x0a5a6a, emissiveIntensity: 0.4 }),
-    trimM: std(0xe84fa8, { emissive: 0x5a0a3a, emissiveIntensity: 0.35 }),
+    ground: std(0xd8e2e8), wall: std(0xf2f5f6), trimC: std(0x19c8e8, { emissive: 0x0a5a6a, emissiveIntensity: 0.7 }),
+    trimM: std(0xe84fa8, { emissive: 0x5a0a3a, emissiveIntensity: 0.6 }),
     contR: std(0xd8433a), crate: std(0xc9a06a), tankB: std(0x2f7fd0),
     pipe: std(0x8a939c, { metalness: 0.6, roughness: 0.4 }),
     steel: std(0x3a4046, { metalness: 0.5, roughness: 0.5 }),
     neonO: bas(0xff7a1a), neonB: bas(0x2f9dff),
-    sakura: std(0xf9b1cd, { emissive: 0x8a2440, emissiveIntensity: 0.5 }), trunk: std(0x7a5230),
+    sakura: std(0xf9b1cd, { emissive: 0x8a2440, emissiveIntensity: 0.7 }), trunk: std(0x7a5230),
     smoke: bas(0xe8e8e8, { transparent: true, opacity: 0.55 }),
     cloud: bas(0xffffff),
     flash: bas(0xffe08a),
