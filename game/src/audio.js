@@ -3,12 +3,12 @@
 // 'muzzle', 'explosion', 'beep', 'plant', 'defuse', 'round-end', 'hit'.
 import { CONFIG } from './config.js';
 
-let ctx = null, master = null, noiseBuf = null, active = 0;
+let ctx = null, master = null, noiseBuf = null, active = 0, vol = 0.5, muted = false;
 const MAX_VOICES = 8;
 function ensure() {
   if (ctx) return ctx;
   ctx = new (window.AudioContext || window.webkitAudioContext)();
-  master = ctx.createGain(); master.gain.value = 0.5; master.connect(ctx.destination);
+  master = ctx.createGain(); master.gain.value = muted ? 0 : vol; master.connect(ctx.destination);
   noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
   const d = noiseBuf.getChannelData(0);
   for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -16,6 +16,10 @@ function ensure() {
 }
 export function resumeAudio() { if (ctx && ctx.state === 'suspended') ctx.resume(); }
 export function initAudio() { ensure(); resumeAudio(); }
+// Volume + mute (panel SETTINGS): simpan nilai bila ctx belum ada, terapkan ke master gain.
+export function setVolume(v) { vol = Math.max(0, Math.min(1, v)); if (master) master.gain.value = muted ? 0 : vol; }
+export function setMuted(m) { muted = !!m; if (master) master.gain.value = muted ? 0 : vol; }
+export function isMuted() { return muted; }
 function env(g, t, a, peak, dec) {
   g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(peak, t + a);
   g.gain.exponentialRampToValueAtTime(0.0001, t + a + dec);

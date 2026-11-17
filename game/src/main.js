@@ -13,7 +13,7 @@ import { InputState } from './input.js';
 import './grenades.js';
 import './characters.js';
 import { createRender } from './render.js';
-import { initAudio, resumeAudio, drainAudio, playReload, playDoor } from './audio.js';
+import { initAudio, resumeAudio, drainAudio, playReload, playDoor, setVolume, setMuted, isMuted } from './audio.js';
 import { createHud } from './hud.js';
 import { applyShot } from './shots.js';
 
@@ -49,12 +49,18 @@ function startGame() {
   started = true; setMenuUI(false);
   state.paused = false; input.paused = false;
   $('start-overlay').style.display = 'none';
+  $('settings-panel').style.display = 'none';
   $('pause-overlay').style.display = 'none';
   $('end-overlay').style.display = 'none';
   canvas.focus();
   canvas.requestPointerLock?.();
 }
 $('start-btn').addEventListener('click', startGame);
+// SETTINGS (menu start): panel VOLUME saja — slider + mute, via audio.js.
+$('settings-btn').addEventListener('click', () => { $('settings-panel').style.display = 'block'; });
+$('settings-close').addEventListener('click', () => { $('settings-panel').style.display = 'none'; });
+$('mute-btn').addEventListener('click', () => { const m = !isMuted(); setMuted(m); $('mute-btn').textContent = m ? '🔊 BUNYI' : '🔇 MUTE'; });
+$('vol-slider').addEventListener('input', (e) => { setVolume(e.target.value / 100); $('vol-val').textContent = e.target.value + '%'; if (isMuted()) { setMuted(false); $('mute-btn').textContent = '🔇 MUTE'; } });
 $('resume-btn').addEventListener('click', () => { canvas.requestPointerLock?.(); });
 $('again-btn').addEventListener('click', () => { playAgain(state); $('end-overlay').style.display = 'none'; $('start-overlay').style.display = 'flex'; started = false; setMenuUI(true); });
 document.addEventListener('pointerlockchange', () => {

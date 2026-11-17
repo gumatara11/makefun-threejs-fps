@@ -98,7 +98,7 @@ export function createRender(canvas) {
   lamp(66, 36); lamp(67, 40); lamp(66, 8); lamp(67, 12);
   scene.add(...mergeParts(lampParts, false));
   // sakura + awan
-  const trees = [[12, 46], [24, 46], [48, 46], [60, 46], [12, 2], [36, 2], [60, 2], [6, 33], [6, 15], [20, 32], [40, 32], [20, 16], [40, 16]];
+  const trees = [[12, 46], [24, 46], [48, 46], [60, 46], [12, 2], [36, 2], [60, 2], [6, 33], [6, 15], [20, 32], [40, 32], [20, 16], [40, 16], [54, 24], [52, 28], [48, 20]];
   const trunkIM = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.14, 0.2, 1.8, 6), P.trunk, trees.length);
   const canIM = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1.15, 0), P.sakura, trees.length * 3);
   const cloudIM = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 8, 6), P.cloud, 18); // awan putih: 6 gumpalan x 3 puff
@@ -263,7 +263,7 @@ export function createRender(canvas) {
   const menuRobots = [];
   for (let i = 0; i < 5; i++) {
     const r = buildRobot(i, 'atk');
-    r.group.position.set(44, 0, 20.5 + i * 1.4);
+    r.group.position.set(44, 0, 21.7 + i * 0.8);
     r.group.rotation.y = Math.PI;
     r.group.visible = false;
     scene.add(r.group); menuRobots.push(r);
@@ -328,7 +328,7 @@ export function createRender(canvas) {
   function render(state, dt, now) {
     const p = state.agents[0];
     if (menuMode) { // menu: robot + kota + menara
-      camera.position.set(38.5, 2, 23.3); camera.lookAt(44, 1.6, 23.3);
+      camera.position.set(41, 1.6, 23.3); camera.lookAt(44, 1.45, 22.9);
       if (Math.abs(camera.fov - 60) > 0.1) { camera.fov = 60; camera.updateProjectionMatrix(); }
     } else {
       const eyeH = p.crouch ? 1.08 : 1.68;
