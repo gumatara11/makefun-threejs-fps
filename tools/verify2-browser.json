@@ -1,18 +1,18 @@
 {
   "startOverlay": {
     "visible": true,
-    "text": "EMBERLINE\n\n5v5 Bomb Defuse. Penyerang: tanam bom di Site A atau B, atau eliminasi semua defender. Defender: cegah plant, atau defuse bom sebelum meledak. Pertama sampai 8 ronde menang.\n\nWASD gerak • Mouse bidik • Klik tembak • R reload • Ctrl crouch • Space lompat\nB menu beli • E tahan plant/defuse • F ambil senjata • G jatuhkan primer\n1 primer • 2 P9 • 3 Frag • 4 Smoke • 5 Flash • Klik kanan scop"
+    "text": "EMBERLINE\n\n5v5 Bomb Defuse — tanam/defuse bom atau eliminasi. Pertama ke 8 ronde menang.\n\n▶ PLAY\nOPERATORS\nLOADOUT\nBATTLE PASS\nEVENT\nSTORE\nWASD gerak • Mouse bidik • Klik tembak • R reload • Ctrl crouch • Space lompat\nB beli • E plant/defuse • F ambil • G jatuhkan primer\n1 primer • 2 P9 • 3 Frag • 4 Smoke • 5 Flash • Klik kanan scope\n▶  MULAI"
   },
   "main": {
     "phase": "buy",
     "paused": false,
     "started": true,
     "stats": {
-      "tickAvg": 0.129,
-      "tickP99": 2.1,
-      "calls": 172,
-      "tris": 11766,
-      "fps": 1
+      "tickAvg": 0.032,
+      "tickP99": 0.7,
+      "calls": 155,
+      "tris": 9998,
+      "fps": 0
     },
     "errors": [],
     "audioCtx": null,
@@ -92,20 +92,20 @@
   "debug": {
     "phase": "buy",
     "stats": {
-      "tickAvg": 0.062,
-      "tickP99": 1.1,
+      "tickAvg": 0.039,
+      "tickP99": 0.6,
       "calls": 177,
       "tris": 15290,
-      "fps": 1
+      "fps": 2
     }
   },
   "bench": {
-    "fpsMedian": 1.2,
-    "fps1pct": 0.6,
-    "tickAvg": 0.057,
-    "tickP99": 0.2,
-    "drawCalls": 176,
-    "tris": 12446,
+    "fpsMedian": 0.8,
+    "fps1pct": 0.3,
+    "tickAvg": 0.07,
+    "tickP99": 0.4,
+    "drawCalls": 36,
+    "tris": 7144,
     "frames": 150
   },
   "errors": [],
