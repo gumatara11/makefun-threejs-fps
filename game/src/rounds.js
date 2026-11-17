@@ -161,12 +161,13 @@ function playerActions(s, input) {
   if (input.pressed('Digit5')) throwGrenade(p, s, 'Flash');
   if (input.pressed('KeyG')) dropWeapon(p, s);
   if (input.pressed('KeyF')) pickupWeapon(p, s);
-  if (input.mouseDown) {
+  const clicked = input.consumeClick ? input.consumeClick() : false; // (a) klik-cepat antar-frame
+  if (input.mouseDown || clicked) {
     const w = currentWeapon(p);
     if (w && WEAPONS[w.key].auto) fire(p, s);
     else if (w && !s._prevMouse) fire(p, s); // semi-otomatis: hanya rising edge
   }
-  s._prevMouse = input.mouseDown;
+  s._prevMouse = input.mouseDown || clicked;
 }
 function bombPickupTick(s) {
   const b = s.bomb;
