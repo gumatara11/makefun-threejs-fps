@@ -1,12 +1,9 @@
-// EMBERLINE sim — weapons.js. LOGIKA SAJA (viewmodel = Builder B).
-// Satu jalur tembak pemain + bot (AMB-05).
 import * as THREE from '../vendor/three/three.module.min.js';
 import { PAL } from './palette.js';
 import { CONFIG, WEAPONS, GRENADES } from './config.js';
 import { shoot, dirFromYawPitch } from './combat.js';
 import { createProjectile } from './grenades.js';
 import { currentWeapon, pushEvent } from './state.js';
-
 export function createLoadout(key) {
   const w = WEAPONS[key];
   return { key, mag: w.mag, reserve: w.reserve };
@@ -18,9 +15,8 @@ export function spreadFor(a, w, moving) {
   let sp = base + (moving ? w.spreadMove : 0);
   if (a.crouch) sp *= CONFIG.crouchSpreadMul;
   if (!a.onGround) sp *= CONFIG.airSpreadMul;
-  // Recoil spray VK-47/Kestrel: +8%/tembakan s.d. x1,8, pulih 0,25 dtk
   if (w.spray && a.recoilShots > 0) sp *= Math.min(CONFIG.recoilSprayMax, 1 + a.recoilShots * CONFIG.recoilSprayStep);
-  if (a.bot) { // akurasi bot per ronde §4 (derajat -> radian)
+  if (a.bot) {
     const r = a.bot.round || 1;
     const extra = (CONFIG.bot.accExtraDeg[Math.min(r, 15)] || 1.5) * Math.PI / 180;
     sp += extra;
@@ -28,9 +24,8 @@ export function spreadFor(a, w, moving) {
   return sp;
 }
 function perturb(dir, spread) {
-  // simpangan acak simetris (AMB-03), bias y kecil
   const a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()) * spread;
-  const ux = -dir.z, uz = dir.x; // vektor samping (tegak lurus, datar)
+  const ux = -dir.z, uz = dir.x;
   const len = Math.hypot(ux, uz) || 1;
   const nx = dir.x + (ux / len) * Math.cos(a) * r;
   const nz = dir.z + (uz / len) * Math.cos(a) * r;
@@ -47,7 +42,7 @@ export function fire(a, state, aimDir) {
   if (now < a.nextShotAt) return null;
   if (w.mag <= 0) {
     pushEvent(state, { type: 'dryclick', shooter: a.id });
-    if (a.bot) startReload(a, now); // bot auto-reload saat aman
+    if (a.bot) startReload(a, now);
     return { dry: true };
   }
   const moving = Math.hypot(a.vx, a.vz) > 0.5;
@@ -61,7 +56,7 @@ export function fire(a, state, aimDir) {
   w.mag--;
   a.nextShotAt = now + 60 / wd.rpm;
   if (wd.spray) a.recoilShots++;
-  else a.recoilShots = 0; // AMB-01
+  else a.recoilShots = 0;
   a.lastShotAt = now;
   const hearR = CONFIG.hearing[wd.key.toLowerCase()] || 35;
   pushEvent(state, { type: 'noise', kind: 'shot', weapon: w.key, x: a.x, y: 0, z: a.z, radius: hearR, team: a.team });
@@ -70,7 +65,7 @@ export function fire(a, state, aimDir) {
 }
 export function updateWeapons(s) {
   for (const a of s.agents) {
-    if (a.reloadUntil && s.now >= a.reloadUntil) { // reload selesai
+    if (a.reloadUntil && s.now >= a.reloadUntil) {
       const slot = a.reloadSlot, w = slot === 'primary' ? a.weapons.primary : a.weapons.secondary;
       if (w) {
         const need = WEAPONS[w.key].mag - w.mag, take = Math.min(need, w.reserve);
@@ -88,8 +83,6 @@ export function startReload(a, now) {
   a.reloadSlot = a.current;
   return true;
 }
-// AMB-04: ganti senjata membatalkan reload (ulang dari nol).
-// Spec §2: ganti senjata batalkan plant/defuse.
 export function switchWeapon(a, slot, now) {
   if (slot === a.current) return false;
   if (slot === 'primary' && !a.weapons.primary) return false;
@@ -106,17 +99,17 @@ export function throwGrenade(a, state, kind) {
   const dir = dirFromYawPitch(a.yaw, a.pitch);
   createProjectile(state, a, kind, dir);
   a.grenades[kind]--;
-  a.nextShotAt = state.now + 0.7; // AMB-10: kembali ke senjata sebelumnya (slot tak berubah)
+  a.nextShotAt = state.now + 0.7;
   pushEvent(state, { type: 'noise', kind: 'throw', x: a.x, y: 0, z: a.z, radius: 8, team: a.team });
   return true;
 }
 export function dropWeapon(a, state) {
   const p = a.weapons.primary;
-  if (!p) return false; // G: primer saja; P9 tidak jatuh
+  if (!p) return false;
   state.dropped.push({ key: p.key, mag: p.mag, reserve: p.reserve, x: a.x, z: a.z });
   a.weapons.primary = null; a.current = 'secondary';
   a.reloadUntil = 0; a.reloadSlot = null;
-  a.planting = false; a.plantProg = 0; a.defusing = false; a.defuseProg = 0; // ganti senjata = batal
+  a.planting = false; a.plantProg = 0; a.defusing = false; a.defuseProg = 0;
   return true;
 }
 export function pickupWeapon(a, state) {
@@ -130,31 +123,25 @@ export function pickupWeapon(a, state) {
   a.weapons.primary = { key: best.key, mag: best.mag, reserve: best.reserve };
   state.dropped.splice(state.dropped.indexOf(best), 1);
   a.current = 'primary';
-  a.planting = false; a.plantProg = 0; a.defusing = false; a.defuseProg = 0; // ganti senjata = batal
+  a.planting = false; a.plantProg = 0; a.defusing = false; a.defuseProg = 0;
   a.switchUntil = state.now + WEAPONS[best.key].draw;
   return true;
 }
 export { GRENADES };
-
-
-// ---- VIEWMODEL TANGAN ROBOT + SENJATA — v4-hands ----
-// v4: 3 jari ditumpuk sepanjang grip, cascade ke kamera, telapak gunmetal gelap.
-// Senjata: detail laras/pisir/picu/rel (merge -> 0 draw call baru).
-// Reload: tilt + yaw ke kamera, dip kecil.
 import { part, mergeParts } from './palette.js';
-const VB = { x: 0.18, y: -0.16, z: -0.55, s: 1.05, yaw: -0.35 }; // v4r2: viewmodel lebih besar/dekat (+10%)
+const VB = { x: 0.18, y: -0.16, z: -0.55, s: 1.05, yaw: -0.35 };
 let sleeveMat = null;
 function weaveMat() {
   if (sleeveMat) return sleeveMat;
   const c = document.createElement('canvas'); c.width = c.height = 128;
   const g = c.getContext('2d');
-  g.fillStyle = '#f2f5f6'; g.fillRect(0, 0, 128, 128);
-  g.strokeStyle = 'rgba(60,60,60,0.10)'; g.lineWidth = 1;
+  g.fillStyle = '#454b52'; g.fillRect(0, 0, 128, 128);
+  g.strokeStyle = 'rgba(255,255,255,0.10)'; g.lineWidth = 1;
   for (let i = 0; i <= 128; i += 8) {
     g.beginPath(); g.moveTo(i, 0); g.lineTo(i, 128); g.stroke();
     g.beginPath(); g.moveTo(0, i); g.lineTo(128, i); g.stroke();
   }
-  g.strokeStyle = 'rgba(60,60,60,0.28)';
+  g.strokeStyle = 'rgba(255,255,255,0.20)';
   for (const x of [42, 86]) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 128); g.stroke(); }
   const t = new THREE.CanvasTexture(c);
   t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(2, 1);
@@ -190,15 +177,14 @@ function forearm(slim, wristR, wristZ) {
 }
 function robotHand(cfg, isLeft, armRot) {
   const g = new THREE.Group();
-  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.088, 0.075, 0.05), PAL.steel)); // telapak gunmetal GELAP (v4r2)
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.088, 0.075, 0.05), PAL.steel));
   const hand = [], tips = [];
-  const sx = isLeft ? 1 : -1; // sisi tumpukan jari: tangan kanan -x (sisi kamera), kiri cermin
-  // v4r3: jari CASCADE menyamping — ruas 2 + ujung keluar siluet telapak
+  const sx = isLeft ? 1 : -1;
   for (let i = 0; i < 3; i++) {
     const fy = -0.006 - i * 0.031, fx = sx * 0.036;
     hand.push(part(new THREE.BoxGeometry(0.028, 0.024, 0.042), PAL.hand, fx, fy, -0.048, -0.35, sx * 0.35, 0));
-    hand.push(part(new THREE.BoxGeometry(0.028, 0.056, 0.024), PAL.hand, fx + sx * 0.012, fy - 0.032, -0.08, -0.15));
-    tips.push(part(new THREE.BoxGeometry(0.034, 0.026, 0.038), PAL.accP, fx + sx * 0.022, fy - 0.058, -0.066, -1.1));
+    hand.push(part(new THREE.BoxGeometry(0.028, 0.066, 0.024), PAL.hand, fx + sx * 0.012, fy - 0.032, -0.08, -0.15));
+    tips.push(part(new THREE.BoxGeometry(0.04, 0.026, 0.038), PAL.accP, fx + sx * 0.022, fy - 0.058, -0.066, -1.1));
     hand.push(part(new THREE.BoxGeometry(0.026, 0.02, 0.02), PAL.hand, fx, fy + 0.014, -0.03));
   }
   hand.push(part(new THREE.BoxGeometry(0.024, 0.024, 0.052), PAL.hand, 0.055, 0.014, -0.065, -0.15, -0.5, 0));
@@ -222,26 +208,32 @@ function buildGun(key) {
     add(box(0.05, 0.045, 0.24), PAL.steel, 0, 0.06, -0.08);
     add(box(0.052, 0.012, 0.24), PAL.accP, 0, 0.085, -0.08);
     add(box(0.045, 0.14, 0.06), PAL.palm, 0, -0.04, 0.02, 0.25);
-    add(cyl(0.013, 0.035), PAL.steel, 0, 0.06, -0.205, Math.PI / 2); // laras
-    add(box(0.008, 0.022, 0.012), PAL.accP, 0, 0.096, -0.185); // pisir depan
-    add(box(0.032, 0.016, 0.012), PAL.steel, 0, 0.094, 0.025); // pisir belakang
-    add(box(0.004, 0.028, 0.05), PAL.palm, -0.026, 0.06, -0.03); // serration kiri
-    add(box(0.004, 0.028, 0.05), PAL.palm, 0.026, 0.06, -0.03); // serration kanan
-    add(box(0.008, 0.028, 0.014), PAL.steel, 0, -0.008, -0.03, 0.25); // picu
-    add(box(0.01, 0.008, 0.05), PAL.steel, 0, -0.028, -0.015); // guard picu
+    add(cyl(0.013, 0.035), PAL.steel, 0, 0.06, -0.205, Math.PI / 2);
+    add(box(0.008, 0.022, 0.012), PAL.accP, 0, 0.096, -0.185);
+    add(box(0.032, 0.016, 0.012), PAL.steel, 0, 0.094, 0.025);
+    add(box(0.004, 0.028, 0.05), PAL.palm, -0.026, 0.06, -0.03);
+    add(box(0.004, 0.028, 0.05), PAL.palm, 0.026, 0.06, -0.03);
+    add(box(0.008, 0.028, 0.014), PAL.steel, 0, -0.008, -0.03, 0.25);
+    add(box(0.01, 0.008, 0.05), PAL.steel, 0, -0.028, -0.015);
     mag = new THREE.Mesh(box(0.04, 0.1, 0.05), PAL.steel); mag.position.set(0, -0.08, 0.03); mag.rotation.x = 0.25;
   } else if (key === 'Breacher') {
     add(cyl(0.026, 0.5), PAL.steel, 0, 0.05, -0.22, Math.PI / 2);
     add(box(0.07, 0.09, 0.3), PAL.steel, 0, 0.02, 0);
-    add(box(0.072, 0.015, 0.24), PAL.accP, 0, 0.068, 0); // strip pink
+    add(box(0.072, 0.015, 0.24), PAL.accP, 0, 0.068, 0);
     add(box(0.06, 0.07, 0.18), PAL.crate, 0, -0.01, -0.25);
     add(box(0.05, 0.12, 0.06), PAL.palm, 0, -0.05, 0.08, 0.2);
     add(box(0.06, 0.09, 0.16), PAL.crate, 0, 0.01, 0.2);
+    add(cyl(0.032, 0.04), PAL.accP, 0, 0.05, -0.46, Math.PI / 2);
+    add(box(0.075, 0.05, 0.12), PAL.palm, 0, -0.035, -0.16);
+    add(box(0.01, 0.03, 0.02), PAL.steel, 0, 0.075, 0.12);
   } else if (key === 'Kestrel') {
     add(box(0.06, 0.09, 0.34), PAL.steel, 0, 0.03, -0.1);
     add(box(0.062, 0.02, 0.2), PAL.accB, 0, 0.08, -0.1);
     add(cyl(0.02, 0.22), PAL.steel, 0, 0.03, -0.36, Math.PI / 2);
     add(box(0.05, 0.11, 0.06), PAL.palm, 0, -0.04, 0.06, 0.2);
+    add(box(0.05, 0.08, 0.14), PAL.palm, 0, 0.01, 0.24);
+    add(box(0.045, 0.09, 0.05), PAL.palm, 0, -0.05, -0.28, 0.15);
+    add(box(0.03, 0.03, 0.06), PAL.steel, 0, 0.095, -0.05);
     mag = new THREE.Mesh(box(0.04, 0.13, 0.06), PAL.steel); mag.position.set(0, -0.08, -0.05); mag.rotation.x = 0.15;
   } else if (key === 'VK47') {
     add(box(0.07, 0.1, 0.42), PAL.steel, 0, 0.03, -0.08);
@@ -251,24 +243,27 @@ function buildGun(key) {
     add(box(0.05, 0.06, 0.14), PAL.palm, 0, -0.045, -0.3);
     add(box(0.055, 0.12, 0.06), PAL.palm, 0, -0.045, 0.1, 0.2);
     add(box(0.035, 0.06, 0.08), PAL.crate, 0, 0.01, 0.25);
-    add(cyl(0.024, 0.07), PAL.steel, 0, 0.04, -0.68, Math.PI / 2); // muzzle brake
-    add(box(0.02, 0.012, 0.03), PAL.steel, 0, 0.055, -0.6); // alas pisir depan
-    add(box(0.008, 0.035, 0.01), PAL.steel, 0, 0.075, -0.6); // pisir depan
-    add(box(0.03, 0.018, 0.025), PAL.steel, 0, 0.088, 0.06); // pisir belakang
-    add(box(0.024, 0.01, 0.2), PAL.steel, 0, 0.065, -0.33); // rel atas
-    add(box(0.008, 0.028, 0.014), PAL.steel, 0, -0.015, 0.03, 0.2); // picu
-    add(box(0.01, 0.008, 0.05), PAL.steel, 0, -0.035, 0.045); // guard picu
-    add(box(0.04, 0.07, 0.015), PAL.palm, 0, 0.01, 0.295); // butt plate
-    add(box(0.022, 0.014, 0.03), PAL.steel, 0.042, 0.05, -0.02); // charging handle
+    add(cyl(0.024, 0.07), PAL.steel, 0, 0.04, -0.68, Math.PI / 2);
+    add(box(0.02, 0.012, 0.03), PAL.steel, 0, 0.055, -0.6);
+    add(box(0.008, 0.035, 0.01), PAL.steel, 0, 0.075, -0.6);
+    add(box(0.03, 0.018, 0.025), PAL.steel, 0, 0.088, 0.06);
+    add(box(0.024, 0.01, 0.2), PAL.steel, 0, 0.065, -0.33);
+    add(box(0.008, 0.028, 0.014), PAL.steel, 0, -0.015, 0.03, 0.2);
+    add(box(0.01, 0.008, 0.05), PAL.steel, 0, -0.035, 0.045);
+    add(box(0.04, 0.07, 0.015), PAL.palm, 0, 0.01, 0.295);
+    add(box(0.022, 0.014, 0.03), PAL.steel, 0.042, 0.05, -0.02);
     mag = new THREE.Mesh(box(0.045, 0.16, 0.07), PAL.steel); mag.position.set(0, -0.09, -0.08); mag.rotation.x = 0.35;
-  } else { // Longbow
+  } else {
     add(cyl(0.014, 0.72), PAL.steel, 0, 0.04, -0.42, Math.PI / 2);
     add(cyl(0.028, 0.2), PAL.palm, 0, 0.1, -0.05, Math.PI / 2);
     add(box(0.06, 0.09, 0.4), PAL.steel, 0, 0.03, -0.05);
-    add(box(0.062, 0.015, 0.3), PAL.accB, 0, 0.078, -0.05); // strip biru
+    add(box(0.062, 0.015, 0.3), PAL.accB, 0, 0.078, -0.05);
     add(box(0.06, 0.09, 0.2), PAL.crate, 0, 0.01, 0.22);
     add(box(0.05, 0.11, 0.06), PAL.palm, 0, -0.04, 0.1, 0.2);
     add(box(0.05, 0.06, 0.12), PAL.palm, 0, -0.04, -0.32);
+    add(cyl(0.02, 0.16), PAL.steel, 0, 0.11, -0.05, Math.PI / 2);
+    add(cyl(0.016, 0.012), PAL.neonB, 0, 0.11, -0.135, Math.PI / 2);
+    add(box(0.05, 0.03, 0.16), PAL.palm, 0, 0.08, 0.18);
     mag = new THREE.Mesh(box(0.04, 0.1, 0.06), PAL.steel); mag.position.set(0, -0.08, -0.02); mag.rotation.x = 0.1;
   }
   const g = new THREE.Group();
@@ -277,11 +272,11 @@ function buildGun(key) {
   return { group: g, mag };
 }
 const VM_CFG = {
-  P9: { slim: 0.88, left: 'support', rRot: 0.38, lRot: -0.62, rhZ: 0.07, lhZ: -0.02 },
-  Breacher: { slim: 1, left: 'fore', rRot: 0.15, lRot: -0.6, rhZ: 0.13, lhZ: -0.26 },
-  Kestrel: { slim: 0.95, left: 'fore', rRot: 0.22, lRot: -0.62, rhZ: 0.11, lhZ: -0.3 },
-  VK47: { slim: 1, left: 'fore', rRot: 0.02, lRot: -0.8, wristR: 0.038, wristZ: 0.01, rhZ: 0.15, lhZ: -0.33 },
-  Longbow: { slim: 1, left: 'fore', rRot: 0.1, lRot: -0.6, rhZ: 0.15, lhZ: -0.3 },
+  P9: { slim: 0.88, left: 'support', rRot: 0.38, lRot: -0.35, rhZ: 0.07, lhZ: -0.02 },
+  Breacher: { slim: 1, left: 'fore', rRot: 0.15, lRot: -0.35, rhZ: 0.13, lhZ: -0.26 },
+  Kestrel: { slim: 0.95, left: 'fore', rRot: 0.22, lRot: -0.35, rhZ: 0.11, lhZ: -0.3 },
+  VK47: { slim: 1, left: 'fore', rRot: 0.02, lRot: -0.3, wristR: 0.038, wristZ: 0.01, rhZ: 0.15, lhZ: -0.3 },
+  Longbow: { slim: 1, left: 'fore', rRot: 0.1, lRot: -0.35, rhZ: 0.15, lhZ: -0.3 },
 };
 export function buildViewmodel(camera, key) {
   const cfg = VM_CFG[key] || VM_CFG.P9;
@@ -290,11 +285,11 @@ export function buildViewmodel(camera, key) {
   const gun = buildGun(key);
   group.add(gun.group);
   const rh = robotHand(cfg, false, cfg.rRot);
-  rh.position.set(0, -0.05, cfg.rhZ); rh.rotation.y = 0; // di tengah grip, jari membungkus
+  rh.position.set(0, -0.05, cfg.rhZ); rh.rotation.y = 0;
   group.add(rh);
   const lh = robotHand(cfg, true, cfg.lRot);
   if (cfg.left === 'support') { lh.position.set(-0.09, -0.15, cfg.lhZ); lh.rotation.set(0.5, 0.5, cfg.lRot); }
-  else { lh.position.set(0, -0.05, cfg.lhZ); lh.rotation.set(0.15, 0, cfg.lRot); }
+  else { lh.position.set(0, -0.09, cfg.lhZ); lh.rotation.set(0.35, 0, cfg.lRot); }
   group.add(lh);
   return { group, key, mag: gun.mag, kick: 0, lastShot: -99, phase: 0 };
 }
@@ -309,7 +304,7 @@ export function updateViewmodel(dt, state, vm) {
     const total = WEAPONS[w.key].reload;
     const prog = 1 - (p.reloadUntil - state.now) / total;
     const s = Math.sin(Math.min(1, Math.max(0, prog)) * Math.PI);
-    dip = s * 0.07; tilt = s * 0.45; magDrop = s * 0.09; ryaw = s * 0.5; // v4: putar senjata ke kamera saat reload — tangan terlihat profil, bukan vertikal; dip kecil
+    dip = s * 0.07; tilt = s * 0.45; magDrop = s * 0.09; ryaw = s * 0.5;
   }
   let sw = 0;
   if (state.now < p.switchUntil) {
@@ -318,7 +313,7 @@ export function updateViewmodel(dt, state, vm) {
   }
   const bob = Math.hypot(p.vx, p.vz) > 0.5 ? Math.sin(state.now * 9) * 0.005 : 0;
   vm.group.position.set(VB.x, VB.y - dip - sw + bob, VB.z + vm.kick * 0.03);
-  vm.group.rotation.x = tilt + vm.kick * 0.05 + 0.06; // senjata nyaris datar: jari tidak foreshorten
+  vm.group.rotation.x = tilt + vm.kick * 0.05 + 0.06;
   vm.group.rotation.y = VB.yaw + ryaw;
   if (vm.mag) vm.mag.position.y = (vm.mag.userData.y0 ??= vm.mag.position.y) - magDrop;
   void dt;

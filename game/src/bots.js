@@ -1,10 +1,8 @@
-// EMBERLINE sim — bots.js. AI §4: peran, persepsi, A*, playbook bom.
 import { CONFIG, WEAPONS, BOT_ROLES } from './config.js';
 import { NODES, LINKS, nearestNode, aStar, losBlocked, collideMove, inZone, ZONES } from './world.js';
 import { fire, startReload, createLoadout, throwGrenade } from './weapons.js';
 import { dirFromYawPitch } from './combat.js';
 import { pushEvent, currentWeapon, aliveAgents } from './state.js';
-
 export function createBotBrain(role) {
   const r = BOT_ROLES[role];
   return { role, kind: r.kind, site: r.site || null, state: 'patrol',
@@ -17,15 +15,12 @@ export function createBotBrain(role) {
 }
 export function ensureBrains(s) {
   for (const a of s.agents) if (!a.isPlayer && !a.bot) a.bot = createBotBrain(a.role);
-  // variasi site carrier: 1 dari 3 ronde ke B, lawan tak bisa selalu menumpuk A
   for (const a of s.agents) if (a.bot) { a.bot.round = s.match.round; a.bot.plantSite = s.match.round % 3 === 2 ? 'B' : 'A'; }
 }
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 function eyeY(a) { return a.y + (a.crouch ? 1.08 : 1.68); }
 function angleTo(a, x, z) { return Math.atan2(z - a.z, x - a.x); }
 function angDiff(a, b) { let d = a - b; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return Math.abs(d); }
-
-// --- persepsi: LOS bergilir 0,12 dtk, terlihat 0,15 dtk, reaksi per peran ---
 function perceive(s, a, dt) {
   const b = a.bot;
   if (s.now < b.losAt) return;
@@ -40,7 +35,6 @@ function perceive(s, a, dt) {
     const inFov = ang <= CONFIG.perception.fovDeg / 2 * Math.PI / 180;
     const inPeriph = moving && d <= CONFIG.perception.periphDist && ang <= CONFIG.perception.periphDeg / 2 * Math.PI / 180;
     if (!inFov && !inPeriph) continue;
-    // LOS torso + kepala; asap/dinding/cover memutus
     const clear = !losBlocked(a.x, eyeY(a), a.z, e.x, e.y + 0.9, e.z, s.smokes, s.door.open)
       || !losBlocked(a.x, eyeY(a), a.z, e.x, e.y + 1.62, e.z, s.smokes, s.door.open);
     if (!clear) continue;
@@ -50,13 +44,12 @@ function perceive(s, a, dt) {
     if (b.targetId !== best.id) { b.targetId = best.id; b.visibleSince = s.now; }
     b.targetPos = { x: best.x, z: best.z }; b.lastSeenAt = s.now;
     const react = CONFIG.perception.reaction[b.kind] || CONFIG.perception.reaction.def;
-    b.reactAt = b.visibleSince + CONFIG.perception.visibleTime + react * (periph ? 2 : 1); // AMB-14
+    b.reactAt = b.visibleSince + CONFIG.perception.visibleTime + react * (periph ? 2 : 1);
     b.state = 'engage';
   } else if (b.targetId !== null && s.now - b.lastSeenAt > CONFIG.perception.memory) {
     b.targetId = null; b.targetPos = null; b.state = 'patrol';
   }
 }
-// --- pendengaran: radius per jenis suara, dinding x0,5 ---
 function hear(s, a) {
   const b = a.bot;
   for (const ev of s.events) {
@@ -66,13 +59,11 @@ function hear(s, a) {
     if (losBlocked(a.x, 1, a.z, ev.x, 1, ev.z, [], s.door.open)) r *= CONFIG.hearing.wallMul;
     if (d > r) continue;
     b.hearPos = { x: ev.x, z: ev.z }; b.hearAt = s.now;
-    if (b.kind === 'holder') a.yaw = angleTo(a, ev.x, ev.z); // AMB-13: holder menoleh
+    if (b.kind === 'holder') a.yaw = angleTo(a, ev.x, ev.z);
     else if (b.kind === 'rotator' && b.state !== 'engage') b.state = 'investigate';
   }
 }
 export function setPath(a, toNode) {
-  // 'from' harus node LOS-bersih — nearestNode mentah bisa di seberang dinding
-  // dan bot macet di baliknya sampai ronde berakhir.
   let from = nearestNode(a.x, a.z);
   if (losBlocked(a.x, 1, a.z, NODES[from].x, 1, NODES[from].z, [], 1)) {
     let best = -1, bd = Infinity;
@@ -84,7 +75,6 @@ export function setPath(a, toNode) {
   }
   let path = aStar(from, toNode);
   if (!path.length && from !== toNode) {
-    // Tujuan tak terjangkau: node terdekat yg terjangkau.
     const seen = new Set([from]), q = [from];
     while (q.length) { const c = q.pop(); for (const nb of LINKS[c]) if (!seen.has(nb)) { seen.add(nb); q.push(nb); } }
     let best = from, bd = Infinity;
@@ -104,27 +94,24 @@ function nodeByTag(tag, x = null) {
 function goalNode(s, a) {
   const b = a.bot, planted = s.bomb && s.bomb.status === 'planted';
   if (a.team === 'atk') {
-    if (planted) { // post-plant: dalam radius 12 m dari bom
+    if (planted) {
       const bx = s.bomb.x, bz = s.bomb.z;
       if (dist(a, { x: bx, z: bz }) > 10) return nearestNode(bx + 4, bz);
       return b.destNode >= 0 ? b.destNode : nearestNode(a.x, a.z);
     }
     if (s.bomb && s.bomb.status === 'dropped') return nearestNode(s.bomb.x, s.bomb.z);
-    // AM2 (17 Nov): tunnel DITERIMA sbg rute utama carrier — A* memilihnya karena
-    // TERPENDEK, bukan bug. Pintu Mid tak dipaksa (rute lebih panjang + artifisial);
-    // fungsinya sbg cover/suara pemain sudah terbukti. Carrier ikut A* apa adanya.
     if (s.bomb && s.bomb.carrierId === a.id) return nodeByTag(b.plantSite === 'A' ? 'siteA' : 'siteB', 63);
-    if (b.kind === 'rusher' || b.kind === 'rifleman') { // ikuti pemain (offset)
+    if (b.kind === 'rusher' || b.kind === 'rifleman') {
       const p = s.agents[0];
-      if (p.id === a.id) return nodeByTag('siteA', 63); // bot jadi pemain: pimpin ke site
+      if (p.id === a.id) return nodeByTag('siteA', 63);
       return nearestNode(p.x + (b.kind === 'rusher' ? 3 : -4), p.z + (b.kind === 'rusher' ? 0 : 4));
     }
-    if (b.kind === 'lurker') return nodeByTag('siteB', 63); // lane lain dari pemain, terus ke B
-    return nodeByTag('mid', 30); // carrier / holder Mid
+    if (b.kind === 'lurker') return nodeByTag('siteB', 63);
+    return nodeByTag('mid', 30);
   }
   if (planted) {
     if (b.state === 'defuse' || b.defuseDuty) return nodeByTag(s.bomb.site === 'A' ? 'siteA' : 'siteB', 63);
-    return nodeByTag(s.bomb.site === 'A' ? 'siteA' : 'siteB', b.retakeRoute ? 66 : 59); // retake: dua sudut site
+    return nodeByTag(s.bomb.site === 'A' ? 'siteA' : 'siteB', b.retakeRoute ? 66 : 59);
   }
   if (b.kind === 'holder') return nodeByTag(b.site === 'A' ? 'siteA' : 'siteB', 63);
   if (b.kind === 'sniper') return nodeByTag('along', 52);
@@ -137,22 +124,18 @@ function goalNode(s, a) {
 export function moveAlongPath(s, a, dt) {
   const b = a.bot;
   if (!b.path.length || b.pathIdx >= b.path.length) return;
-  // Unstuck pakai jarak NETO dari anchor (bot bergetar di tempat tak maju meski
-  // movedAcc naik). Neto <0,5 m selama >0,8 dtk -> repath; 0,8 dtk lagi -> snap.
   const netMoved = Math.hypot(a.x - b.lastPX, a.z - b.lastPZ);
   if (netMoved > 0.5) { b.lastPX = a.x; b.lastPZ = a.z; b.stuckAt = s.now; b.nudges = 0; }
   else if (s.now - b.stuckAt > 0.8 && b.destNode >= 0) {
     b.stuckAt = s.now;
     if (b.nudges === 0) { setPath(a, b.destNode); b.nudges = 1; }
     else {
-      // coba 3 node berikut, ambil yang LOS-nya bersih dari posisi bot
       let snapped = false;
       for (let k = b.pathIdx; k < Math.min(b.pathIdx + 3, b.path.length); k++) {
         const n = NODES[b.path[k]];
         if (n && !losBlocked(a.x, 1, a.z, n.x, 1, n.z, [], s.door.open)) { a.x = n.x; a.z = n.z; b.pathIdx = k; snapped = true; break; }
       }
       if (!snapped) {
-        // D3: pilar pintu di tengah tunnel — geser menyamping ~1,2 m via collideMove.
         const n = NODES[b.path[b.pathIdx]];
         if (n) {
           const dx = n.x - a.x, dz = n.z - a.z, len = Math.hypot(dx, dz) || 1;
@@ -168,7 +151,7 @@ export function moveAlongPath(s, a, dt) {
     }
   }
   const n = NODES[b.path[b.pathIdx]];
-  if (!n) return; // path kosong (tak terjangkau) — setPath sudah fallback, jaga-jaga
+  if (!n) return;
   const d = Math.hypot(n.x - a.x, n.z - a.z);
   if (d < 0.8) { b.pathIdx++; return; }
   const w = currentWeapon(a);
@@ -179,11 +162,9 @@ export function moveAlongPath(s, a, dt) {
   const h = a.crouch ? CONFIG.agentHeightCrouch : CONFIG.agentHeight;
   const r = collideMove(a, a.vx * dt, 0, a.vz * dt, CONFIG.agentRadius, h, s.door.open);
   a.x = r.x; a.z = r.z;
-  // Terjepit di sudut: dekat node tapi tertahan solid = anggap tercapai.
   if ((r.hitX || r.hitZ) && d < 2.5) { b.pathIdx++; b.stuckAt = s.now; b.lastPX = a.x; b.lastPZ = a.z; }
   else if ((r.hitX || r.hitZ) && s.now > b.repathAt) { b.repathAt = s.now + 1; setPath(a, b.destNode); }
 }
-// Pisah antar-bot 0,6 m (AMB-17); penanam/defuser tak digeser; dorongan via collideMove.
 function separate(s) {
   const list = aliveAgents(s);
   for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
@@ -214,11 +195,11 @@ function botShoot(s, a, dt) {
   const len = Math.hypot(dx, dy, dz) || 1;
   const w = currentWeapon(a);
   if (!w) return;
-  if (w.key === 'Longbow') { // 1 tembakan lalu reposisi
+  if (w.key === 'Longbow') {
     if (b.burstLeft <= 0) { b.burstLeft = 1; b.burstUntil = s.now + 1.5; setPath(a, nodeByTag('along', a.x + 8)); }
   } else if (b.burstLeft <= 0) {
     if (s.now < b.burstUntil) return;
-    b.burstLeft = 3 + Math.floor(Math.random() * 3); // burst 3-5
+    b.burstLeft = 3 + Math.floor(Math.random() * 3);
   }
   const r = fire(a, s, { x: dx / len, y: dy / len, z: dz / len });
   if (r && !r.dry) b.burstLeft--;
@@ -235,13 +216,12 @@ export function updateBots(s, dt) {
     const isCarrier = s.bomb && s.bomb.carrierId === a.id && s.round.phase === 'live'
       && !(s.bomb.status === 'planted');
     if (t && t.alive && s.now >= b.reactAt && s.now >= a.blindUntil && (!isCarrier || dist(a, t) < 20)) {
-      // D3: b.goal terpisah dari destNode — setPath hanya bila tujuan berubah.
       if (b.path.length) { b.path = []; b.pathIdx = 0; b.destNode = -1; b.goal = -1; }
       a.yaw = angleTo(a, t.x, t.z);
       b.strafeT -= dt;
       if (b.strafeT <= 0) { b.strafeT = 0.7 + Math.random(); b.strafeDir *= -1; }
       const d = dist(a, t);
-      if (d > 10) { // tetap maju sambil duel (3,5 m/s + strafe), jangan terpaku
+      if (d > 10) {
         a.vx = Math.cos(a.yaw) * 3.5 - Math.sin(a.yaw) * b.strafeDir * 1.2;
         a.vz = Math.sin(a.yaw) * 3.5 + Math.cos(a.yaw) * b.strafeDir * 1.2;
       } else { a.vx = -Math.sin(a.yaw) * b.strafeDir * 1.5; a.vz = Math.cos(a.yaw) * b.strafeDir * 1.5; }
@@ -272,20 +252,18 @@ export function updateBots(s, dt) {
   }
   separate(s);
 }
-// --- beli bot §4: serentak awal fase beli, deterministik ---
 export function buyBots(s) {
   for (const a of s.agents) {
     if (a.isPlayer || !a.bot) continue;
     const b = a.bot, m = a.money;
     if (b.role === 'D2') {
-      if (m >= 5400) { // Longbow + kevlar
+      if (m >= 5400) {
         if (!a.weapons.primary) { a.weapons.primary = createLoadout('Longbow'); a.money -= 4750; a.current = 'primary'; }
         if (!a.kevlar && a.money >= 650) { a.kevlar = true; a.money -= 650; }
       } else if (s.match.d2LoseStreak >= 3) {
         buyStandard(a);
-      } // else menabung (eco)
+      }
     } else buyStandard(a);
-    // granat: Frag lalu Flash bila sisa cukup; bot TIDAK beli Smoke (AMB-19)
     if (a.money >= 300 && !a.grenades.Frag) { a.grenades.Frag = 1; a.money -= 300; }
     if (a.money >= 200 && !a.grenades.Flash) { a.grenades.Flash = 1; a.money -= 200; }
   }
@@ -304,8 +282,6 @@ export function bombPlaybook(s) {
   const planted = s.bomb && s.bomb.status === 'planted';
   if (planted) {
     const defs = aliveAgents(s, 'def').sort((p, q) => dist(p, s.bomb) - dist(q, s.bomb));
-    // D4 (17 Nov): defuser MELEKAT sampai mati — ia harus menjauh dari bom saat
-    // memutar masuk site, jadi "terdekat" terus berganti; hanya ganti bila defuser lama mati.
     const cur = defs.find(d => d.bot.defuseDuty);
     let lead = defs[0];
     if (cur && cur.alive) lead = cur;
@@ -316,7 +292,6 @@ export function bombPlaybook(s) {
     const atks = aliveAgents(s, 'atk');
     if (!atks.length) return;
     const near = atks.sort((p, q) => dist(p, s.bomb) - dist(q, s.bomb))[0];
-    // dipaksa ambil bila 10 dtk tak diambil (cek di rounds.js via droppedAt)
-    if (s.now - s.bomb.droppedAt > CONFIG.bot.bombPickupForceAfter && near.bot) near.bot.state = 'patrol'; // pemain (bot null) tak punya state bot
+    if (s.now - s.bomb.droppedAt > CONFIG.bot.bombPickupForceAfter && near.bot) near.bot.state = 'patrol';
   }
 }

@@ -1,7 +1,4 @@
-// EMBERLINE — audio.js. Synth WebAudio SEMUA.
-// Satu sumber kebenaran: events 'noise'/'muzzle'/'explosion'/'beep'/'plant'/'defuse'/'round-end'/'hit'.
 import { CONFIG } from './config.js';
-
 let ctx = null, master = null, noiseBuf = null, active = 0, vol = 0.5, muted = false;
 const MAX_VOICES = 8;
 function ensure() {
@@ -22,7 +19,7 @@ function env(g, t, a, peak, dec) {
   g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(peak, t + a);
   g.gain.exponentialRampToValueAtTime(0.0001, t + a + dec);
 }
-function burst(dur, freq, type, peak, vol) { // noise burst + filter
+function burst(dur, freq, type, peak, vol) {
   if (!ctx || active >= MAX_VOICES) return;
   active++;
   const t = ctx.currentTime;
@@ -68,7 +65,7 @@ export function drainAudio(state, idx) {
     else if (ev.type === 'beep') { tone(1200, 0.07, 'square', 0.18); }
     else if (ev.type === 'plant') { tone(660, 0.12, 'square', 0.2); tone(990, 0.18, 'square', 0.2); }
     else if (ev.type === 'defuse') { tone(990, 0.12, 'square', 0.2); tone(660, 0.18, 'square', 0.2); }
-    else if (ev.type === 'round-end') { // stinger menang/kalah
+    else if (ev.type === 'round-end') {
       const win = ev.winner === 'atk';
       [523, 659, 784].forEach((f, k) => setTimeout(() => tone(f, 0.22, 'triangle', 0.25), k * 110));
       if (!win) setTimeout(() => tone(392, 0.4, 'triangle', 0.25), 330);

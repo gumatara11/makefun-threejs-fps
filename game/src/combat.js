@@ -1,8 +1,6 @@
-// EMBERLINE sim — combat.js. Raycast hit, zona tubuh, damage, kill.
 import { CONFIG, WEAPONS } from './config.js';
 import { raySolids, losBlocked } from './world.js';
 import { pushEvent } from './state.js';
-
 export function dirFromYawPitch(yaw, pitch) {
   const cp = Math.cos(pitch);
   return { x: Math.cos(yaw) * cp, y: Math.sin(pitch), z: Math.sin(yaw) * cp };
@@ -63,10 +61,9 @@ export function applyDamage(state, target, dmg, attacker, zone, cause) {
   target.planting = false; target.defusing = false;
   if (attacker && attacker.id !== target.id) {
     attacker.kills++;
-    attacker.pending += CONFIG.rewardKill; // AMB-24: dibukukan, dibayar akhir ronde
+    attacker.pending += CONFIG.rewardKill;
     pushEvent(state, { type: 'kill', killer: attacker.id, victim: target.id, zone, cause });
   } else pushEvent(state, { type: 'kill', killer: -1, victim: target.id, zone, cause });
-  // primer jatuh (P9 tidak pernah jatuh); bom jatuh bila carrier
   if (target.weapons.primary) {
     state.dropped.push({ key: target.weapons.primary.key, mag: target.weapons.primary.mag,
       reserve: target.weapons.primary.reserve, x: target.x, z: target.z });
@@ -79,7 +76,6 @@ export function applyDamage(state, target, dmg, attacker, zone, cause) {
   }
   if (target.kevlar) target.kevlar = false;
 }
-// Damage ledakan Frag: LOS dari titik ledak, kevlar x0,75.
 export function explosiveDamage(state, x, y, z, radius, dmgCenter, dmgEdge, attacker) {
   for (const a of state.agents) {
     if (!a.alive || (attacker && a.id === attacker.id)) continue;

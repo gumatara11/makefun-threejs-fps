@@ -1,9 +1,6 @@
-// EMBERLINE — shots.js. Mode ?shot=start|play|buy|bomb|win&seed=1: pose deterministik.
-// Dipanggil sekali saat boot; sim dibekukan sesudahnya (main.js).
 import { CONFIG, WEAPONS } from './config.js';
 import { createLoadout } from './weapons.js';
-
-function rng(seed) { // mulberry32
+function rng(seed) {
   let a = seed >>> 0;
   return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
@@ -20,9 +17,9 @@ export function applyShot(state, mode, seed = 1) {
     give(p, 'VK47'); p.weapons.primary.mag = 27;
     place(p, 18, 42, 0.1);
     state.door.open = 1; state.door.target = 1;
-    place(state.agents[8], 28, 42, Math.PI); // D4 rotator di A-long, menghadap pemain
-    place(state.agents[1], 12, 44, 0.1); // A1 sekutu di kiri
-    place(state.agents[6], 58, 40, Math.PI); // D2 jauh di Site A (depth)
+    place(state.agents[8], 28, 42, Math.PI);
+    place(state.agents[1], 12, 44, 0.1);
+    place(state.agents[6], 58, 40, Math.PI);
     state.agents[8].hp = 100;
   } else if (mode === 'robots') {
     state.round.phase = 'live'; state.round.timer = 62;
@@ -49,9 +46,9 @@ export function applyShot(state, mode, seed = 1) {
     state.bomb.status = 'planted'; state.bomb.site = 'A';
     state.bomb.x = 60; state.bomb.z = 40; state.bomb.timer = 22.5;
     state.round.plantedSite = 'A';
-    place(p, 57, 37, Math.atan2(40 - 37, 60 - 57)); // dari barat Site A, bom terlihat
-    place(state.agents[5], 66, 41, Math.PI); // D1 di site
-    place(state.agents[2], 59, 43, 0); // A2 sekutu
+    place(p, 57, 37, Math.atan2(40 - 37, 60 - 57));
+    place(state.agents[5], 66, 41, Math.PI);
+    place(state.agents[2], 59, 43, 0);
     state.door.open = 0;
   } else if (mode === 'win') {
     state.round.phase = 'end'; state.round.winner = 'atk'; state.round.reason = 'elimination';

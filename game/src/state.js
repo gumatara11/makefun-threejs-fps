@@ -1,7 +1,5 @@
-// EMBERLINE sim — state.js. Satu tempat state.
 import { CONFIG, WEAPONS, ROLE_ORDER } from './config.js';
 import { SPAWNS } from './world.js';
-
 export function makeAgent(id, team, role, isPlayer, x, z) {
   return {
     id, team, role, isPlayer, name: isPlayer ? 'Kamu' : role,
@@ -16,30 +14,27 @@ export function makeAgent(id, team, role, isPlayer, x, z) {
     recoilShots: 0, lastShotAt: -99, spraySeed: Math.random() * 1000,
     scoped: false, blindUntil: 0, planting: false, defusing: false,
     plantProg: 0, defuseProg: 0, stepAt: 0, ePrev: false,
-    bot: null, // diisi bots.createBotBrain(role) untuk bot
+    bot: null,
   };
 }
-
 export function createState() {
   const s = {
-    now: 0, tick: 0, paused: false, evSeq: 0, // evSeq: nomor urut event (c)
+    now: 0, tick: 0, paused: false, evSeq: 0,
     match: { scoreAtk: 0, scoreDef: 0, round: 1, over: false, winner: null, d2LoseStreak: 0 },
     round: { phase: 'buy', timer: CONFIG.timeBuy, winner: null, reason: null,
       buyDone: false, plantedSite: null, endTimer: 0 },
     agents: [], bomb: null, dropped: [], grenadesActive: [], smokes: [],
-    events: [], // {t,type,...} killfeed / hitmarker / suara (satu bus, dipakai bots+audio+hud)
+    events: [],
     door: { open: 0, target: 0, emptySince: 0 },
     stats: { shots: 0, hits: 0 },
   };
   resetMatch(s);
   return s;
 }
-
 export function resetMatch(s) {
   s.match.scoreAtk = 0; s.match.scoreDef = 0; s.match.round = 1;
   s.match.over = false; s.match.winner = null; s.match.d2LoseStreak = 0;
   s.agents = [];
-  // pemain = id 0 penyerang; bot 1-4 penyerang, 5-9 defender
   const atk = SPAWNS.atk, def = SPAWNS.def;
   s.agents.push(makeAgent(0, 'atk', 'P', true, atk[0].x, atk[0].z));
   for (let i = 0; i < 4; i++) {
@@ -54,8 +49,6 @@ export function resetMatch(s) {
   s.events = []; s.dropped = []; s.grenadesActive = []; s.smokes = [];
   resetRound(s, true);
 }
-
-// AMB-25: satu daftar reset antar-ronde.
 export function resetRound(s, first = false) {
   const atk = SPAWNS.atk, def = SPAWNS.def;
   s.round.phase = 'buy'; s.round.timer = CONFIG.timeBuy; s.round.winner = null;
@@ -63,7 +56,7 @@ export function resetRound(s, first = false) {
   s.dropped = []; s.grenadesActive = []; s.smokes = [];
   s.door.open = 0; s.door.target = 0; s.door.emptySince = 0;
   s.agents.forEach((a, i) => {
-    const wasAlive = a.alive; // carry-over §2: mati -> respawn P9 saja
+    const wasAlive = a.alive;
     const sp = a.team === 'atk' ? atk[i % atk.length] : def[(i - 5 + 5) % def.length];
     a.x = sp.x; a.z = sp.z; a.y = 0; a.vx = 0; a.vy = 0; a.vz = 0;
     a.yaw = a.team === 'atk' ? 0 : Math.PI; a.pitch = 0;
@@ -71,10 +64,8 @@ export function resetRound(s, first = false) {
     a.reloadUntil = 0; a.reloadSlot = null; a.switchUntil = 0; a.nextShotAt = 0;
     a.recoilShots = 0; a.scoped = false; a.blindUntil = 0;
     a.planting = false; a.defusing = false; a.plantProg = 0; a.defuseProg = 0;
-    // granat: survivor pertahankan yg tak terpakai (§2)
     if (first || !wasAlive) a.grenades = { Frag: 0, Smoke: 0, Flash: 0 };
-    if (a.bot) { // reset penuh otak; destNode/pathIdx HARUS ikut direset, kalau tidak
-      // bot yang tujuannya sama dengan ronde lalu tak pernah memanggil setPath lagi
+    if (a.bot) {
       a.bot.targetId = null; a.bot.targetPos = null; a.bot.lastSeenAt = -99;
       a.bot.visibleSince = 0; a.bot.reactAt = 0; a.bot.hearPos = null; a.bot.hearAt = -99;
       a.bot.path = []; a.bot.pathIdx = 0; a.bot.destNode = -1; a.bot.repathAt = 0; a.bot.goal = -1;
@@ -84,18 +75,15 @@ export function resetRound(s, first = false) {
       a.bot.lastPX = a.x; a.bot.lastPZ = a.z;
     }
     if (first || !wasAlive) { a.kevlar = false; a.weapons.primary = null; a.weapons.secondary = { key: 'P9', mag: 12, reserve: 48 }; a.current = 'secondary'; }
-    else { // selamat: magasin primer diisi penuh gratis, cadangan tidak ditambah
+    else {
       const p = a.weapons.primary;
       if (p) p.mag = WEAPONS[p.key].mag;
       a.weapons.secondary.mag = 12;
     }
   });
-  // carry-over: hidup pertahankan primer+kevlar+granat; mati -> P9.
-  // (Dipanggil setelah ekonomi ronde lalu; resetRound jg di awal match.)
   s.bomb = { carrierId: 4, status: 'carried', x: 0, y: 0, z: 0, site: null,
     timer: CONFIG.timeBomb, planterId: null, defuserId: null, droppedAt: 0 };
 }
-
 export function aliveAgents(s, team) {
   return s.agents.filter(a => a.alive && (!team || a.team === team));
 }

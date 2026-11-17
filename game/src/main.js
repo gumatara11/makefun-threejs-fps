@@ -1,5 +1,3 @@
-// EMBERLINE — main.js. Bootstrap + loop fixed-step 60 Hz + debug API.
-// Urutan import (spec §5): config, state, world, weapons, combat, bots, rounds, player, input, grenades, characters, render, audio, hud, shots.
 import { CONFIG } from './config.js';
 import { createState } from './state.js';
 import './world.js';
@@ -15,33 +13,29 @@ import { createRender } from './render.js';
 import { initAudio, resumeAudio, drainAudio, playReload, playDoor, setVolume, setMuted, isMuted } from './audio.js';
 import { createHud } from './hud.js';
 import { applyShot } from './shots.js';
-
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 const SHOT = params.get('shot'), BENCH = params.get('bench') === '1', DEBUG = params.get('debug') === '1';
 const SEED = Number(params.get('seed') || 1);
-
 const state = createState();
 const input = new InputState();
 const errors = [];
 window.addEventListener('error', (e) => errors.push(String(e.message || e.error)));
 window.addEventListener('unhandledrejection', (e) => errors.push('reject: ' + String(e.reason)));
-
 const canvas = $('game');
 const R = createRender(canvas);
-let audioIdx = 0, started = false, benchDone = false, lastDoor = 0; // di atas blok DEBUG (TDZ: DEBUG memakai `started`)
+let audioIdx = 0, started = false, benchDone = false, lastDoor = 0;
 if (DEBUG) R.setDebug(true);
 const setMenuUI = (on) => { R.setMenu(on); document.body.classList.toggle('menu', on); };
 setMenuUI(!SHOT && !BENCH && !DEBUG);
-if (DEBUG) { // ?debug=1: overlay start JANGAN menutupi waypoint graph
+if (DEBUG) {
   $('start-overlay').style.display = 'none'; started = true; state.paused = false;
 }
 input.attach(canvas);
 const hud = createHud(state);
-const simSamples = []; // ms per simStep
-const frameTimes = []; // ms per rAF (bench)
+const simSamples = [];
+const frameTimes = [];
 const simStats = { tickAvg: 0, tickP99: 0, calls: 0, tris: 0, fps: 0 };
-
 function startGame() {
   initAudio(); resumeAudio();
   started = true; setMenuUI(false);
@@ -74,7 +68,6 @@ window.addEventListener('resize', () => {
 });
 R.renderer.setSize(innerWidth, innerHeight);
 R.camera.aspect = innerWidth / innerHeight; R.camera.updateProjectionMatrix();
-
 const vms = {};
 let activeVm = null, activeKey = null, lastReload = false;
 function syncViewmodel() {
@@ -115,7 +108,6 @@ if (SHOT) {
   if (SHOT === 'win') hud.showBanner({ winner: 'atk', reason: 'elimination' }, true);
 }
 if (BENCH) { started = true; $('start-overlay').style.display = 'none'; runBench(); }
-
 window.__EMBERLINE__ = { state, config: CONFIG, simStats, errors, scene: R.scene, renderer: R.renderer, pick: R.pick,
   forcePlant: () => forcePlant(state), forceDefuse: () => forceDefuse(state),
   killAll: (t) => killAll(state, t), setMoney: (id, a) => setMoney(state, id, a),
@@ -150,7 +142,7 @@ function loop(now) {
     simStats.tickP99 = +s[Math.floor(s.length * 0.99)].toFixed(3);
   }
   audioIdx = drainAudio(state, audioIdx);
-  R.render(state, SHOT ? 0 : 1 / 60, SHOT ? 1.0 : now / 1000); // ?shot=: waktu beku (deterministik)
+  R.render(state, SHOT ? 0 : 1 / 60, SHOT ? 1.0 : now / 1000);
   const rs = R.stats();
   simStats.calls = rs.calls; simStats.tris = rs.tris;
   syncViewmodel();

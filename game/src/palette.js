@@ -1,6 +1,4 @@
-// EMBERLINE — palette.js. Satu palet material terang (<=24 unik).
 import * as THREE from '../vendor/three/three.module.min.js';
-
 export function makePalette() {
   const std = (c, o = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.85, metalness: 0.05, ...o });
   const bas = (c, o = {}) => new THREE.MeshBasicMaterial({ color: c, ...o });

@@ -1,8 +1,6 @@
-// EMBERLINE — hud.js. HUD DOM + minimap live + buy menu.
 import { WEAPONS, GRENADES, CONFIG } from './config.js';
 import { buyItem } from './rounds.js';
 import { currentWeapon } from './state.js';
-
 const $ = (id) => document.getElementById(id);
 const BUY_ROWS = [
   ...Object.values(WEAPONS).filter((w) => w.slot === 'primary').map((w) => ({ key: w.key, name: w.name, price: w.price })),
@@ -83,8 +81,6 @@ export function createHud(state, onBuyOpen) {
     $('crosshair').style.setProperty('--gap', gap + 'px');
     $('crosshair').style.display = p.scoped ? 'none' : 'block';
     $('scope').style.display = p.scoped ? 'block' : 'none';
-    // (c) lacak event via seq, bukan indeks: array events disambung/difilter
-    // (cap 200 + buang noise lama) sehingga indeks lama menunjuk event salah.
     for (const ev of state.events) {
       if (ev.seq == null || ev.seq <= lastSeq) continue;
       lastSeq = ev.seq;

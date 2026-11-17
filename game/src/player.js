@@ -1,8 +1,6 @@
-// EMBERLINE sim — player.js. Gerakan pemain.
 import { CONFIG, WEAPONS } from './config.js';
 import { collideMove } from './world.js';
 import { currentWeapon } from './state.js';
-
 export function updatePlayer(s, input, dt) {
   const p = s.agents[0];
   if (!p.alive || s.round.phase === 'buy' || s.round.phase === 'end' || s.paused) return;
@@ -13,9 +11,7 @@ export function updatePlayer(s, input, dt) {
   p.crouch = input.down('ControlLeft') || input.down('ControlRight');
   const w = currentWeapon(p);
   p.scoped = !!(w && w.key === 'Longbow' && input.rightDown);
-
   const speed = (w ? WEAPONS[w.key].speed : 5.2) * (p.crouch ? CONFIG.moveCrouch / 5.2 : 1);
-  // yaw: 0 = +X (timur), PI = -X. Maju = (cos yaw, sin yaw).
   const fwd = (input.down('KeyW') ? 1 : 0) - (input.down('KeyS') ? 1 : 0);
   const str = (input.down('KeyD') ? 1 : 0) - (input.down('KeyA') ? 1 : 0);
   let wx = Math.cos(p.yaw) * fwd - Math.sin(p.yaw) * str;
@@ -25,7 +21,7 @@ export function updatePlayer(s, input, dt) {
   const a = Math.min(1, CONFIG.accel * dt / 5.2);
   p.vx += (tx - p.vx) * a;
   p.vz += (tz - p.vz) * a;
-  if (!fwd && !str && p.onGround) { // deselerasi
+  if (!fwd && !str && p.onGround) {
     const f = Math.max(0, 1 - CONFIG.friction * dt / 5.2);
     p.vx *= f; p.vz *= f;
   }

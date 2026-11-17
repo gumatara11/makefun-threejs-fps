@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>EMBERLINE — 5v5 Bomb Defuse</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0a141c; font-family: system-ui, sans-serif; color: #fff; }
+  #game { display: block; width: 100%; height: 100%; outline: none; }
+  .hud { position: fixed; z-index: 5; pointer-events: none; text-shadow: 0 1px 3px #000; }
+  #topbar { top: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 14px; align-items: center; font-size: 20px; font-weight: 700; }
+  #topbar .score { font-size: 26px; }
+  #timer { background: rgba(0,0,0,.45); padding: 2px 10px; border-radius: 6px; }
+  #round-num { font-size: 12px; opacity: .8; }
+  #bottom-left { left: 14px; bottom: 14px; }
+  #hp-num { font-size: 34px; font-weight: 800; }
+  #hp-bar-wrap { width: 180px; height: 10px; background: rgba(0,0,0,.5); border-radius: 5px; overflow: hidden; }
+  #hp-bar { height: 100%; width: 100%; background: #3ec96a; }
+  #bottom-right { right: 14px; bottom: 14px; text-align: right; }
+  #ammo-mag { font-size: 34px; font-weight: 800; }
+  #ammo-res { font-size: 18px; opacity: .8; }
+  #weapon-value, #money { font-size: 15px; }
+  #money { color: #7dff9a; font-weight: 700; }
+  #team-icons { top: 52px; left: 50%; transform: translateX(-50%); font-size: 13px; letter-spacing: 2px; }
+  #team-atk { color: #ff9a3c; } #team-def { color: #5ab8ff; }
+  #killfeed { top: 76px; right: 14px; text-align: right; font-size: 13px; }
+  .feed-line { background: rgba(0,0,0,.45); padding: 2px 8px; margin-top: 4px; border-radius: 4px; }
+  #banner { top: 30%; left: 50%; transform: translate(-50%,-50%); font-size: 34px; font-weight: 800; display: none; padding: 10px 26px; border-radius: 10px; }
+  #banner.win { background: rgba(20,120,40,.8); } #banner.lose { background: rgba(140,20,20,.8); }
+  #bomb-status { top: 100px; left: 50%; transform: translateX(-50%); font-size: 15px; font-weight: 700; color: #ffcc00; }
+  #crosshair { left: 50%; top: 50%; width: 0; height: 0; --gap: 6px; }
+  #crosshair i { position: absolute; background: #fff; box-shadow: 0 0 2px #000; }
+  #crosshair .t { left: -1px; top: calc(-1 * var(--gap) - 8px); width: 2px; height: 8px; }
+  #crosshair .b { left: -1px; top: var(--gap); width: 2px; height: 8px; }
+  #crosshair .l { top: -1px; left: calc(-1 * var(--gap) - 8px); width: 8px; height: 2px; }
+  #crosshair .r { top: -1px; left: var(--gap); width: 8px; height: 2px; }
+  #crosshair .dot { left: -1.5px; top: -1.5px; width: 3px; height: 3px; border-radius: 50%; }
+  #hitmarker { left: 50%; top: 50%; transform: translate(-50%,-50%); font-size: 26px; font-weight: 900; opacity: 0; color: #fff; }
+  #dmg-ind { left: 50%; top: 50%; width: 130px; height: 130px; opacity: 0; }
+  #dmg-ind::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); border: 16px solid transparent; border-top: 22px solid rgba(255,40,40,.85); }
+  #scope { left: 50%; top: 50%; transform: translate(-50%,-50%); width: 100vmin; height: 100vmin; border-radius: 50%; border: 90vmax solid rgba(0,0,0,.92); display: none; }
+  #minimap { right: 14px; bottom: 110px; border: 2px solid rgba(255,255,255,.5); border-radius: 6px; background: rgba(0,0,0,.4); }
+  .overlay { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: linear-gradient(160deg, rgba(20,60,110,.92), rgba(120,30,90,.88)); text-align: center; padding: 20px; }
+  #start-overlay { justify-content: space-between; padding: 22px 26px 20px; background: linear-gradient(180deg, rgba(10,25,45,.62) 0%, rgba(10,25,45,.18) 16%, rgba(10,25,45,0) 32%, rgba(10,25,45,0) 68%, rgba(10,25,45,.5) 86%, rgba(10,25,45,.78) 100%); text-align: left; }
+  #start-overlay .spacer { flex: 1; }
+  body.menu .hud { display: none !important; }
+  #start-overlay .menu-top { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; width: 100%; }
+  #start-overlay .menu-bottom { display: flex; justify-content: space-between; align-items: flex-end; width: 100%; }
+  #start-overlay .nv { width: 196px; padding: 8px 12px; border-left: 3px solid #0000; background: rgba(8,20,30,.55); color: #fff; font-size: 15px; }
+  #start-overlay .nv.on { color: #ffd23c; border-color: #ffd23c; }
+  .overlay h1 { font-size: 40px; letter-spacing: 6px; color: #ffd23c; text-shadow: 0 3px 0 #e83a2f, 0 6px 18px #000; }
+  .overlay h2 { font-size: 30px; letter-spacing: 3px; }
+  .overlay p { max-width: 560px; font-size: 15px; line-height: 1.5; }
+  .overlay .controls { font-size: 13px; background: rgba(0,0,0,.4); padding: 10px 16px; border-radius: 8px; line-height: 1.8; text-align: left; }
+  .overlay button { pointer-events: auto; font-size: 22px; font-weight: 800; padding: 12px 42px; border: none; border-radius: 10px; background: #ffd23c; color: #222; cursor: pointer; }
+  .overlay button:hover { background: #ffe06a; }
+  #pause-overlay, #end-overlay { display: none; background: rgba(5,15,25,.82); }
+  #buy-menu { position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 8; width: 420px; background: rgba(8,20,30,.94); border: 2px solid #ffd23c; border-radius: 10px; padding: 16px; display: none; }
+  #buy-menu h3 { margin-bottom: 8px; } #buy-money { color: #7dff9a; float: right; }
+  .buy-row { display: flex; gap: 10px; padding: 7px 8px; border-radius: 6px; cursor: pointer; font-size: 15px; }
+  .buy-row:hover { background: rgba(255,255,255,.12); }
+  .buy-row.cant { opacity: .45; } .buy-row.owned { color: #7dff9a; }
+  .buy-key { color: #ffd23c; width: 16px; } .buy-name { flex: 1; } .buy-price { font-weight: 700; }
+  #buy-hint { font-size: 12px; opacity: .7; margin-top: 8px; }
+  #settings-panel { position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 11; width: 320px; background: rgba(8,20,30,.94); border: 2px solid #ffd23c; border-radius: 10px; padding: 16px; display: none; text-align: left; }
+  #settings-panel h3 { margin-bottom: 12px; }
+  #settings-panel label { display: block; font-size: 15px; }
+  #settings-panel input[type=range] { width: 100%; margin: 8px 0 14px; }
+  #settings-panel .row { display: flex; gap: 10px; }
+  #settings-panel .row button { flex: 1; font-size: 15px; font-weight: 700; padding: 8px; border: none; border-radius: 8px; background: #ffd23c; color: #222; cursor: pointer; }
+</style>
+<script type="importmap">{"imports":{"three":"./vendor/three/three.module.min.js"}}</script>
+</head>
+<body>
+<canvas id="game" tabindex="0"></canvas>
+<div class="hud" id="topbar"><span id="round-num">RONDE 1</span><span class="score" style="color:#ff9a3c" id="score-atk">0</span><span id="timer">01:40</span><span class="score" style="color:#5ab8ff" id="score-def">0</span></div>
+<div class="hud" id="team-icons"><span id="team-atk">● ● ● ● ●</span> &nbsp;vs&nbsp; <span id="team-def">● ● ● ● ●</span></div>
+<div class="hud" id="bomb-status"></div>
+<div class="hud" id="killfeed"></div>
+<div class="hud" id="banner"></div>
+<div class="hud" id="bottom-left"><div id="hp-num">100</div><div id="hp-bar-wrap"><div id="hp-bar"></div></div><div>HP</div></div>
+<div class="hud" id="bottom-right"><div><span id="ammo-mag">12</span><span id="ammo-res">/48</span></div><div id="weapon-value">P9</div><div id="money">$800</div></div>
+<div class="hud" id="crosshair"><i class="t"></i><i class="b"></i><i class="l"></i><i class="r"></i><i class="dot"></i></div>
+<div class="hud" id="hitmarker">✕</div>
+<div class="hud" id="dmg-ind"></div>
+<div class="hud" id="scope"></div>
+<canvas class="hud" id="minimap" width="192" height="144"></canvas>
+<div id="buy-menu"><h3>🛒 BELI <span id="buy-money">$800</span></h3><div id="buy-list"></div><div id="buy-hint">Klik item atau tekan 1–8 • B tutup • hanya di fase beli &amp; di spawn</div></div>
+<div class="overlay" id="start-overlay">
+  <div class="menu-top">
+    <h1>EMBERLINE</h1>
+    <p><b>5v5 Bomb Defuse</b> — tanam/defuse bom atau eliminasi. Pertama ke <b>8 ronde</b> menang.</p>
+    <button class="nv on" onclick="document.getElementById('start-btn').click()">▶ PLAY</button>
+    <button class="nv" id="settings-btn">⚙ SETTINGS</button>
+  </div>
+  <div class="spacer"></div>
+  <div class="menu-bottom">
+    <div class="controls">WASD gerak • Mouse bidik • Klik tembak • R reload • Ctrl crouch • Space lompat<br>B beli • E plant/defuse • F ambil • G jatuhkan primer<br>1 primer • 2 P9 • 3 Frag • 4 Smoke • 5 Flash • Klik kanan scope</div>
+    <button id="start-btn">▶ &nbsp;MULAI</button>
+  </div>
+</div>
+<div id="settings-panel"><h3>⚙ SETTINGS</h3><label>VOLUME <span id="vol-val">50%</span><input type="range" id="vol-slider" min="0" max="100" value="50"></label><div class="row"><button id="mute-btn">🔇 MUTE</button><button id="settings-close">TUTUP</button></div></div>
+<div class="overlay" id="pause-overlay"><h2>⏸ JEDA</h2><p>Pointer lock lepas — simulasi berhenti.</p><button id="resume-btn">▶ &nbsp;LANJUTKAN</button></div>
+<div class="overlay" id="end-overlay"><h2>🏁 MATCH SELESAI</h2><div id="end-score" style="font-size:40px;font-weight:800">0 — 0</div><div id="end-stats"></div><button id="again-btn">↻ &nbsp;MAIN LAGI</button></div>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>

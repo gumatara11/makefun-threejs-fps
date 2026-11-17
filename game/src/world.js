@@ -1,10 +1,6 @@
-// EMBERLINE sim — world.js. Data map §3 + amendemen. TANPA three.
-// AABB: {minX,minY,minZ,maxX,maxY,maxZ}. y = kaki agen (lantai y=0).
 import { CONFIG } from './config.js';
-
 const S = (x0, z0, x1, z1, y0 = 0, y1 = 3.2) =>
   ({ minX: x0, minY: y0, minZ: z0, maxX: x1, maxY: y1, maxZ: z1 });
-
 export const SPAWNS = {
   atk: [{ x: 4, z: 21 }, { x: 4, z: 25 }, { x: 7, z: 23 }, { x: 7, z: 27 }, { x: 9, z: 25 }],
   def: [{ x: 60, z: 22 }, { x: 63, z: 25 }, { x: 66, z: 26 }, { x: 58, z: 27 }, { x: 64, z: 21 }],
@@ -16,57 +12,40 @@ export const ZONES = {
   plantB: { x0: 57.5, z0: 5.5, x1: 67.5, z1: 14.5 },
   siteA: { x0: 56, z0: 32, x1: 69, z1: 44 },
   siteB: { x0: 56, z0: 4, x1: 69, z1: 16 },
-  tunnel: { x0: 28, z0: 14, x1: 32, z1: 36 },   // service tunnel
+  tunnel: { x0: 28, z0: 14, x1: 32, z1: 36 },
   btunnel: { x0: 10, z0: 6, x1: 56, z1: 14 },
   mid: { x0: 10, z0: 21, x1: 56, z1: 29 },
   along: { x0: 10, z0: 36, x1: 56, z1: 44 },
 };
-
 const WALL_H = 5.0;
 export const SOLIDS = [
-  // perimeter (tebal 1, tinggi 5)
   S(-1, -1, 0, 49, 0, WALL_H), S(72, -1, 73, 49, 0, WALL_H),
   S(0, -1, 72, 0, 0, WALL_H), S(0, 48, 72, 49, 0, WALL_H),
-  // dinding selatan A-long (Z36), celah tunnel + Pintu Mid-A
   S(10, 35.5, 28, 36), S(32, 35.5, 46, 36), S(50, 35.5, 56, 36),
-  // dinding utara B-tunnel (Z14), celah tunnel + Pintu Mid-B
   S(10, 14, 28, 14.5), S(32, 14, 46, 14.5), S(50, 14, 56, 14.5),
-  // konektor Mid-A (X46-50, Z29-36) dinding samping
   S(45.5, 29, 46, 36), S(50, 29, 50.5, 36),
-  // konektor Mid-B (X46-50, Z13-21) dinding samping
   S(45.5, 13, 46, 21), S(50, 13, 50.5, 21),
-  // service tunnel: dinding X28/X32 dipisah Z21-29 (underpass di bawah Mid)
   S(27.5, 14, 28, 21), S(27.5, 29, 28, 36), S(32, 14, 32.5, 21), S(32, 29, 32.5, 36),
-  // langit-langit B-tunnel 3,0 m + service tunnel 2,6 m (collider)
   S(10, 6, 56, 14, 3.0, 5.0), S(28, 14, 32, 36, 2.6, 5.0),
-  // rangka pintu Mid: segmen Z21-23 & Z27-29 (celah Z23-27 = panel)
   S(29.7, 21, 30.3, 23), S(29.7, 27, 30.3, 29),
-  // interior Site A: barat (celah Z36-40), selatan (celah Z60-64)
   S(55.5, 32, 56, 36), S(55.5, 40, 56, 44),
   S(56, 31.5, 60, 32), S(64, 31.5, 69, 32),
   S(56, 43.5, 69, 44), S(68.5, 32, 69, 44),
-  // interior Site B: barat (celah Z8-12), selatan (celah Z60-64)
   S(55.5, 4, 56, 8), S(55.5, 12, 56, 16),
   S(56, 15.5, 60, 16), S(64, 15.5, 69, 16),
   S(56, 3.5, 69, 4), S(68.5, 4, 69, 16),
-  // cover Site A: 3 kontainer 6x2,4 h2,6 + 4 crate 1,2
   S(58, 34, 64, 36.4, 0, 2.6), S(62, 38, 68, 40.4, 0, 2.6), S(58, 41, 64, 43.4, 0, 2.6),
   S(66, 34, 67.2, 35.2, 0, 1.2), S(59, 37.5, 60.2, 38.7, 0, 1.2),
   S(65, 42, 66.2, 43.2, 0, 1.2), S(57.5, 39.5, 58.7, 40.7, 0, 1.2),
-  // cover Site B: 2 tangki (kotak 3x3 h3) + 4 crate + 1 meja bengkel
   S(59, 6, 62, 9, 0, 3.0), S(64, 11, 67, 14, 0, 3.0),
   S(57.5, 12, 58.7, 13.2, 0, 1.2), S(62.5, 5, 63.7, 6.2, 0, 1.2),
   S(66, 7, 67.2, 8.2, 0, 1.2), S(59, 13.5, 60.2, 14.7, 0, 1.2),
   S(62, 9.5, 66, 10.7, 0, 1.0),
-  // crate lane: A-long X24/X40 (Z38), Mid X20/X42 (Z27) — jaga lane
   S(23.4, 37.4, 24.6, 38.6, 0, 1.2), S(39.4, 37.4, 40.6, 38.6, 0, 1.2),
   S(19.4, 26.4, 20.6, 27.6, 0, 1.2), S(41.4, 26.4, 42.6, 27.6, 0, 1.2),
-  // pipa tegak belokan B-tunnel (Z12,5, jaga node Z10)
   S(11.5, 12.2, 12.5, 13.2, 0, 3.0), S(53.5, 12.2, 54.5, 13.2, 0, 3.0),
 ];
-// Panel pintu Mid (solid bila tertutup, doorOpen < 0.5)
 export const DOOR_PANEL = S(29.7, 23, 30.3, 27, 0, 3.2);
-
 function solidsWithDoor(doorOpen) {
   return doorOpen < 0.5 ? [...SOLIDS, DOOR_PANEL] : SOLIDS;
 }
@@ -78,8 +57,6 @@ function hitsSolid(x, y, z, r, h, solids) {
   }
   return null;
 }
-
-// Geser AABB per sumbu; kembalikan posisi + flag tabrakan. y = kaki.
 export function collideMove(pos, dx, dy, dz, radius, height, doorOpen = 1) {
   const solids = solidsWithDoor(doorOpen);
   let { x, y, z } = pos; let hitX = false, hitY = false, hitZ = false, onGround = false;
@@ -90,8 +67,6 @@ export function collideMove(pos, dx, dy, dz, radius, height, doorOpen = 1) {
   else if (hitsSolid(x, y, z, radius, height, solids)) { y -= dy; hitY = true; if (dy < 0) onGround = true; }
   return { x, y, z, hitX, hitY, hitZ, onGround };
 }
-
-// Slab test segmen vs AABB; kembalikan t masuk [0,1] atau null.
 function segAABB(ax, ay, az, bx, by, bz, s) {
   const dx = bx - ax, dy = by - ay, dz = bz - az;
   let t0 = 0, t1 = 1;
@@ -123,7 +98,6 @@ export function losBlocked(ax, ay, az, bx, by, bz, smokes = [], doorOpen = 1) {
   for (const sm of smokes) if (segSphere(ax, ay, az, bx, by, bz, sm, sm.r)) return true;
   return false;
 }
-// Ray vs solids: jarak terdekat (m) atau Infinity.
 export function raySolids(ox, oy, oz, dx, dy, dz, maxDist, doorOpen = 1) {
   let best = Infinity;
   for (const s of solidsWithDoor(doorOpen)) {
@@ -136,8 +110,6 @@ export function inZone(p, name) {
   const z = ZONES[name]; if (!z) return false;
   return p.x >= z.x0 && p.x <= z.x1 && p.z >= z.z0 && p.z <= z.z1;
 }
-
-// ---- Waypoint graph: 59 node (48 beku + 9 amendemen + 2 spawn-def) ----
 const N = (x, z, tags = []) => ({ x, z, tags });
 export const NODES = [
   N(5, 21, ['spawnAtk']), N(5, 25, ['spawnAtk']), N(7, 27, ['spawnAtk']),
@@ -160,7 +132,6 @@ export const NODES = [
   N(61, 31, ['defA']), N(61, 16, ['defB']),
 ];
 NODES.forEach((n, i) => { n.id = i; });
-// Link otomatis: jarak <= 9.5 m, segmen (y=1) tak tertembus dinding (panel pintu = cover).
 export const LINKS = NODES.map(() => []);
 for (let i = 0; i < NODES.length; i++) for (let j = i + 1; j < NODES.length; j++) {
   const a = NODES[i], b = NODES[j];
@@ -169,7 +140,6 @@ for (let i = 0; i < NODES.length; i++) for (let j = i + 1; j < NODES.length; j++
   if (losBlocked(a.x, 1, a.z, b.x, 1, b.z, [], 1)) continue;
   LINKS[i].push(j); LINKS[j].push(i);
 }
-// Paksa rantai tunnel + pintu (jaminan konektivitas amendemen).
 const force = (a, b) => { if (!LINKS[a].includes(b)) LINKS[a].push(b); if (!LINKS[b].includes(a)) LINKS[b].push(a); };
 const byTag = t => NODES.findIndex(n => n.tags.includes(t));
 force(byTag('tunnel') , NODES.findIndex(n => n.x === 30 && n.z === 20));
@@ -177,7 +147,6 @@ force(NODES.findIndex(n => n.x === 30 && n.z === 20), NODES.findIndex(n => n.x =
 force(NODES.findIndex(n => n.x === 30 && n.z === 30), NODES.findIndex(n => n.x === 30 && n.z === 36));
 force(byTag('door'), NODES.findIndex(n => n.x === 27 && n.z === 25));
 force(byTag('door'), NODES.findIndex(n => n.x === 32 && n.z === 25));
-
 export function nearestNode(x, z) {
   let best = 0, bd = Infinity;
   NODES.forEach((n, i) => { const d = (n.x - x) ** 2 + (n.z - z) ** 2; if (d < bd) { bd = d; best = i; } });

@@ -1,9 +1,7 @@
-// EMBERLINE — render.js. Geometri dari SOLIDS; render == collider sim.
 import * as THREE from '../vendor/three/three.module.min.js';
 import { SOLIDS, DOOR_PANEL, NODES, LINKS, ZONES } from './world.js';
 import { PAL, part, mergeParts } from './palette.js';
 import { buildRobot, buildDrone, updateRobot } from './characters.js';
-
 const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
 function classify(s) {
   const w = s.maxX - s.minX, d = s.maxZ - s.minZ, h = s.maxY - s.minY;
@@ -25,7 +23,7 @@ function instanced(scene, mat, list) {
   });
   im.castShadow = true; im.receiveShadow = true; scene.add(im); return im;
 }
-function letterParts(isA) { // bagian huruf A/B (lokal); A+B digabung 1 mesh (d)
+function letterParts(isA) {
   const parts = [];
   const add = (w, h, d, px, py, pz, rz = 0) => parts.push(part(new THREE.BoxGeometry(w, h, d), PAL.cloud, px, py, pz, 0, 0, rz));
   if (isA) { add(0.3, 3, 0.3, -0.62, 1.5, 0, -0.42); add(0.3, 3, 0.3, 0.62, 1.5, 0, 0.42); add(1.3, 0.25, 0.3, 0, 1.1, 0); }
@@ -37,26 +35,25 @@ export function createRender(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
   renderer.setSize(1280, 800);
-  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.25;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x8ec9ee);
-  scene.fog = new THREE.Fog(0xcfe8f5, 25, 70); // spec §1: 25->70 m
+  scene.background = new THREE.Color(0x5fb2f2);
+  scene.fog = new THREE.Fog(0xbfe0f5, 25, 70);
   const camera = new THREE.PerspectiveCamera(74, 1280 / 800, 0.05, 200);
   camera.rotation.order = 'YXZ'; scene.add(camera);
-  // cahaya: 1 dir + 1 hemi + 3 point + 1 muzzle = 6; target bayangan (36,24).
   const sun = new THREE.DirectionalLight(0xfff2d8, 2.8);
   sun.position.set(34, 30, -16); sun.castShadow = true;
   sun.target.position.set(36, 0, 24); scene.add(sun.target);
   sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0004;
   Object.assign(sun.shadow.camera, { left: -42, right: 42, top: 42, bottom: -42, far: 120 });
-  scene.add(sun); scene.add(new THREE.HemisphereLight(0xbfd9ff, 0x9a8a68, 0.75));
+  scene.add(sun); scene.add(new THREE.HemisphereLight(0xbfd9ff, 0x9a8a68, 1.15));
   const pt = (x, y, z, c, i) => { const l = new THREE.PointLight(c, i, 16, 1.6); l.position.set(x, y, z); scene.add(l); return l; };
   pt(62, 2.8, 38, 0xffd9a0, 20); pt(62, 2.8, 10, 0x9fd4ff, 18); pt(30, 2.2, 25, 0x9ff5e8, 16);
   const muzzleLight = new THREE.PointLight(0xffc860, 0, 9, 2); scene.add(muzzleLight);
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(72, 48), P.ground);
   ground.rotation.x = -Math.PI / 2; ground.position.set(36, 0, 24); ground.receiveShadow = true; scene.add(ground);
-  const markParts = []; // marka+zona gabung: 3 mesh
+  const markParts = [];
   const mark = (x0, z0, x1, z1, mat = P.accY, y = 0.01, w0 = 0.18) => {
     const w = Math.abs(x1 - x0) || w0, d = Math.abs(z1 - z0) || w0;
     markParts.push(part(new THREE.BoxGeometry(w, 0.02, d), mat, (x0 + x1) / 2, y, (z0 + z1) / 2));
@@ -71,7 +68,7 @@ export function createRender(canvas) {
   const byClass = {};
   for (const s of SOLIDS) (byClass[classify(s)] ??= []).push(s);
   for (const [k, list] of Object.entries(byClass)) instanced(scene, P[k], list);
-  const trimParts = []; // trim gabung: 2 mesh
+  const trimParts = [];
   const trim = (x0, z0, x1, z1, mat) => trimParts.push(part(new THREE.BoxGeometry(Math.abs(x1 - x0) || 0.2, 0.18, Math.abs(z1 - z0) || 0.2), mat, (x0 + x1) / 2, 5.05, (z0 + z1) / 2));
   trim(0, 0, 72, 0, P.trimC); trim(0, 48, 72, 48, P.trimM); trim(0, 0, 0, 48, P.trimC); trim(72, 0, 72, 48, P.trimM);
   scene.add(...mergeParts(trimParts, false));
@@ -83,36 +80,36 @@ export function createRender(canvas) {
   laneTrim.push(part(new THREE.BoxGeometry(14, 0.18, 0.2), P.trimM, 39, 3.3, 14.25));
   laneTrim.push(part(new THREE.BoxGeometry(6, 0.18, 0.2), P.trimM, 53, 3.3, 14.25));
   scene.add(...mergeParts(laneTrim, false));
-  { // huruf site A+B: 2 mesh -> 1 (d)
+  {
     const ltr = new THREE.Matrix4().makeRotationY(-Math.PI / 2);
     const lp = [];
     for (const [x, z, isA] of [[61.8, 38.4, true], [58.8, 7.5, false]])
       for (const p of letterParts(isA)) { p.mtx.premultiply(new THREE.Matrix4().makeTranslation(x, 0, z).multiply(ltr)); lp.push(p); }
     scene.add(...mergeParts(lp, false));
   }
-  const roofParts = [ // atap interior: 2 mesh -> 1 (d)
+  const roofParts = [
     part(new THREE.BoxGeometry(5, 0.2, 12), P.wall, 67, 3.4, 38),
     part(new THREE.BoxGeometry(5, 0.2, 12), P.wall, 67, 3.4, 10)];
   scene.add(...mergeParts(roofParts, false));
   const lampParts = [];
   const lamp = (x, z) => lampParts.push(part(new THREE.BoxGeometry(0.5, 0.08, 0.5), P.flash, x, 3.1, z));
   lamp(66, 36); lamp(67, 40); lamp(66, 8); lamp(67, 12);
-  { // matahari: gabung ke lampParts (P.flash) — hadap ke tengah map (d)
+  {
     const sunPart = part(new THREE.CircleGeometry(3, 20), P.flash, 58, 34, -28);
     sunPart.mtx.lookAt(new THREE.Vector3(36, 0, 24), new THREE.Vector3(58, 34, -28), new THREE.Vector3(0, 1, 0));
     lampParts.push(sunPart);
   }
   scene.add(...mergeParts(lampParts, false));
-  const trees = [[12, 46], [24, 46], [48, 46], [60, 46], [12, 2], [36, 2], [60, 2], [6, 33], [6, 15], [20, 32], [40, 32], [20, 16], [40, 16], [54, 24], [52, 28], [48, 20]];
+  const trees = [[12, 46], [24, 46], [48, 46], [60, 46], [12, 2], [36, 2], [60, 2], [6, 33], [6, 15], [20, 32], [40, 32], [20, 16], [40, 16], [54, 24], [52, 28], [48, 20], [8, 40], [56, 40], [8, 10], [56, 10]];
   const trunkIM = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.14, 0.2, 1.8, 6), P.trunk, trees.length);
   const canIM = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1.15, 0), P.sakura, trees.length * 3);
-  const cloudIM = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 8, 6), P.cloud, 18); // awan putih: 6 gumpalan x 3 puff
+  const cloudIM = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 8, 6), P.cloud, 18);
   { const m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler();
     trees.forEach((t, i) => {
       m.compose(V3(t[0], 0.9, t[1]), q, V3(1, 1, 1)); trunkIM.setMatrixAt(i, m);
       for (let k = 0; k < 3; k++) {
         e.set(0, 0, 0); q.setFromEuler(e);
-        m.compose(V3(t[0] + (k - 1) * 0.7, 2.1 + (k % 2) * 0.5, t[1] + (k === 1 ? 0.5 : -0.3)), q, V3(1, 0.75, 1));
+        m.compose(V3(t[0] + (k - 1) * 0.7, 2.1 + (k % 2) * 0.5, t[1] + (k === 1 ? 0.5 : -0.3)), q, V3(1.2, 0.9, 1.2));
         canIM.setMatrixAt(i * 3 + k, m);
       }
     });
@@ -123,12 +120,12 @@ export function createRender(canvas) {
       }
     });
   }
-  canIM.castShadow = true; // batang tak melempar bayangan (tipis, tak terlihat) (d)
+  canIM.castShadow = true;
   scene.add(trunkIM, canIM, cloudIM);
   const srand = (() => { let a = 1234567; return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; })();
   const gp = [];
-  gp.push(part(new THREE.BoxGeometry(0.8, 0.02, 8), P.accY, 30, 0.015, 25)); // rel pintu Mid (d)
-  for (let i = 0; i < 46; i++) { // kelopak pink diam di tanah
+  gp.push(part(new THREE.BoxGeometry(0.8, 0.02, 8), P.accY, 30, 0.015, 25));
+  for (let i = 0; i < 46; i++) {
     const x = 4 + srand() * 64, z = 3 + srand() * 42;
     gp.push(part(new THREE.PlaneGeometry(0.22, 0.14).rotateX(-Math.PI / 2).rotateY(srand() * 6.28), P.sakura, x, 0.02, z));
   }
@@ -155,14 +152,19 @@ export function createRender(canvas) {
     gp.push(part(new THREE.BoxGeometry(0.5, 0.02, 1.1), P.wall, x + k * 1.1, 0.015, z));
   gp.push(part(new THREE.CircleGeometry(1.4, 12).rotateX(-Math.PI / 2), P.steel, 26, 0.012, 33));
   gp.push(part(new THREE.CircleGeometry(1.1, 12).rotateX(-Math.PI / 2), P.steel, 46, 0.012, 17));
-  // Dressing fasad v4-map (0 draw call baru; hindari celah 28-32/46-50).
+  gp.push(part(new THREE.BoxGeometry(40, 0.02, 0.5), P.accB, 33, 0.015, 25));
+  gp.push(part(new THREE.BoxGeometry(40, 0.02, 0.5), P.accP, 33, 0.015, 40));
+  gp.push(part(new THREE.BoxGeometry(40, 0.02, 0.5), P.accG, 33, 0.015, 10));
+  gp.push(part(new THREE.BoxGeometry(8, 0.02, 10), P.accY, 6, 0.012, 25));
+  gp.push(part(new THREE.BoxGeometry(8, 0.02, 10), P.accB, 62, 0.012, 24));
+  for (const x of [19, 37, 53]) gp.push(part(new THREE.BoxGeometry(2.4, 1.5, 0.07), P.accP, x, 1.7, 13.94));
   for (const x of [13, 19, 25, 37, 43, 53]) {
-    gp.push(part(new THREE.BoxGeometry(2.4, 1.5, 0.07), P.accB, x, 1.7, 36.06)); // muka A-long
+    gp.push(part(new THREE.BoxGeometry(2.4, 1.5, 0.07), P.accB, x, 1.7, 36.06));
     gp.push(part(new THREE.BoxGeometry(2.4, 0.12, 0.09), P.accY, x, 2.55, 36.06));
-    gp.push(part(new THREE.BoxGeometry(2.4, 1.5, 0.07), P.accB, x, 1.7, 14.56)); // muka Mid (selatan)
-    gp.push(part(new THREE.BoxGeometry(2.4, 1.5, 0.07), P.crate, x, 1.7, 35.44)); // muka strip utara Mid
+    gp.push(part(new THREE.BoxGeometry(2.4, 1.5, 0.07), P.accB, x, 1.7, 14.56));
+    gp.push(part(new THREE.BoxGeometry(2.4, 1.5, 0.07), P.crate, x, 1.7, 35.44));
   }
-  for (let x = 12; x <= 60; x += 8) { // panel perimeter utara/selatan
+  for (let x = 12; x <= 60; x += 8) {
     gp.push(part(new THREE.BoxGeometry(2.4, 1.5, 0.07), P.accY, x, 1.7, 47.94));
     gp.push(part(new THREE.BoxGeometry(2.4, 1.5, 0.07), P.accY, x, 1.7, 0.06));
   }
@@ -170,11 +172,11 @@ export function createRender(canvas) {
     gp.push(part(new THREE.BoxGeometry(0.07, 1.5, 1.8), P.steel, x, 1.5, z));
   for (const [x, z] of [[61, 43.44], [66, 43.44], [61, 4.06], [66, 4.06]])
     gp.push(part(new THREE.BoxGeometry(2.4, 1.5, 0.07), P.accB, x, 1.7, z));
-  for (const [x, z] of [[60.5, 5.94], [65.5, 14.06]]) // pita kuning tangki B
+  for (const [x, z] of [[60.5, 5.94], [65.5, 14.06]])
     gp.push(part(new THREE.BoxGeometry(3.1, 0.18, 0.1), P.accY, x, 2.85, z));
-  gp.push(part(new THREE.BoxGeometry(4, 0.08, 0.1), P.accB, 64, 0.9, 9.44)); // strip meja bengkel B
+  gp.push(part(new THREE.BoxGeometry(4, 0.08, 0.1), P.accB, 64, 0.9, 9.44));
   for (const [x, z, w, d] of [[27.44, 17.5, 0.07, 2.2], [27.44, 32.5, 0.07, 2.2], [29.64, 22, 0.07, 1.6], [29.64, 28, 0.07, 1.6]])
-    gp.push(part(new THREE.BoxGeometry(w, 1.6, d), P.accB, x, 1.6, z)); // muka barat blok tunnel + rangka pintu Mid
+    gp.push(part(new THREE.BoxGeometry(w, 1.6, d), P.accB, x, 1.6, z));
   planterAt(14, 44.5); planterAt(50, 44.5); planterAt(14, 3.5); planterAt(50, 3.5);
   for (const px of [27.9, 32.1]) {
     gp.push(part(new THREE.BoxGeometry(0.06, 0.9, 9), P.steel, px, 5.85, 25));
@@ -190,7 +192,7 @@ export function createRender(canvas) {
   gp.push(part(new THREE.BoxGeometry(6, 0.5, 0.1), P.accB, 53, 2.2, 35.45));
   gp.push(part(new THREE.BoxGeometry(42, 0.5, 0.1), P.accY, 33, 2.2, 47.95));
   scene.add(...mergeParts(gp, false));
-  const petN = 120, petPos = new Float32Array(petN * 3), petVel = [];
+  const petN = 160, petPos = new Float32Array(petN * 3), petVel = [];
   for (let i = 0; i < petN; i++) {
     const t = trees[i % trees.length];
     petPos.set([t[0] + (srand() - 0.5) * 4, srand() * 3, t[1] + (srand() - 0.5) * 4], i * 3);
@@ -200,7 +202,6 @@ export function createRender(canvas) {
   petGeo.setAttribute('position', new THREE.BufferAttribute(petPos, 3));
   const petals = new THREE.Points(petGeo, new THREE.PointsMaterial({ color: 0xf7a8c4, size: 0.14, transparent: true, opacity: 0.9 }));
   scene.add(petals);
-  // menara cincin + skybridge: 4 mesh -> 2 gabung per material (d)
   scene.add(...mergeParts([
     part(new THREE.CylinderGeometry(2.2, 3, 24, 10), P.wall, 80, 12, 27),
     part(new THREE.BoxGeometry(4.5, 0.15, 9), P.wall, 30, 5.1, 25)], false));
@@ -218,18 +219,18 @@ export function createRender(canvas) {
       p.set(cx, b[3] / 2, cz); sc.set(b[2], b[3], b[2]);
       m.compose(p, q, sc); skyIM.setMatrixAt(bi, m);
       const xFace = Math.abs(cx - 36) > Math.abs(cz - 24);
+      const wm = [P.neonB, P.accP, P.accY][bi % 3];
       for (let r = 0; r < 3; r++) for (let c = 0; c < 2; c++) {
         const wy = 3 + r * 4;
-        if (xFace) winParts.push(part(new THREE.BoxGeometry(0.1, 1.6, 2.2), P.neonB, cx + (cx < 36 ? 1 : -1) * (b[2] / 2 + 0.05), wy, b[1] + 2 + c * 3));
-        else winParts.push(part(new THREE.BoxGeometry(2.2, 1.6, 0.1), P.neonB, b[0] + 2 + c * 3, wy, cz + (cz < 24 ? 1 : -1) * (b[2] / 2 + 0.05)));
+        if (xFace) winParts.push(part(new THREE.BoxGeometry(0.1, 1.6, 2.2), wm, cx + (cx < 36 ? 1 : -1) * (b[2] / 2 + 0.05), wy, b[1] + 2 + c * 3));
+        else winParts.push(part(new THREE.BoxGeometry(2.2, 1.6, 0.1), wm, b[0] + 2 + c * 3, wy, cz + (cz < 24 ? 1 : -1) * (b[2] / 2 + 0.05)));
       }
     });
   }
-  // Jendela v4-map (0 draw call baru).
   for (const x of [14, 22, 30, 38, 46, 54, 62]) winParts.push(part(new THREE.BoxGeometry(2.6, 1, 0.1), P.neonB, x, 3.4, 47.94));
   for (const x of [14, 30, 46, 62]) winParts.push(part(new THREE.BoxGeometry(2.6, 1, 0.1), P.neonB, x, 3.4, 0.06));
   for (const z of [7, 13, 35, 41]) winParts.push(part(new THREE.BoxGeometry(0.1, 1, 2.2), P.neonB, 68.44, 3.2, z));
-  winParts.push(part(new THREE.CylinderGeometry(1.7, 1.7, 0.3, 3, 1, false, Math.PI / 2), P.neonB, 77.5, 19, 27, 0, 0, Math.PI / 2)); // logo segitiga menara (d)
+  winParts.push(part(new THREE.CylinderGeometry(1.7, 1.7, 0.3, 3, 1, false, Math.PI / 2), P.neonB, 77.5, 19, 27, 0, 0, Math.PI / 2));
   scene.add(skyIM, ...mergeParts(winParts, false));
   const ship = new THREE.Group();
   ship.add(...mergeParts([
@@ -247,14 +248,13 @@ export function createRender(canvas) {
   const sign = new THREE.Mesh(new THREE.PlaneGeometry(7, 1.3),
     new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(signC) }));
   sign.position.set(27.4, 6.2, 25); sign.rotation.y = -Math.PI / 2; scene.add(sign);
-  // pintu Mid: 2 panel + 2 strip -> 2 InstancedMesh (d)
   const _m4 = new THREE.Matrix4(), _tv = new THREE.Vector3(), _tv2 = new THREE.Vector3(), _ts = new THREE.Vector3();
   const _up = new THREE.Vector3(0, 1, 0);
   const doorIM = new THREE.InstancedMesh(new THREE.BoxGeometry(0.6, 3.2, 2), P.steel, 2);
-  doorIM.frustumCulled = false; scene.add(doorIM); // tanpa bayangan: panel tipis (d)
+  doorIM.frustumCulled = false; scene.add(doorIM);
   const stripIM = new THREE.InstancedMesh(new THREE.BoxGeometry(0.1, 0.5, 2), P.neonO, 2);
   stripIM.frustumCulled = false; scene.add(stripIM);
-  const rail = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.02, 8), P.accY); // garis hazard rel lantai (spec §2) — dipertahankan dari base
+  const rail = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.02, 8), P.accY);
   rail.position.set(30, 0.015, 25); scene.add(rail);
   const stripParts = [], pipeParts = [];
   const neonStrip = (x, z0, z1) => stripParts.push(part(new THREE.BoxGeometry(0.08, 0.12, Math.abs(z1 - z0)), P.trimC, x, 2.2, (z0 + z1) / 2));
@@ -263,7 +263,7 @@ export function createRender(canvas) {
     stripParts.push(part(new THREE.BoxGeometry(4, 0.12, 0.08), P.trimC, x, 2.9, 36.08));
     stripParts.push(part(new THREE.BoxGeometry(4, 0.12, 0.08), P.trimC, x, 2.9, 14.58));
   }
-  stripParts.push(part(new THREE.BoxGeometry(0.08, 0.15, 8), P.trimC, 27.7, 5.6, 25)); // strip cyan muka barat jembatan
+  stripParts.push(part(new THREE.BoxGeometry(0.08, 0.15, 8), P.trimC, 27.7, 5.6, 25));
   scene.add(...mergeParts(stripParts, false));
   const pipeV = (x, z) => pipeParts.push(part(new THREE.CylinderGeometry(0.12, 0.12, 2.6, 8), P.pipe, x, 1.3, z));
   pipeV(28.2, 18); pipeV(31.8, 32); pipeV(28.2, 33); pipeV(31.8, 17);
@@ -275,7 +275,7 @@ export function createRender(canvas) {
     const r = buildRobot(i % 5, i < 5 ? 'atk' : 'def');
     scene.add(r.group); robots.push(r);
   }
-  robots[0].group.visible = false; // robot pemain sendiri: kamera ada di dalamnya
+  robots[0].group.visible = false;
   const drone = buildDrone();
   drone.group.position.set(30, 6.8, 25); scene.add(drone.group);
   let menuMode = false;
@@ -290,7 +290,6 @@ export function createRender(canvas) {
   const menuDrone = buildDrone();
   menuDrone.group.position.set(46, 3.2, 23); menuDrone.group.visible = false;
   scene.add(menuDrone.group);
-  // tracer: 8 mesh -> 1 InstancedMesh (d); slot mati diskala 0
   const tracerIM = new THREE.InstancedMesh(new THREE.BoxGeometry(0.03, 0.03, 1), P.flash, 8);
   tracerIM.frustumCulled = false; scene.add(tracerIM);
   const tracers = [];
@@ -353,7 +352,7 @@ export function createRender(canvas) {
   }
   function render(state, dt, now) {
     const p = state.agents[0];
-    if (menuMode) { // menu: robot + kota + menara
+    if (menuMode) {
       camera.position.set(41, 1.6, 23.3); camera.lookAt(44, 1.45, 22.9);
       if (Math.abs(camera.fov - 60) > 0.1) { camera.fov = 60; camera.updateProjectionMatrix(); }
     } else {
@@ -397,7 +396,6 @@ export function createRender(canvas) {
     const b = state.bomb;
     if (b && (b.status === 'planted' || b.status === 'dropped')) {
       bombMesh.visible = true; bombMesh.position.set(b.x, 0, b.z);
-      // beep makin cepat 10 dtk terakhir (spec §2)
       const blinkRate = (b.status === 'planted' && b.timer < 10) ? 10 : 4;
       bombLight.visible = Math.floor(now * blinkRate) % 2 === 0;
     } else bombMesh.visible = false;
@@ -410,8 +408,6 @@ export function createRender(canvas) {
       dropIM.setMatrixAt(i, _m4);
     }
     dropIM.instanceMatrix.needsUpdate = true;
-    // tracer + muzzle + ledakan: konsumsi events (umur pakai jam GAME state.now,
-    // bukan jam wall `now` — selisih menu/pause membuat semua event basi).
     for (const ev of state.events) {
       if (ev.t < state.now - 0.12) continue;
       if (ev.type === 'muzzle') {
@@ -440,7 +436,7 @@ export function createRender(canvas) {
   }
   function setDebug(on) { dbg.visible = on; dbgNodes.visible = on; }
   function setMenu(on) { menuMode = on; menuRobots.forEach((r) => { r.group.visible = on; }); menuDrone.group.visible = on; }
-  function pick() { // raycast dari tengah kamera: apa yang menutupi pandangan?
+  function pick() {
     const rc = new THREE.Raycaster();
     rc.setFromCamera(new THREE.Vector2(0, 0), camera);
     const hits = rc.intersectObjects(scene.children, true).slice(0, 5);

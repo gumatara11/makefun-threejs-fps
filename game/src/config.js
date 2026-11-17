@@ -1,6 +1,3 @@
-// EMBERLINE sim — config.js
-// Satu sumber angka beku (spec §2-§4 + AMB §10).
-// Satuan: meter, detik, radian, dolar. Falloff: penuh s.d. falloffStart, linear ke falloffMin di falloffEnd.
 export const CONFIG = {
   tickHz: 60, dt: 1 / 60,
   hpMax: 100, teamSize: 5, firstTo: 8, maxRounds: 15,
@@ -13,7 +10,7 @@ export const CONFIG = {
   zoneHeadMul: 2, zoneHeadMulLongbow: 4, zoneTorsoMul: 1, zoneLegMul: 0.75,
   moveCrouch: 2.4, gravity: 14, jumpVel: 5.2, accel: 42, friction: 30,
   agentRadius: 0.4, agentHeight: 1.8, agentHeightCrouch: 1.2,
-  mouseSens: 1.0, // AMB-32
+  mouseSens: 1.0,
   fovBase: 74, fovScoped: 30,
   crouchSpreadMul: 0.7, airSpreadMul: 1.6,
   recoilSprayStep: 0.08, recoilSprayMax: 1.8, recoilRecoverDelay: 0.25,
@@ -32,7 +29,6 @@ export const CONFIG = {
     accExtraDeg: [0, 2.2, 2.2, 2.2, 1.8, 1.8, 1.8, 1.8, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5] },
   perf: { maxDrawCalls: 180, maxTris: 350000 },
 };
-
 export const WEAPONS = {
   P9: { key: 'P9', name: 'P9', price: 0, dmg: 26, rpm: 400, mag: 12, reserve: 48,
     reload: 1.6, spreadStand: 0.004, spreadMove: 0.026, recoil: 0.006,
@@ -55,22 +51,18 @@ export const WEAPONS = {
     recoil: 0.045, falloffStart: 80, falloffEnd: 80, falloffMin: 1.0, speed: 4.6,
     draw: 0.80, auto: false, pellets: 1, slot: 'primary', bolt: true, scoped: true },
 };
-
 export const GRENADES = {
   Frag: { key: 'Frag', price: 300, fuse: 1.5, radius: 6, dmgCenter: 85, dmgEdge: 10, slot: 3 },
   Smoke: { key: 'Smoke', price: 300, fuse: 0.8, radius: 3.5, duration: 12, slot: 4 },
   Flash: { key: 'Flash', price: 200, fuse: 1.2, radius: 15, blindFace: 2.2, blindBack: 0.8, slot: 5 },
 };
-
-// Urutan beli bot §4 (harga ambang, item).
 export const BUY_TABLE = [
   { min: 3350, weapon: 'VK47', kevlar: true },
   { min: 2150, weapon: 'Kestrel', kevlar: true },
   { min: 1700, weapon: 'Breacher', kevlar: true },
   { min: 650, weapon: null, kevlar: true },
 ];
-export const D2_LONGBOW_MIN = 5400; // Longbow 4750 + kevlar 650
-
+export const D2_LONGBOW_MIN = 5400;
 export const BOT_ROLES = {
   A1: { role: 'A1', team: 'atk', kind: 'rusher', weapon: 'Kestrel', reaction: 0.25, lane: 'follow-player' },
   A2: { role: 'A2', team: 'atk', kind: 'rifleman', weapon: 'VK47', reaction: 0.28, lane: 'follow-player' },

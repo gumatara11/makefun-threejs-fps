@@ -1,0 +1,114 @@
+{
+  "startOverlay": {
+    "visible": true,
+    "text": "EMBERLINE\n\n5v5 Bomb Defuse — tanam/defuse bom atau eliminasi. Pertama ke 8 ronde menang.\n\n▶ PLAY\nOPERATORS\nLOADOUT\nBATTLE PASS\nEVENT\nSTORE\nWASD gerak • Mouse bidik • Klik tembak • R reload • Ctrl crouch • Space lompat\nB beli • E plant/defuse • F ambil • G jatuhkan primer\n1 primer • 2 P9 • 3 Frag • 4 Smoke • 5 Flash • Klik kanan scope\n▶  MULAI"
+  },
+  "main": {
+    "phase": "buy",
+    "paused": false,
+    "started": true,
+    "stats": {
+      "tickAvg": 0.082,
+      "tickP99": 2.3,
+      "calls": 157,
+      "tris": 11798,
+      "fps": 1
+    },
+    "errors": [],
+    "audioCtx": null,
+    "hud": {
+      "hp": "100",
+      "ammo": "12",
+      "timer": "00:11",
+      "scoreAtk": "0",
+      "money": "$800",
+      "teamIcons": "● ● ● ● ●  vs  ● ● ● ● ●"
+    }
+  },
+  "pauseTest": {
+    "lockedBefore": true,
+    "paused": true,
+    "pauseVisible": "flex"
+  },
+  "banner": {
+    "banner": "",
+    "killfeed": ""
+  },
+  "shot_start": {
+    "ready": true,
+    "phase": "buy",
+    "stats": {
+      "tickAvg": 0,
+      "tickP99": 0,
+      "calls": 176,
+      "tris": 14178,
+      "fps": 2
+    }
+  },
+  "shot_play": {
+    "ready": true,
+    "phase": "live",
+    "stats": {
+      "tickAvg": 0,
+      "tickP99": 0,
+      "calls": 137,
+      "tris": 12744,
+      "fps": 2
+    }
+  },
+  "shot_buy": {
+    "ready": true,
+    "phase": "buy",
+    "stats": {
+      "tickAvg": 0,
+      "tickP99": 0,
+      "calls": 161,
+      "tris": 12090,
+      "fps": 1
+    }
+  },
+  "shot_bomb": {
+    "ready": true,
+    "phase": "bomb",
+    "stats": {
+      "tickAvg": 0,
+      "tickP99": 0,
+      "calls": 79,
+      "tris": 10392,
+      "fps": 1
+    }
+  },
+  "shot_win": {
+    "ready": true,
+    "phase": "end",
+    "stats": {
+      "tickAvg": 0,
+      "tickP99": 0,
+      "calls": 122,
+      "tris": 14206,
+      "fps": 0
+    }
+  },
+  "debug": {
+    "phase": "buy",
+    "stats": {
+      "tickAvg": 0,
+      "tickP99": 0,
+      "calls": 178,
+      "tris": 19220,
+      "fps": 0
+    }
+  },
+  "bench": {
+    "fpsMedian": 0.6,
+    "fps1pct": 0.2,
+    "tickAvg": 0.288,
+    "tickP99": 3.9,
+    "drawCalls": 178,
+    "tris": 16456,
+    "frames": 150
+  },
+  "errors": [],
+  "warnings": [],
+  "failedReqs": []
+}
