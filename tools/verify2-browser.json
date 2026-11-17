@@ -8,11 +8,11 @@
     "paused": false,
     "started": true,
     "stats": {
-      "tickAvg": 0.028,
-      "tickP99": 0.8,
-      "calls": 174,
-      "tris": 12530,
-      "fps": 2
+      "tickAvg": 0.124,
+      "tickP99": 3.7,
+      "calls": 176,
+      "tris": 13898,
+      "fps": 1
     },
     "errors": [],
     "audioCtx": null,
@@ -40,8 +40,8 @@
     "stats": {
       "tickAvg": 0,
       "tickP99": 0,
-      "calls": 174,
-      "tris": 12462,
+      "calls": 176,
+      "tris": 13830,
       "fps": 1
     }
   },
@@ -51,9 +51,9 @@
     "stats": {
       "tickAvg": 0,
       "tickP99": 0,
-      "calls": 132,
-      "tris": 10700,
-      "fps": 1
+      "calls": 137,
+      "tris": 12504,
+      "fps": 2
     }
   },
   "shot_buy": {
@@ -62,8 +62,8 @@
     "stats": {
       "tickAvg": 0,
       "tickP99": 0,
-      "calls": 156,
-      "tris": 9890,
+      "calls": 161,
+      "tris": 11694,
       "fps": 1
     }
   },
@@ -73,9 +73,9 @@
     "stats": {
       "tickAvg": 0,
       "tickP99": 0,
-      "calls": 78,
-      "tris": 9116,
-      "fps": 1
+      "calls": 79,
+      "tris": 10260,
+      "fps": 2
     }
   },
   "shot_win": {
@@ -84,9 +84,9 @@
     "stats": {
       "tickAvg": 0,
       "tickP99": 0,
-      "calls": 118,
-      "tris": 10452,
-      "fps": 2
+      "calls": 122,
+      "tris": 12184,
+      "fps": 1
     }
   },
   "debug": {
@@ -94,18 +94,18 @@
     "stats": {
       "tickAvg": 0,
       "tickP99": 0,
-      "calls": 177,
-      "tris": 15374,
+      "calls": 179,
+      "tris": 16742,
       "fps": 2
     }
   },
   "bench": {
-    "fpsMedian": 0.8,
-    "fps1pct": 0.2,
-    "tickAvg": 0.064,
-    "tickP99": 0.4,
-    "drawCalls": 176,
-    "tris": 12530,
+    "fpsMedian": 1.2,
+    "fps1pct": 0.6,
+    "tickAvg": 0.059,
+    "tickP99": 0.3,
+    "drawCalls": 36,
+    "tris": 8104,
     "frames": 150
   },
   "errors": [],
