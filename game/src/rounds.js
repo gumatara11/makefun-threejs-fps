@@ -38,7 +38,6 @@ function nextRound(s) {
   s.match.round++;
   resetRound(s);
 }
-// --- buy menu: fase buy + di spawn sendiri; tanpa refund ---
 export function buyItem(s, a, key) {
   if (s.round.phase !== 'buy') return { ok: false, why: 'not-buy-phase' };
   const zone = a.team === 'atk' ? 'spawnAtk' : 'spawnDef';
@@ -63,13 +62,11 @@ export function buyItem(s, a, key) {
   a.switchUntil = s.now + w.draw;
   return { ok: true };
 }
-// --- plant/defuse: tahan E; batal bila gerak/ganti/lepas E ---
 function plantDefuseTick(s, input) {
   const p = s.agents[0];
   const eDown = input.down('KeyE');
   const eEdge = eDown && !p.ePrev; // tekan E baru: plant/defuse hanya mulai dari
   p.ePrev = eDown; // tekanan baru; setelah batal (gerak/ganti/lepas E) harus tekan ulang
-  // pemain: E ditahan + carrier + di zona plant + live
   if (s.round.phase === 'live' && p.alive && s.bomb && s.bomb.carrierId === 0) {
     const site = inZone(p, 'plantA') ? 'A' : inZone(p, 'plantB') ? 'B' : null;
     const moving = input.down('KeyW') || input.down('KeyA') || input.down('KeyS') || input.down('KeyD');
@@ -86,7 +83,6 @@ function plantDefuseTick(s, input) {
       }
     } else { p.planting = false; p.plantProg = 0; }
   }
-  // bot carrier plant
   for (const a of s.agents) {
     if (a.isPlayer || !a.alive || !a.planting) continue;
     if (s.round.phase !== 'live' || !s.bomb || s.bomb.carrierId !== a.id) { a.planting = false; a.plantProg = 0; continue; }
@@ -102,7 +98,6 @@ function plantDefuseTick(s, input) {
       pushEvent(s, { type: 'noise', kind: 'plant', x: a.x, y: 0, z: a.z, radius: CONFIG.hearing.plant, team: 'atk' });
     }
   }
-  // defuse: fase bomb, di zona plant site yg ditanam
   if (s.round.phase === 'bomb' && s.bomb && s.bomb.status === 'planted') {
     const siteZone = s.bomb.site === 'A' ? 'plantA' : 'plantB';
     for (const a of s.agents) {
@@ -172,7 +167,6 @@ function playerActions(s, input) {
 function bombPickupTick(s) {
   const b = s.bomb;
   if (!b) return;
-  // pemain ambil alih dari A4 di spawn saat fase beli
   if (s.round.phase === 'buy' && b.status === 'carried' && b.carrierId !== 0) {
     const c = s.agents[b.carrierId], p = s.agents[0];
     if (c && Math.hypot(p.x - c.x, p.z - c.z) < 1.2) { b.carrierId = 0; pushEvent(s, { type: 'bomb-take', by: 0 }); }
@@ -227,7 +221,6 @@ export function simStep(s, dt, input) {
     updateGrenades(s, dt);
     if (s.round.endTimer <= 0) nextRound(s);
   }
-  // buang noise lama (bot hanya butuh 0,15 dtk terakhir)
   if (s.events.length > 200) s.events = s.events.filter(e => e.type !== 'noise' || s.now - e.t < 1);
 }
 export function playAgain(s) { // AMB-26: reset peran/penghitung/skala akurasi/uang/skor
@@ -236,7 +229,6 @@ export function playAgain(s) { // AMB-26: reset peran/penghitung/skala akurasi/u
   for (const a of s.agents) { a.money = CONFIG.moneyStart; a.pending = 0; a.kills = 0; a.deaths = 0; a.plants = 0; a.defuses = 0; if (a.bot) a.bot.round = 1; }
   resetRound(s, true);
 }
-// Debug API (dipakai Builder B window.__EMBERLINE__).
 export function forcePlant(s) {
   const c = s.agents[s.bomb.carrierId];
   if (!c || s.round.phase !== 'live') return false;

@@ -19,7 +19,6 @@ const C = (g, m, x, y, z, rx = 0, ry = 0, rz = 0) => part(g, m, x, y, z, rx, ry,
 const CYL = (rt, rb, h, s = 8) => new THREE.CylinderGeometry(rt, rb, h, s);
 const SPH = (r, w = 10, h = 8) => new THREE.SphereGeometry(r, w, h);
 const CON = (r, h, s = 6) => new THREE.ConeGeometry(r, h, s);
-// Satu robot.
 export function buildRobot(designIdx, team) {
   const P = PAL, d = DESIGNS[designIdx % DESIGNS.length];
   const acc = P[d.accent], visor = team === 'atk' ? P.neonO : P.neonB;
@@ -41,7 +40,6 @@ export function buildRobot(designIdx, team) {
     body.add(piv); return piv;
   };
   const legL = mkLeg(0.13 * bk), legR = mkLeg(-0.13 * bk);
-  // badan berlapis
   const bp = [
     W(0.44, 0.62, 0.38 * bk, 0, 1.03, 0),
     a(0.4, 0.3, 0.07, 0.225, 1.2, 0), // pelat dada utama aksen
@@ -67,7 +65,6 @@ export function buildRobot(designIdx, team) {
     C(new THREE.SphereGeometry(0.158, 10, 6, 0, 6.29, 0, 1.1), acc, 0, 1.65, 0),
     v(0.05, 0.12, 0.11, 0.14, 1.64, 0.06), v(0.05, 0.12, 0.11, 0.14, 1.64, -0.06),
   ];
-  // bahu berlapis + lengan bersegmen
   for (const s of [1, -1]) {
     bp.push(C(CYL(0.1, 0.14, 0.12), acc, 0, 1.4, s * 0.24 * bk, Math.PI / 2));
     bp.push(C(CYL(0.145, 0.145, 0.03), P.steel, 0, 1.4, s * 0.185 * bk, Math.PI / 2));
@@ -77,7 +74,6 @@ export function buildRobot(designIdx, team) {
     bp.push(S(0.12, 0.26, 0.12, 0.42, 1.15, s * 0.11 * bk, 0, s * 0.25, -1.35));
     bp.push(M(0.11, 0.12, 0.11, 0.5, 1.14, s * 0.06 * bk));
   }
-  // dekor
   if (d.decor === 'fin') { // R1: fin helm besar + pelat bahu kuning
     bp.push(a(0.4, 0.12, 0.06, 0, 1.86, 0));
     bp.push(a(0.1, 0.2, 0.46 * bk, 0, 1.3, 0));
@@ -97,7 +93,6 @@ export function buildRobot(designIdx, team) {
     bp.push(a(0.34, 0.1, 0.34, 0, 1.38, 0));
   }
   if (d.decor === 'visor') { bp.push(a(0.06, 0.06, 0.3, 0.16, 1.72, 0)); bp.push(a(0.06, 0.05, 0.24, 0.16, 1.56, 0)); }
-  // senjata
   if (d.gun === 'cannon') { // R1: cannon berat
     bp.push(C(CYL(0.09, 0.09, 0.5).rotateZ(Math.PI / 2), P.steel, 0.5, 1.15, 0));
     bp.push(M(0.22, 0.18, 0.18, 0.3, 1.15, 0));
@@ -115,14 +110,12 @@ export function buildRobot(designIdx, team) {
   const bodyMeshes = mergeParts(bp, false);
   bodyMeshes[0].castShadow = true; // hanya mesh dinding badan yang melempar bayangan
   body.add(...bodyMeshes);
-  // ransel bom + beep
   const pack = new THREE.Mesh(B(0.12, 0.34, 0.3), P.steel);
   pack.position.set(-0.3, 1.1, 0); pack.visible = false; pack.castShadow = true; body.add(pack);
   const beep = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), P.flash);
   beep.position.set(-0.37, 1.32, 0); beep.visible = false; body.add(beep);
   return { group: g, body, legL, legR, pack, beep };
 }
-// Drone bundar berwajah.
 export function buildDrone() {
   const P = PAL;
   const g = new THREE.Group();
@@ -137,7 +130,6 @@ export function buildDrone() {
   g.add(...mergeParts(parts, false));
   return { group: g };
 }
-// Update/frame: walk + pose mati.
 export function updateRobot(r, a, dt, now) {
   const g = r.group, u = g.userData;
   g.position.set(a.x, a.y, a.z);

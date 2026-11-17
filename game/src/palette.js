@@ -21,7 +21,6 @@ export function makePalette() {
     fold: std(0x3d2c17),
   };
 }
-// Gabung geometri per material -> sedikit Mesh.
 export function part(geo, mat, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0) {
   const m = new THREE.Matrix4().compose(new THREE.Vector3(x, y, z),
     new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, ry, rz)), new THREE.Vector3(1, 1, 1));
@@ -58,5 +57,4 @@ export function mergeParts(parts, shadow = true) {
   }
   return out;
 }
-// Singleton: satu instans material dipakai bersama.
 export const PAL = makePalette();

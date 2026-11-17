@@ -38,7 +38,6 @@ function perturb(dir, spread) {
   const nl = Math.hypot(nx, ny, nz) || 1;
   return { x: nx / nl, y: ny / nl, z: nz / nl };
 }
-// aimDir: arah paksa (bot). Tanpa itu: arah yaw/pitch agen.
 export function fire(a, state, aimDir) {
   const now = state.now;
   if (!a.alive || now < a.switchUntil || now < a.reloadUntil) return null;
@@ -162,7 +161,6 @@ function weaveMat() {
   sleeveMat = new THREE.MeshStandardMaterial({ map: t, roughness: 0.85 });
   return sleeveMat;
 }
-// Displace lengan ke arah kamera (+z) dgn bump Gaussian.
 function hug(geo, slim) {
   const p = geo.attributes.position;
   for (let i = 0; i < p.count; i++) {
@@ -203,11 +201,9 @@ function robotHand(cfg, isLeft, armRot) {
     tips.push(part(new THREE.BoxGeometry(0.034, 0.026, 0.038), PAL.accP, fx + sx * 0.022, fy - 0.058, -0.066, -1.1));
     hand.push(part(new THREE.BoxGeometry(0.026, 0.02, 0.02), PAL.hand, fx, fy + 0.014, -0.03));
   }
-  // telunjuk lurus di sisi frame (jari picu), lebih besar
   hand.push(part(new THREE.BoxGeometry(0.024, 0.024, 0.052), PAL.hand, 0.055, 0.014, -0.065, -0.15, -0.5, 0));
   hand.push(part(new THREE.BoxGeometry(0.024, 0.024, 0.044), PAL.hand, 0.055, 0.012, -0.098, -0.15, -0.5, 0));
   tips.push(part(new THREE.BoxGeometry(0.024, 0.024, 0.034), PAL.accP, 0.055, 0.01, -0.122, -0.15, -0.5, 0));
-  // ibu jari menekan sisi grip (sisi kamera)
   const tx = isLeft ? -0.062 : 0.062;
   hand.push(part(new THREE.BoxGeometry(0.022, 0.022, 0.06), PAL.hand, tx, -0.015, -0.05, -0.3, isLeft ? 0.5 : -0.5, 0));
   g.add(...mergeParts(hand, false), ...mergeParts(tips, false));
@@ -281,7 +277,6 @@ function buildGun(key) {
   return { group: g, mag };
 }
 const VM_CFG = {
-  // rhZ/lhZ: muka grip/foregrip di z lokal tangan -0,08
   P9: { slim: 0.88, left: 'support', rRot: 0.38, lRot: -0.62, rhZ: 0.07, lhZ: -0.02 },
   Breacher: { slim: 1, left: 'fore', rRot: 0.15, lRot: -0.6, rhZ: 0.13, lhZ: -0.26 },
   Kestrel: { slim: 0.95, left: 'fore', rRot: 0.22, lRot: -0.62, rhZ: 0.11, lhZ: -0.3 },

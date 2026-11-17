@@ -11,7 +11,6 @@ export function updatePlayer(s, input, dt) {
   p.pitch -= m.dy * 0.0022 * CONFIG.mouseSens;
   p.pitch = Math.max(-1.5, Math.min(1.5, p.pitch));
   p.crouch = input.down('ControlLeft') || input.down('ControlRight');
-  // Scope Longbow: klik kanan.
   const w = currentWeapon(p);
   p.scoped = !!(w && w.key === 'Longbow' && input.rightDown);
 
@@ -38,7 +37,6 @@ export function updatePlayer(s, input, dt) {
   if (r.hitY && p.vy < 0) { p.vy = 0; p.onGround = true; }
   if (r.hitY && p.vy > 0) p.vy = 0;
   if (r.onGround) p.onGround = true;
-  // langkah kaki: tiap 0.45 dtk saat bergerak di tanah
   if (p.onGround && Math.hypot(p.vx, p.vz) > 1 && s.now - p.stepAt > 0.45) {
     p.stepAt = s.now;
     const r0 = p.crouch ? CONFIG.hearing.crouchStep : CONFIG.hearing.runStep;

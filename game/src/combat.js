@@ -11,7 +11,6 @@ export function eyePos(a) {
   const h = a.crouch ? CONFIG.agentHeightCrouch : CONFIG.agentHeight;
   return { x: a.x, y: a.y + h - 0.12, z: a.z };
 }
-// Ray vs silinder agen (r 0,4).
 function rayAgent(ox, oy, oz, dx, dy, dz, a) {
   const h = a.crouch ? CONFIG.agentHeightCrouch : CONFIG.agentHeight;
   const cx = a.x - ox, cz = a.z - oz;
@@ -34,7 +33,6 @@ function falloff(w, dist) {
   const k = (dist - w.falloffStart) / (w.falloffEnd - w.falloffStart);
   return 1 + (w.falloffMin - 1) * k;
 }
-// Satu peluru. opts: {spreadRad} diterapkan pemanggil.
 export function shoot(state, shooter, dir, weapon) {
   const o = eyePos(shooter);
   const maxDist = 120;

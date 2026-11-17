@@ -140,33 +140,23 @@ export function inZone(p, name) {
 // ---- Waypoint graph: 59 node (48 beku + 9 amendemen + 2 spawn-def) ----
 const N = (x, z, tags = []) => ({ x, z, tags });
 export const NODES = [
-  // spawn atk 3, spawn def 3
   N(5, 21, ['spawnAtk']), N(5, 25, ['spawnAtk']), N(7, 27, ['spawnAtk']),
   N(60, 22, ['spawnDef']), N(63, 25, ['spawnDef']), N(66, 26, ['spawnDef']),
-  // A-long 10
   N(12, 40, ['along']), N(17, 40, ['along']), N(22, 40, ['along']), N(27, 40, ['along']),
   N(32, 40, ['along']), N(37, 40, ['along']), N(42, 40, ['along']), N(47, 40, ['along']),
   N(52, 40, ['along']), N(57, 40, ['along']),
-  // Mid 10
   N(12, 25, ['mid']), N(17, 25, ['mid']), N(22, 25, ['mid']), N(27, 25, ['mid']),
   N(32, 25, ['mid']), N(37, 25, ['mid']), N(42, 25, ['mid']), N(47, 25, ['mid']),
   N(52, 25, ['mid']), N(55, 25, ['mid']),
-  // B-tunnel 10
   N(12, 10, ['btunnel']), N(17, 10, ['btunnel']), N(22, 10, ['btunnel']), N(27, 10, ['btunnel']),
   N(32, 10, ['btunnel']), N(37, 10, ['btunnel']), N(42, 10, ['btunnel']), N(47, 10, ['btunnel']),
   N(52, 10, ['btunnel']), N(57, 10, ['btunnel']),
-  // pintu Mid 4 (konektor A/B)
   N(48, 32, ['midA']), N(48, 35, ['midA']), N(48, 18, ['midB']), N(48, 15, ['midB']),
-  // site 8 (node tak boleh di dalam cover solid)
   N(59, 33, ['siteA']), N(63, 37, ['siteA']), N(66, 41, ['siteA']), N(57, 42, ['siteA']),
   N(58, 7, ['siteB']), N(63, 11, ['siteB']), N(66, 15, ['siteB']), N(58, 14, ['siteB']),
-  // amendemen: pintu Mid 1
   N(30, 25, ['door']),
-  // amendemen: service tunnel 4
   N(30, 14, ['tunnel']), N(30, 20, ['tunnel']), N(30, 30, ['tunnel']), N(30, 36, ['tunnel']),
-  // amendemen: interior A 2, interior B 2
   N(60, 37, ['intA']), N(65, 37, ['intA']), N(60, 11, ['intB']), N(63, 13, ['intB']),
-  // penghubung spawn defender -> site (celah Z32/Z16)
   N(61, 31, ['defA']), N(61, 16, ['defB']),
 ];
 NODES.forEach((n, i) => { n.id = i; });

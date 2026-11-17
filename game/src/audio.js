@@ -15,7 +15,6 @@ function ensure() {
 }
 export function resumeAudio() { if (ctx && ctx.state === 'suspended') ctx.resume(); }
 export function initAudio() { ensure(); resumeAudio(); }
-// Volume + mute (panel SETTINGS).
 export function setVolume(v) { vol = Math.max(0, Math.min(1, v)); if (master) master.gain.value = muted ? 0 : vol; }
 export function setMuted(m) { muted = !!m; if (master) master.gain.value = muted ? 0 : vol; }
 export function isMuted() { return muted; }
@@ -53,7 +52,6 @@ const SHOT = {
   Longbow: () => { burst(0.3, 700, 'lowpass', 0.8); tone(70, 0.25, 'sine', 0.3, 35); },
 };
 function volFor(dist) { return Math.max(0.05, 1 / (1 + dist / 18)); }
-// Konsumsi events baru sejak idx. p = pemain.
 export function drainAudio(state, idx) {
   if (!ctx) return state.events.length;
   const p = state.agents[0];

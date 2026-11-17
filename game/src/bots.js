@@ -122,7 +122,6 @@ function goalNode(s, a) {
     if (b.kind === 'lurker') return nodeByTag('siteB', 63); // lane lain dari pemain, terus ke B
     return nodeByTag('mid', 30); // carrier / holder Mid
   }
-  // defender
   if (planted) {
     if (b.state === 'defuse' || b.defuseDuty) return nodeByTag(s.bomb.site === 'A' ? 'siteA' : 'siteB', 63);
     return nodeByTag(s.bomb.site === 'A' ? 'siteA' : 'siteB', b.retakeRoute ? 66 : 59); // retake: dua sudut site
@@ -210,7 +209,6 @@ function botShoot(s, a, dt) {
   if (s.now < b.reactAt || s.now < a.blindUntil) return;
   const t = s.agents[b.targetId];
   if (!t || !t.alive) return;
-  // bidik dada/kepala; spread di weapons.fire
   const ty = t.y + (t.crouch ? 0.8 : 1.35);
   const dx = t.x - a.x, dy = ty - eyeY(a), dz = t.z - a.z;
   const len = Math.hypot(dx, dy, dz) || 1;
@@ -236,9 +234,7 @@ export function updateBots(s, dt) {
     const t = b.targetId !== null ? s.agents[b.targetId] : null;
     const isCarrier = s.bomb && s.bomb.carrierId === a.id && s.round.phase === 'live'
       && !(s.bomb.status === 'planted');
-    // Carrier maju ke site; duel penuh hanya bila musuh <20 m.
     if (t && t.alive && s.now >= b.reactAt && s.now >= a.blindUntil && (!isCarrier || dist(a, t) < 20)) {
-      // engage: hadap target, strafe, tembak; path lama dibersihkan.
       // D3: b.goal terpisah dari destNode — setPath hanya bila tujuan berubah.
       if (b.path.length) { b.path = []; b.pathIdx = 0; b.destNode = -1; b.goal = -1; }
       a.yaw = angleTo(a, t.x, t.z);
@@ -255,7 +251,6 @@ export function updateBots(s, dt) {
       botShoot(s, a, dt);
       continue;
     }
-    // plant / defuse duty
     const planted = s.bomb && s.bomb.status === 'planted';
     if (!planted && s.bomb && s.bomb.carrierId === a.id) {
       const site = b.plantSite === 'A' ? 'plantA' : 'plantB';
@@ -269,7 +264,6 @@ export function updateBots(s, dt) {
       else { a.defusing = false; const g = goalNode(s, a); if (g >= 0 && g !== b.goal) { b.goal = g; setPath(a, g); } moveAlongPath(s, a, dt); }
       continue;
     }
-    // patrol / investigate / retake
     let g = goalNode(s, a);
     if (b.state === 'investigate' && b.hearPos) g = nearestNode(b.hearPos.x, b.hearPos.z);
     if (g >= 0 && g !== b.goal) { b.goal = g; setPath(a, g); }
@@ -306,7 +300,6 @@ function buyStandard(a) {
   }
   if (a.money >= 650 && !a.kevlar) { a.kevlar = true; a.money -= 650; }
 }
-// Playbook bom: dipanggil tiap 1 dtk dari rounds.js
 export function bombPlaybook(s) {
   const planted = s.bomb && s.bomb.status === 'planted';
   if (planted) {

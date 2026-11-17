@@ -18,7 +18,6 @@ export function applyShot(state, mode, seed = 1) {
   } else if (mode === 'play') {
     state.round.phase = 'live'; state.round.timer = 62;
     give(p, 'VK47'); p.weapons.primary.mag = 27;
-    // COVER: dari A-long menghadap timur — musuh 12 m, kontainer merah Site A + huruf A
     place(p, 18, 42, 0.1);
     state.door.open = 1; state.door.target = 1;
     place(state.agents[8], 28, 42, Math.PI); // D4 rotator di A-long, menghadap pemain
@@ -26,7 +25,6 @@ export function applyShot(state, mode, seed = 1) {
     place(state.agents[6], 58, 40, Math.PI); // D2 jauh di Site A (depth)
     state.agents[8].hp = 100;
   } else if (mode === 'robots') {
-    // close-up 5 robot: baris 3,5 m di depan kamera
     state.round.phase = 'live'; state.round.timer = 62;
     give(p, 'VK47'); p.weapons.primary.mag = 27;
     place(p, 30, 40, 0);
@@ -34,7 +32,6 @@ export function applyShot(state, mode, seed = 1) {
     for (const [i, z] of row) { place(state.agents[i], 33.5, z, Math.PI); state.agents[i].hp = 100; }
     state.door.open = 1; state.door.target = 1;
   } else if (mode === 'p9' || mode === 'p9r' || mode === 'vkr') {
-    // zoom tangan: P9 idle / P9 reload / VK-47 reload (pose reload beku di tengah)
     state.round.phase = 'live'; state.round.timer = 62;
     const key = mode === 'vkr' ? 'VK47' : 'P9';
     give(p, key); p.weapons.primary.mag = mode === 'vkr' ? 27 : 9;

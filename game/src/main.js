@@ -31,7 +31,6 @@ const canvas = $('game');
 const R = createRender(canvas);
 let audioIdx = 0, started = false, benchDone = false, lastDoor = 0; // di atas blok DEBUG (TDZ: DEBUG memakai `started`)
 if (DEBUG) R.setDebug(true);
-// menu: 5 robot figure di layar awal; HUD disembunyikan
 const setMenuUI = (on) => { R.setMenu(on); document.body.classList.toggle('menu', on); };
 setMenuUI(!SHOT && !BENCH && !DEBUG);
 if (DEBUG) { // ?debug=1: overlay start JANGAN menutupi waypoint graph
@@ -55,7 +54,6 @@ function startGame() {
   canvas.requestPointerLock?.();
 }
 $('play-btn').addEventListener('click', startGame);
-// SETTINGS: panel VOLUME saja (slider + mute).
 $('settings-btn').addEventListener('click', () => { $('settings-panel').style.display = 'block'; });
 $('settings-close').addEventListener('click', () => { $('settings-panel').style.display = 'none'; });
 $('mute-btn').addEventListener('click', () => { const m = !isMuted(); setMuted(m); $('mute-btn').textContent = m ? '🔊 BUNYI' : '🔇 MUTE'; });
@@ -77,7 +75,6 @@ window.addEventListener('resize', () => {
 R.renderer.setSize(innerWidth, innerHeight);
 R.camera.aspect = innerWidth / innerHeight; R.camera.updateProjectionMatrix();
 
-// --- viewmodel: satu per senjata ---
 const vms = {};
 let activeVm = null, activeKey = null, lastReload = false;
 function syncViewmodel() {
@@ -96,7 +93,6 @@ function syncViewmodel() {
   if (reloading && !lastReload) playReload();
   lastReload = reloading;
 }
-// --- bench: skenario baku, ukur 150 frame ---
 function runBench() {
   const p = state.agents[0];
   p.weapons.primary = { key: 'VK47', mag: 30, reserve: 90 }; p.current = 'primary';
@@ -111,7 +107,6 @@ function runBench() {
   state.smokes.push({ x: 30, y: 1, z: 25, r: 3.5, until: state.now + 12 });
   console.log('[bench] scripted sim done in', (performance.now() - t0).toFixed(0), 'ms');
 }
-// --- shot mode ---
 if (SHOT) {
   applyShot(state, SHOT, SEED);
   state.paused = true; started = true;
@@ -125,7 +120,6 @@ window.__EMBERLINE__ = { state, config: CONFIG, simStats, errors, scene: R.scene
   forcePlant: () => forcePlant(state), forceDefuse: () => forceDefuse(state),
   killAll: (t) => killAll(state, t), setMoney: (id, a) => setMoney(state, id, a),
   setRound: (n) => setRound(state, n), start: startGame };
-// --- loop ---
 let acc = 0, last = performance.now(), frames = 0, fpsAt = last;
 function loop(now) {
   requestAnimationFrame(loop);
@@ -133,7 +127,6 @@ function loop(now) {
   frames++;
   if (now - fpsAt > 1000) { simStats.fps = Math.round(frames * 1000 / (now - fpsAt)); frames = 0; fpsAt = now; }
   if (BENCH && !benchDone) frameTimes.push(dtMs);
-  // kunci UI (sebelum simStep)
   if (!SHOT && input.pressed('KeyB') && state.round.phase === 'buy') hud.setBuy(!hud.isBuyOpen());
   if (hud.isBuyOpen()) {
     for (const k of ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8'])
@@ -150,9 +143,7 @@ function loop(now) {
       acc -= 1 / 60; n++;
     }
   } else acc = 0;
-  // pintu Mid: bunyi slide
   if (Math.abs(state.door.target - state.door.open) > 0.01 && now - lastDoor > 900) { playDoor(); lastDoor = now; }
-  // statistik sim
   if (simSamples.length > 20) {
     const s = [...simSamples].sort((a, b) => a - b);
     simStats.tickAvg = +(s.reduce((x, y) => x + y, 0) / s.length).toFixed(3);
@@ -164,7 +155,6 @@ function loop(now) {
   simStats.calls = rs.calls; simStats.tris = rs.tris;
   syncViewmodel();
   hud.update(now / 1000);
-  // akhir match
   if (state.match.over && $('end-overlay').style.display !== 'flex') {
     const p = state.agents[0];
     $('end-score').textContent = state.match.scoreAtk + ' — ' + state.match.scoreDef;
