@@ -29,11 +29,11 @@ function letter(scene, mat, x, z, isA) {
   const B = (w, h, d) => new THREE.BoxGeometry(w, h, d);
   const parts = [];
   const add = (w, h, d, px, py, pz, rz = 0) => parts.push(part(B(w, h, d), mat, px, py, pz, 0, 0, rz));
-  if (isA) { add(0.3, 4.4, 0.3, -0.9, 2.2, 0, 0.42); add(0.3, 4.4, 0.3, 0.9, 2.2, 0, -0.42); add(1.6, 0.3, 0.3, 0, 1.6, 0); }
-  else { add(0.3, 4.4, 0.3, -0.8, 2.2, 0); add(1.4, 0.3, 0.3, 0, 4.1, 0); add(1.4, 0.3, 0.3, 0, 2.2, 0); add(1.4, 0.3, 0.3, 0, 0.3, 0); add(0.3, 1.9, 0.3, 0.7, 3.15, 0); add(0.3, 1.9, 0.3, 0.7, 1.25, 0); }
+  if (isA) { add(0.3, 3, 0.3, -0.62, 1.5, 0, -0.42); add(0.3, 3, 0.3, 0.62, 1.5, 0, 0.42); add(1.3, 0.25, 0.3, 0, 1.1, 0); }
+  else { add(0.3, 3, 0.3, -0.55, 1.5, 0); add(1, 0.25, 0.3, 0, 2.85, 0); add(1, 0.25, 0.3, 0, 1.5, 0); add(1, 0.25, 0.3, 0, 0.15, 0); add(0.3, 1.25, 0.3, 0.5, 2.18, 0); add(0.3, 1.25, 0.3, 0.5, 0.83, 0); }
   const g = new THREE.Group();
   g.add(...mergeParts(parts, false));
-  g.position.set(x, 0, z); g.rotation.y = Math.PI / 2; scene.add(g);
+  g.position.set(x, 0, z); g.rotation.y = -Math.PI / 2; scene.add(g);
 }
 export function createRender(canvas) {
   const P = PAL;
@@ -68,7 +68,7 @@ export function createRender(canvas) {
   for (let x = 12; x < 56; x += 6) { mark(x, 39.9, x + 3, 40.1); mark(x, 24.9, x + 3, 25.1); mark(x, 9.9, x + 3, 10.1); }
   // garis zona plant oranye / biru
   const zoneLine = (z, mat) => {
-    const mk = (x0, z0, x1, z1) => { const m = new THREE.Mesh(new THREE.BoxGeometry(Math.abs(x1 - x0) || 0.15, 0.02, Math.abs(z1 - z0) || 0.15), mat); m.position.set((x0 + x1) / 2, 0.02, (z0 + z1) / 2); scene.add(m); };
+    const mk = (x0, z0, x1, z1) => { const m = new THREE.Mesh(new THREE.BoxGeometry(Math.abs(x1 - x0) || 0.35, 0.02, Math.abs(z1 - z0) || 0.35), mat); m.position.set((x0 + x1) / 2, 0.02, (z0 + z1) / 2); scene.add(m); };
     mk(z.x0, z.z0, z.x1, z.z0); mk(z.x0, z.z1, z.x1, z.z1); mk(z.x0, z.z0, z.x0, z.z1); mk(z.x1, z.z0, z.x1, z.z1);
   };
   zoneLine(ZONES.plantA, P.neonO); zoneLine(ZONES.plantB, P.neonB);
@@ -93,12 +93,12 @@ export function createRender(canvas) {
   scene.add(...mergeParts(laneTrim, false));
   // huruf site + atap interior + lampu
   // huruf site PUTIH BESAR (foto map: A putih di kontainer merah, B putih di biru)
-  letter(scene, P.wall, 68, 38, true); letter(scene, P.wall, 68, 10, false);
+  letter(scene, P.cloud, 61.8, 38.4, true); letter(scene, P.cloud, 58.8, 7.5, false);
   const roof = (x, z, w, d) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, 0.2, d), P.wall); m.position.set(x, 3.4, z); scene.add(m); };
-  roof(62.5, 38, 13, 12); roof(62.5, 10, 13, 12);
+  roof(67, 38, 5, 12); roof(67, 10, 5, 12);
   const lampParts = [];
   const lamp = (x, z) => lampParts.push(part(new THREE.BoxGeometry(0.5, 0.08, 0.5), P.flash, x, 3.1, z));
-  lamp(60, 36); lamp(65, 40); lamp(60, 8); lamp(65, 12);
+  lamp(66, 36); lamp(67, 40); lamp(66, 8); lamp(67, 12);
   scene.add(...mergeParts(lampParts, false));
   // --- sakura: batang + canopy instanced; awan putih ---
   const trees = [[12, 46], [24, 46], [48, 46], [60, 46], [12, 2], [36, 2], [60, 2], [6, 33], [6, 15], [20, 32], [40, 32], [20, 16], [40, 16]];
@@ -170,17 +170,17 @@ export function createRender(canvas) {
   const petals = new THREE.Points(petGeo, new THREE.PointsMaterial({ color: 0xf7a8c4, size: 0.14, transparent: true, opacity: 0.9 }));
   scene.add(petals);
   // menara cincin + skybridge
-  const tower = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 3, 20, 10), P.wall);
-  tower.position.set(36, 10, -9); scene.add(tower);
+  const tower = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 3, 24, 10), P.wall);
+  tower.position.set(80, 12, 27); scene.add(tower);
   const ring = new THREE.Mesh(new THREE.TorusGeometry(4.5, 0.5, 8, 24), P.trimC);
-  ring.position.set(36, 16, -9); scene.add(ring);
+  ring.position.set(80, 19, 27); ring.rotation.x = Math.PI / 2; scene.add(ring);
   const bridge = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.9, 9), P.trimC);
   bridge.position.set(30, 5.6, 25); scene.add(bridge);
   const bridgeDeck = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.15, 9), P.wall);
   bridgeDeck.position.set(30, 5.1, 25); scene.add(bridgeDeck);
   // logo segitiga menara
-  const triLogo = new THREE.Mesh(new THREE.CylinderGeometry(1.7, 1.7, 0.3, 3), P.neonB);
-  triLogo.rotation.x = Math.PI / 2; triLogo.position.set(36, 16, -8.5); scene.add(triLogo);
+  const triLogo = new THREE.Mesh(new THREE.CylinderGeometry(1.7, 1.7, 0.3, 3, 1, false, Math.PI / 2), P.neonB);
+  triLogo.rotation.z = Math.PI / 2; triLogo.position.set(77.5, 19, 27); scene.add(triLogo);
   // matahari
   const sunDisc = new THREE.Mesh(new THREE.CircleGeometry(3, 20), P.flash);
   sunDisc.position.set(58, 34, -28); sunDisc.lookAt(36, 0, 24); scene.add(sunDisc);
