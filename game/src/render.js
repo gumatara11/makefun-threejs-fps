@@ -217,12 +217,10 @@ export function createRender(canvas) {
   scene.add(skyIM, ...mergeParts(winParts, false));
   // airship
   const ship = new THREE.Group();
-  const shipBody = new THREE.Mesh(new THREE.SphereGeometry(3, 12, 8), P.wall);
-  shipBody.scale.set(2.2, 0.8, 0.8); ship.add(shipBody);
-  const shipGond = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.7, 1), P.steel);
-  shipGond.position.y = -2.2; ship.add(shipGond);
-  const shipFin = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.6, 1.4), P.trimM);
-  shipFin.position.set(-5.5, 0.6, 0); ship.add(shipFin);
+  ship.add(...mergeParts([
+    part(new THREE.SphereGeometry(3, 12, 8).scale(2.2, 0.8, 0.8), P.wall, 0, 0, 0),
+    part(new THREE.BoxGeometry(2.2, 0.7, 1), P.wall, 0, -2.2, 0),
+    part(new THREE.BoxGeometry(0.3, 1.6, 1.4), P.wall, -5.5, 0.6, 0)], false));
   ship.position.set(70, 26, 10); scene.add(ship);
   // papan EMBERLINE (canvas, 1 mesh)
   const signC = document.createElement('canvas'); signC.width = 512; signC.height = 96;
