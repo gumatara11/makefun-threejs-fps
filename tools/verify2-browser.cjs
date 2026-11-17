@@ -34,7 +34,7 @@ async function newPage(browser, dsf = 1) {
       return { visible: o && getComputedStyle(o).display !== 'none', text: o ? o.innerText.slice(0, 400) : '' };
     });
     await page.screenshot({ path: 'shots/verify-start.jpg', type: 'jpeg', quality: 82 });
-    await page.click('#start-btn').catch((e) => { out.startClickErr = e.message; });
+    await page.click('#play-btn').catch((e) => { out.startClickErr = e.message; });
     await sleep(2500);
     out.main = await page.evaluate(() => {
       const E = window.__EMBERLINE__;
