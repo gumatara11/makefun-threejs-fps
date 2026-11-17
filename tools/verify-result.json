@@ -1,0 +1,21 @@
+{
+  "mainStats": {
+    "tickAvg": 0,
+    "tickP99": 0,
+    "calls": 137,
+    "tris": 9404,
+    "fps": 0
+  },
+  "mainPhase": "buy",
+  "mainPaused": false,
+  "bench": {
+    "fpsMedian": 1.5,
+    "fps1pct": 0.7,
+    "tickAvg": 0.082,
+    "tickP99": 0.2,
+    "drawCalls": 34,
+    "tris": 5932,
+    "frames": 150
+  },
+  "errors": []
+}
