@@ -34,7 +34,7 @@ foto hanya arah visual, bukan untuk dijiplak mentah. Budget tetap: ≤180 draw c
   bersegmen yang MEMBUNGKUS grip/foregrip (bukan batang mengambang, bukan kotak hitam),
   cuff warna tim menyentuh jari tanpa gap, lengan lathe + ring. Verifikasi zoom idle + reload
   untuk P9 DAN VK-47 (tangan kanan VK-47 harus TERLIHAT memegang grip).
-- ☐ 5 robot tampil di LAYAR AWAL (menu): baris figure robot di atas/di samping tombol MULAI,
+- ☐ 5 robot tampil di LAYAR AWAL (menu): baris figure robot di atas/di samping tombol PLAY,
   bukan hanya gradien + teks. (Boleh render scene yang sama dari kamera menu.)
 - ☐ Senjata first-person BERWARNA seperti foto gameplay (aksen pink/biru pada SMG/rifle),
   bukan hitam polos. Ammo + muzzle flash terbaca.

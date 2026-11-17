@@ -1,0 +1,41 @@
+{
+ "bannerR1": {
+  "text": "🏆 PENYERANG MENANG — elimination",
+  "display": "block"
+ },
+ "scoreR1": "1-0",
+ "eventsSaturated": 251,
+ "bannerR2samples": [
+  {
+   "text": "🏆 PENYERANG MENANG — elimination",
+   "display": "none"
+  },
+  {
+   "text": "🏆 PENYERANG MENANG — elimination",
+   "display": "none"
+  },
+  {
+   "text": "🛡️ DEFENDER MENANG — elimination",
+   "display": "block"
+  },
+  {
+   "text": "🛡️ DEFENDER MENANG — elimination",
+   "display": "block"
+  },
+  {
+   "text": "🛡️ DEFENDER MENANG — elimination",
+   "display": "block"
+  },
+  {
+   "text": "🛡️ DEFENDER MENANG — elimination",
+   "display": "block"
+  }
+ ],
+ "scoreR2": "1-1",
+ "bannerR2": {
+  "text": "🛡️ DEFENDER MENANG — elimination",
+  "display": "block"
+ },
+ "pass": true,
+ "errors": []
+}

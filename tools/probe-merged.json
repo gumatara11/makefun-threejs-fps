@@ -1,0 +1,57 @@
+{
+  "menu": 98,
+  "menuButtons": {
+    "play": true,
+    "startBtnGone": true,
+    "settings": true,
+    "menuButtons": [
+      "play-btn:▶ PLAY",
+      "settings-btn:⚙ SETTINGS"
+    ]
+  },
+  "buySpawnEast": 125,
+  "worstLive": {
+    "min": 54,
+    "median": 72,
+    "p95": 160,
+    "max": 160,
+    "samples": [
+      54,
+      54,
+      54,
+      54,
+      54,
+      54,
+      54,
+      57,
+      57,
+      60,
+      60,
+      64,
+      72,
+      72,
+      75,
+      108,
+      108,
+      108,
+      137,
+      144,
+      144,
+      144,
+      160,
+      160
+    ]
+  },
+  "robotClose": 81,
+  "debug": 145,
+  "bench": {
+    "fpsMedian": 1.3,
+    "fps1pct": 0.6,
+    "tickAvg": 0.087,
+    "tickP99": 0.6,
+    "drawCalls": 145,
+    "tris": 23402,
+    "frames": 150
+  },
+  "errors": []
+}
