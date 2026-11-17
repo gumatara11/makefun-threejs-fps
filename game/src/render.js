@@ -247,18 +247,18 @@ export function createRender(canvas) {
   // drone kecil melayang di atas Mid (prop ambient, foto menu)
   const drone = buildDrone();
   drone.group.position.set(30, 6.8, 25); scene.add(drone.group);
-  // 5 robot figure di layar awal (spec §8) — baris di apron selatan, kamera menu
+  // menu: 5 robot di dalam map, kota + menara jadi latar
   let menuMode = false;
   const menuRobots = [];
   for (let i = 0; i < 5; i++) {
     const r = buildRobot(i, 'atk');
-    r.group.position.set(31 + i * 2.5, 0, 50); // di depan dinding selatan, kota + menara jadi latar
-    r.group.rotation.y = -Math.PI / 2; // menghadap kamera menu (+Z)
+    r.group.position.set(33.2 + i * 1.4, 0, 29.5);
+    r.group.rotation.y = -Math.PI / 2;
     r.group.visible = false;
     scene.add(r.group); menuRobots.push(r);
   }
   const menuDrone = buildDrone();
-  menuDrone.group.position.set(36, 3.2, 50); menuDrone.group.visible = false;
+  menuDrone.group.position.set(34.8, 3, 30.2); menuDrone.group.visible = false;
   scene.add(menuDrone.group);
   const tracerGeo = new THREE.BoxGeometry(0.03, 0.03, 1);
   const tracers = [];
@@ -318,9 +318,9 @@ export function createRender(canvas) {
   const _v = new THREE.Vector3();
   function render(state, dt, now) {
     const p = state.agents[0];
-    if (menuMode) { // kamera menu: baris 5 robot + drone + kota di belakang
-      camera.position.set(36, 2.2, 57.5); camera.lookAt(36, 1.0, 50);
-      if (Math.abs(camera.fov - 55) > 0.1) { camera.fov = 55; camera.updateProjectionMatrix(); }
+    if (menuMode) { // menu: robot + kota + menara
+      camera.position.set(36, 2.1, 34.3); camera.lookAt(36, 1.93, 29.5);
+      if (Math.abs(camera.fov - 60) > 0.1) { camera.fov = 60; camera.updateProjectionMatrix(); }
     } else {
       const eyeH = p.crouch ? 1.08 : 1.68;
       camera.position.set(p.x, p.y + eyeH, p.z);
@@ -340,7 +340,7 @@ export function createRender(canvas) {
     drone.group.position.y = 6.8 + Math.sin(now * 1.1) * 0.3;
     drone.group.rotation.y = now * 0.3;
     ship.position.x = 20 + Math.sin(now * 0.05) * 8;
-    if (menuMode) menuDrone.group.position.y = 3.2 + Math.sin(now * 1.2) * 0.25;
+    if (menuMode) menuDrone.group.position.y = 3 + Math.sin(now * 1.2) * 0.25;
     // pintu Mid mengikuti s.door.open (0 tutup -> 1 buka)
     const o = state.door.open;
     doorL.position.set(30, 1.6, 24 - o * 2); doorR.position.set(30, 1.6, 26 + o * 2);
