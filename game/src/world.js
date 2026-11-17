@@ -35,19 +35,18 @@ export const SOLIDS = [
   S(45.5, 29, 46, 36), S(50, 29, 50.5, 36),
   // konektor Mid-B (X46-50, Z13-21) dinding samping
   S(45.5, 13, 46, 21), S(50, 13, 50.5, 21),
-  // service tunnel: dinding samping X28 / X32 — DIPISAH di Z21-29 karena tunnel
-  // adalah underpass DI BAWAH koridor Mid (di sim 2D, dinding penuh akan menutup Mid)
+  // service tunnel: dinding samping X28 / X32 — DIPISAH di Z21-29 (underpass
+  // DI BAWAH koridor Mid; dinding penuh akan menutup Mid di sim 2D)
   S(27.5, 14, 28, 21), S(27.5, 29, 28, 36), S(32, 14, 32.5, 21), S(32, 29, 32.5, 36),
   // langit-langit B-tunnel 3,0 m + service tunnel 2,6 m (collider; atap interior TIDAK collider)
   S(10, 6, 56, 14, 3.0, 5.0), S(28, 14, 32, 36, 2.6, 5.0),
   // rangka pintu Mid: segmen permanen Z21-23 & Z27-29 (celah Z23-27 = panel pintu)
   S(29.7, 21, 30.3, 23), S(29.7, 27, 30.3, 29),
-  // interior Site A: dinding barat (celah masuk A-long Z36-40), selatan (celah Mid Z60-64),
-  // utara + timur (perimeter dalam)
+  // interior Site A: dinding barat (celah A-long Z36-40), selatan (celah Mid Z60-64)
   S(55.5, 32, 56, 36), S(55.5, 40, 56, 44),
   S(56, 31.5, 60, 32), S(64, 31.5, 69, 32),
   S(56, 43.5, 69, 44), S(68.5, 32, 69, 44),
-  // interior Site B: barat (celah B-tunnel Z8-12), selatan (celah Mid Z60-64), utara + timur
+  // interior Site B: barat (celah B-tunnel Z8-12), selatan (celah Mid Z60-64)
   S(55.5, 4, 56, 8), S(55.5, 12, 56, 16),
   S(56, 15.5, 60, 16), S(64, 15.5, 69, 16),
   S(56, 3.5, 69, 4), S(68.5, 4, 69, 16),
@@ -139,7 +138,6 @@ export function inZone(p, name) {
   const z = ZONES[name]; if (!z) return false;
   return p.x >= z.x0 && p.x <= z.x1 && p.z >= z.z0 && p.z <= z.z1;
 }
-export function inTunnel(p) { return inZone(p, 'tunnel'); }
 
 // ---- Waypoint graph: 48 beku + 9 amendemen + 2 penghubung spawn-def = 59 node ----
 const N = (x, z, tags = []) => ({ x, z, tags });

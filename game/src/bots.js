@@ -70,10 +70,8 @@ function hear(s, a) {
   }
 }
 export function setPath(a, toNode) {
-  // 'from' harus node yang terjangkau langsung (LOS jelas) — nearestNode mentah
-  // bisa menunjuk node di seberang dinding (mis. node tunnel (30,20) untuk bot
-  // di (33,20) di luar dinding tunnel), sehingga path diawali node yang tak bisa
-  // dicapai dan bot macet di balik dinding sampai ronde berakhir.
+  // 'from' harus node LOS-bersih — nearestNode mentah bisa di seberang dinding
+  // dan bot macet di baliknya sampai ronde berakhir.
   let from = nearestNode(a.x, a.z);
   if (losBlocked(a.x, 1, a.z, NODES[from].x, 1, NODES[from].z, [], 1)) {
     let best = -1, bd = Infinity;
@@ -85,9 +83,7 @@ export function setPath(a, toNode) {
   }
   let path = aStar(from, toNode);
   if (!path.length && from !== toNode) {
-    // Tujuan tak terjangkau (node terisolasi, mis. siteA (59,33)/(66,41) atau
-    // (57,42) yang hanya terhubung satu sama lain): pilih node terdekat dengan
-    // tujuan yang masih terjangkau dari posisi bot, agar bot tak diam dengan path kosong.
+    // Tujuan tak terjangkau (node terisolasi): pilih node terdekat yang masih terjangkau.
     const seen = new Set([from]), q = [from];
     while (q.length) { const c = q.pop(); for (const nb of LINKS[c]) if (!seen.has(nb)) { seen.add(nb); q.push(nb); } }
     let best = from, bd = Infinity;
@@ -113,12 +109,9 @@ function goalNode(s, a) {
       return b.destNode >= 0 ? b.destNode : nearestNode(a.x, a.z);
     }
     if (s.bomb && s.bomb.status === 'dropped') return nearestNode(s.bomb.x, s.bomb.z);
-    // AM2 (keputusan koordinator 17 Nov 01:51): service tunnel DITERIMA sebagai
-    // rute utama carrier — A* memilihnya karena itu rute TERPENDEK, bukan bug.
-    // Pintu Mid TIDAK dipaksa untuk carrier: rute lebih panjang + artifisial.
-    // Pintu tetap bernilai (memutus sightline + meredam suara saat tertutup, rute
-    // pemain); fungsinya sudah terbukti (path paksa via node pintu: pintu terbuka
-    // 1,00, bot lolos, plant sukses). Jadi: carrier ikut A* apa adanya.
+    // AM2 (17 Nov): tunnel DITERIMA sbg rute utama carrier — A* memilihnya karena
+    // TERPENDEK, bukan bug. Pintu Mid tak dipaksa (rute lebih panjang + artifisial);
+    // fungsinya sbg cover/suara pemain sudah terbukti. Carrier ikut A* apa adanya.
     if (s.bomb && s.bomb.carrierId === a.id) return nodeByTag(b.plantSite === 'A' ? 'siteA' : 'siteB', 63);
     if (b.kind === 'rusher' || b.kind === 'rifleman') { // ikuti pemain (offset)
       const p = s.agents[0];
@@ -144,11 +137,8 @@ function goalNode(s, a) {
 export function moveAlongPath(s, a, dt) {
   const b = a.bot;
   if (!b.path.length || b.pathIdx >= b.path.length) return;
-  // Unstuck (jarak NETO dari anchor, bukan akumulasi absolut): bot yang bergetar
-  // di tempat (separate() vs moveAlongPath saling dorong) mengakumulasi movedAcc
-  // tapi tak maju — D3 mengukur perpindahan neto, jadi unstuck harus sama.
-  // Neto <0,5 m selama >0,8 dtk -> repath; 0,8 dtk lagi -> snap ke node LOS-bersih.
-  // Batas D3 = 2 dtk, jadi total maks ~1,6 dtk + 0,2 dtk jalan.
+  // Unstuck pakai jarak NETO dari anchor (bot bergetar di tempat tak maju meski
+  // movedAcc naik). Neto <0,5 m selama >0,8 dtk -> repath; 0,8 dtk lagi -> snap.
   const netMoved = Math.hypot(a.x - b.lastPX, a.z - b.lastPZ);
   if (netMoved > 0.5) { b.lastPX = a.x; b.lastPZ = a.z; b.stuckAt = s.now; b.nudges = 0; }
   else if (s.now - b.stuckAt > 0.8 && b.destNode >= 0) {
@@ -162,13 +152,9 @@ export function moveAlongPath(s, a, dt) {
         if (n && !losBlocked(a.x, 1, a.z, n.x, 1, n.z, [], s.door.open)) { a.x = n.x; a.z = n.z; b.pathIdx = k; snapped = true; break; }
       }
       if (!snapped) {
-        // D3 (17 Nov): pilar pintu S(29.7,21,30.3,23)/(27,29) di tengah tunnel —
-        // rantai tunnel paksa 50->51 (world.js force) jalurnya lurus menembus
-        // pilar, jadi LOS ke node berikut terhalang dan repath mengembalikan
-        // jalur yang sama. Bot soliter (tanpa dorongan separate()) macet di
-        // pilar. Geser menyamping ~1,2 m (tegak lurus arah node) lewat
-        // collideMove agar masuk lajur samping tunnel (x 28-29,7 / 30,3-32)
-        // yang selalu terbuka; dari sana bot bisa jalan lurus ke node berikut.
+        // D3 (17 Nov): pilar pintu di tengah tunnel — rantai tunnel paksa jalurnya
+        // lurus menembus pilar, repath mengembalikan jalur sama. Geser menyamping
+        // ~1,2 m lewat collideMove ke lajur samping tunnel yang selalu terbuka.
         const n = NODES[b.path[b.pathIdx]];
         if (n) {
           const dx = n.x - a.x, dz = n.z - a.z, len = Math.hypot(dx, dz) || 1;
@@ -195,17 +181,13 @@ export function moveAlongPath(s, a, dt) {
   const h = a.crouch ? CONFIG.agentHeightCrouch : CONFIG.agentHeight;
   const r = collideMove(a, a.vx * dt, 0, a.vz * dt, CONFIG.agentRadius, h, s.door.open);
   a.x = r.x; a.z = r.z;
-  // Terjepit di sudut/dinding (mis. node (57,40) tepat di bibir celah pintu Site A):
-  // bila sudah dekat node tapi tertahan solid, anggap node tercapai dan lanjut ke
-  // node berikut — arah ke node berikut punya komponen menyamping yang menggeser
-  // bot mengitari sudut (collideMove sudah slide per sumbu).
+  // Terjepit di sudut (mis. node (57,40) di bibir celah Site A): bila sudah dekat
+  // node tapi tertahan solid, anggap tercapai — arah node berikut menggeser bot mengitari sudut.
   if ((r.hitX || r.hitZ) && d < 2.5) { b.pathIdx++; b.stuckAt = s.now; b.lastPX = a.x; b.lastPZ = a.z; }
   else if ((r.hitX || r.hitZ) && s.now > b.repathAt) { b.repathAt = s.now + 1; setPath(a, b.destNode); }
 }
-// Pisah antar-bot 0,6 m (AMB-17); penanam/pen-defuse diprioritaskan (tak digeser).
-// Dorongan HARUS sadar collision: dorongan mentah bisa mendorong bot ke dalam
-// solid (mis. dinding S(45.5,29,46,36) konektor Mid-A) lalu collideMove tak bisa
-// mengeluarkannya lagi -> macet puluhan detik. Dorong lewat collideMove per sumbu.
+// Pisah antar-bot 0,6 m (AMB-17); penanam/pen-defuse tak digeser.
+// Dorongan HARUS lewat collideMove: dorongan mentah bisa mendorong bot ke dalam solid.
 function separate(s) {
   const list = aliveAgents(s);
   for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
@@ -259,16 +241,11 @@ export function updateBots(s, dt) {
       && !(s.bomb.status === 'planted');
     // Carrier terus maju ke site (tugasnya menanam); duel penuh hanya bila musuh <20 m.
     if (t && t.alive && s.now >= b.reactAt && s.now >= a.blindUntil && (!isCarrier || dist(a, t) < 20)) {
-      // engage: hadap target, strafe, tembak; jangan jalan saat menembak jarak dekat
-      // Path lama DIBERSIHKAN: bot yang duel bukan "macet" — ia berhenti di rute untuk
-      // bertarung, dan strafe 1,5 m/s < ambang gerak D3 (0,05 m/tick). Tujuan dihitung
-      // ulang saat duel selesai (patrol/plant branch memanggil setPath).
-      // D3 (17 Nov): goal dilacak terpisah dari destNode. setPath() punya fallback
-      // (tujuan terisolasi, mis. node siteA 40 (59,33) 0 link di balik kontainer)
-      // yang mengubah destNode ke node terdekat yang terjangkau (mis. 57), sehingga
-      // perbandingan g !== destNode SELALU benar -> setPath dipanggil tiap tick ->
-      // pathIdx di-reset ke 0 terus -> bot beku di tempat dengan velocity stale.
-      // Dengan b.goal, setPath hanya dipanggil bila TUJUAN (goalNode) berubah.
+      // engage: hadap target, strafe, tembak. Path lama dibersihkan (bot duel bukan
+      // "macet"; tujuan dihitung ulang saat duel selesai).
+      // D3 (17 Nov): goal dilacak terpisah dari destNode — fallback setPath bisa
+      // mengubah destNode, sehingga g !== destNode selalu benar dan pathIdx
+      // di-reset tiap tick (bot beku). Dengan b.goal, setPath hanya bila tujuan berubah.
       if (b.path.length) { b.path = []; b.pathIdx = 0; b.destNode = -1; b.goal = -1; }
       a.yaw = angleTo(a, t.x, t.z);
       b.strafeT -= dt;
@@ -312,7 +289,6 @@ export function buyBots(s) {
   for (const a of s.agents) {
     if (a.isPlayer || !a.bot) continue;
     const b = a.bot, m = a.money;
-    const want = (key, price) => { if (!a.weapons.primary && m >= price) { a.weapons.primary = createLoadout(key); a.money -= price; a.current = 'primary'; } };
     if (b.role === 'D2') {
       if (m >= 5400) { // Longbow + kevlar
         if (!a.weapons.primary) { a.weapons.primary = createLoadout('Longbow'); a.money -= 4750; a.current = 'primary'; }
@@ -341,11 +317,8 @@ export function bombPlaybook(s) {
   const planted = s.bomb && s.bomb.status === 'planted';
   if (planted) {
     const defs = aliveAgents(s, 'def').sort((p, q) => dist(p, s.bomb) - dist(q, s.bomb));
-    // D4 (17 Nov): defuser MELEKAT sampai mati. Ia harus MENJAUH dari bom
-    // (memutar via Mid/A-long mengitari kontainer) untuk masuk site, jadi
-    // jaraknya ke bom membesar saat memutar — "terdekat" akan terus berganti
-    // dan tak ada yang sampai site. Histeresis jarak tak cukup; hanya ganti
-    // bila defuser lama mati (atau belum ada).
+    // D4 (17 Nov): defuser MELEKAT sampai mati — ia harus menjauh dari bom saat
+    // memutar masuk site, jadi "terdekat" terus berganti; hanya ganti bila defuser lama mati.
     const cur = defs.find(d => d.bot.defuseDuty);
     let lead = defs[0];
     if (cur && cur.alive) lead = cur;

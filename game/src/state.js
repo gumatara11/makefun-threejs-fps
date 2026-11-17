@@ -73,9 +73,8 @@ export function resetRound(s, first = false) {
     a.planting = false; a.defusing = false; a.plantProg = 0; a.defuseProg = 0;
     // granat: survivor pertahankan yang tak terpakai (§2); hanya yang mati yang kehilangan
     if (first || !wasAlive) a.grenades = { Frag: 0, Smoke: 0, Flash: 0 };
-    if (a.bot) { // reset penuh otak: destNode/pathIdx HARUS ikut direset, kalau tidak
+    if (a.bot) { // reset penuh otak; destNode/pathIdx HARUS ikut direset, kalau tidak
       // bot yang tujuannya sama dengan ronde lalu tak pernah memanggil setPath lagi
-      // (path sudah dikosongkan) dan berdiri diam sepanjang ronde
       a.bot.targetId = null; a.bot.targetPos = null; a.bot.lastSeenAt = -99;
       a.bot.visibleSince = 0; a.bot.reactAt = 0; a.bot.hearPos = null; a.bot.hearAt = -99;
       a.bot.path = []; a.bot.pathIdx = 0; a.bot.destNode = -1; a.bot.repathAt = 0; a.bot.goal = -1;

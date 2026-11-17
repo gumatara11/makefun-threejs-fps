@@ -14,20 +14,6 @@ export function createProjectile(state, a, kind, dir) {
   state.grenadesActive.push(p);
   return p;
 }
-// Segmen vs bola asap (khusus asap; tanpa dinding).
-export function smokeBlocks(ax, ay, az, bx, by, bz, smokes) {
-  for (const sm of smokes) {
-    const dx = bx - ax, dy = by - ay, dz = bz - az;
-    const fx = ax - sm.x, fy = ay - sm.y, fz = az - sm.z;
-    const A = dx * dx + dy * dy + dz * dz, B = 2 * (fx * dx + fy * dy + fz * dz);
-    const C = fx * fx + fy * fy + fz * fz - sm.r * sm.r;
-    const disc = B * B - 4 * A * C;
-    if (disc < 0) continue;
-    const t = (-B - Math.sqrt(disc)) / (2 * A);
-    if (t >= 0 && t <= 1) return true;
-  }
-  return false;
-}
 export function updateGrenades(s, dt) {
   for (let i = s.grenadesActive.length - 1; i >= 0; i--) {
     const p = s.grenadesActive[i];
