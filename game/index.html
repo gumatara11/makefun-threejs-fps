@@ -64,6 +64,12 @@
   .buy-row.cant { opacity: .45; } .buy-row.owned { color: #7dff9a; }
   .buy-key { color: #ffd23c; width: 16px; } .buy-name { flex: 1; } .buy-price { font-weight: 700; }
   #buy-hint { font-size: 12px; opacity: .7; margin-top: 8px; }
+  #settings-panel { position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 11; width: 320px; background: rgba(8,20,30,.94); border: 2px solid #ffd23c; border-radius: 10px; padding: 16px; display: none; text-align: left; }
+  #settings-panel h3 { margin-bottom: 12px; }
+  #settings-panel label { display: block; font-size: 15px; }
+  #settings-panel input[type=range] { width: 100%; margin: 8px 0 14px; }
+  #settings-panel .row { display: flex; gap: 10px; }
+  #settings-panel .row button { flex: 1; font-size: 15px; font-weight: 700; padding: 8px; border: none; border-radius: 8px; background: #ffd23c; color: #222; cursor: pointer; }
 </style>
 <script type="importmap">{"imports":{"three":"./vendor/three/three.module.min.js"}}</script>
 </head>
@@ -87,11 +93,7 @@
     <h1>EMBERLINE</h1>
     <p><b>5v5 Bomb Defuse</b> — tanam/defuse bom atau eliminasi. Pertama ke <b>8 ronde</b> menang.</p>
     <button class="nv on" onclick="document.getElementById('start-btn').click()">▶ PLAY</button>
-    <button class="nv">OPERATORS</button>
-    <button class="nv">LOADOUT</button>
-    <button class="nv">BATTLE PASS</button>
-    <button class="nv">EVENT</button>
-    <button class="nv">STORE</button>
+    <button class="nv" id="settings-btn">⚙ SETTINGS</button>
   </div>
   <div class="spacer"></div>
   <div class="menu-bottom">
@@ -99,6 +101,7 @@
     <button id="start-btn">▶ &nbsp;MULAI</button>
   </div>
 </div>
+<div id="settings-panel"><h3>⚙ SETTINGS</h3><label>VOLUME <span id="vol-val">50%</span><input type="range" id="vol-slider" min="0" max="100" value="50"></label><div class="row"><button id="mute-btn">🔇 MUTE</button><button id="settings-close">TUTUP</button></div></div>
 <div class="overlay" id="pause-overlay"><h2>⏸ JEDA</h2><p>Pointer lock lepas — simulasi berhenti.</p><button id="resume-btn">▶ &nbsp;LANJUTKAN</button></div>
 <div class="overlay" id="end-overlay"><h2>🏁 MATCH SELESAI</h2><div id="end-score" style="font-size:40px;font-weight:800">0 — 0</div><div id="end-stats"></div><button id="again-btn">↻ &nbsp;MAIN LAGI</button></div>
 <script type="module" src="./src/main.js"></script>
