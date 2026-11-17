@@ -61,4 +61,3 @@ export function mergeParts(parts, shadow = true) {
 }
 // Singleton: satu instans material dipakai render/characters/viewmodel bersama.
 export const PAL = makePalette();
-export const ACCENT_KEYS = ['accY', 'accP', 'accB', 'accR', 'accG'];

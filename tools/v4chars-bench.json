@@ -1,0 +1,31 @@
+{
+  "robots": {
+    "tickAvg": 0,
+    "tickP99": 0,
+    "calls": 162,
+    "tris": 20054,
+    "fps": 0
+  },
+  "play": {
+    "tickAvg": 0,
+    "tickP99": 0,
+    "calls": 137,
+    "tris": 16538,
+    "fps": 1
+  },
+  "benchCalls": {
+    "tickAvg": 0.373,
+    "tickP99": 6.4,
+    "calls": 184,
+    "tris": 19912,
+    "fps": 1
+  },
+  "debug": {
+    "tickAvg": 0,
+    "tickP99": 0,
+    "calls": 179,
+    "tris": 22528,
+    "fps": 0
+  },
+  "errors": []
+}
