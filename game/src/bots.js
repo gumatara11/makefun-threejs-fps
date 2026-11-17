@@ -17,7 +17,8 @@ export function createBotBrain(role) {
 }
 export function ensureBrains(s) {
   for (const a of s.agents) if (!a.isPlayer && !a.bot) a.bot = createBotBrain(a.role);
-  for (const a of s.agents) if (a.bot) a.bot.round = s.match.round;
+  // variasi site carrier: 1 dari 3 ronde ke B, lawan tak bisa selalu menumpuk A
+  for (const a of s.agents) if (a.bot) { a.bot.round = s.match.round; a.bot.plantSite = s.match.round % 3 === 2 ? 'B' : 'A'; }
 }
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 function eyeY(a) { return a.y + (a.crouch ? 1.08 : 1.68); }
@@ -124,7 +125,7 @@ function goalNode(s, a) {
   // defender
   if (planted) {
     if (b.state === 'defuse' || b.defuseDuty) return nodeByTag(s.bomb.site === 'A' ? 'siteA' : 'siteB', 63);
-    return nodeByTag(s.bomb.site === 'A' ? 'siteA' : 'siteB', 59); // retake
+    return nodeByTag(s.bomb.site === 'A' ? 'siteA' : 'siteB', b.retakeRoute ? 66 : 59); // retake: dua sudut site
   }
   if (b.kind === 'holder') return nodeByTag(b.site === 'A' ? 'siteA' : 'siteB', 63);
   if (b.kind === 'sniper') return nodeByTag('along', 52);
