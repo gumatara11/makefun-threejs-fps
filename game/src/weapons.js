@@ -138,14 +138,11 @@ export function pickupWeapon(a, state) {
 export { GRENADES };
 
 
-// ---- VIEWMODEL TANGAN ROBOT (Builder B) — teknik tangan v8–v15 ----
-// Jari metal terang di grip gelap (v9); jari bersegmen + gap lebar, ujung capai
-// sudut depan grip (v8/v9); lengan lathe belly asimetris Gaussian peak 0,024
-// sigma 0,10 (v14), shadow band + 3 ring (v12), weave canvas (v13), wrist ball
-// rata tersembunyi di cuff (v11); lengan panjang keluar tepi bawah frame (v10).
-// KRITIS v15: cuff OVERLAP tepi bawah jari 0,027 — tanpa gap gelap.
-// Geometri di-merge per material (tangan 7 mesh, senjata <=5) agar draw calls rendah.
-// Senjata: P9 1 tangan + support hand; rifle 2 tangan (grip + foregrip).
+// ---- VIEWMODEL TANGAN ROBOT (Builder B) — v3-hands: PROFIL SAMPING ----
+// v8–v15: jari metal terang di grip gelap, lengan lathe belly asimetris,
+// cuff OVERLAP tepi bawah jari 0,027 (tanpa gap gelap). v3: ruas tengah jari
+// VERTIKAL di muka grip (terbaca dari belakang, tak foreshorten), ujung pink
+// balik ke kamera di bawah grip. Merge per material, tanpa material baru.
 import { part, mergeParts } from './palette.js';
 const VB = { x: 0.18, y: -0.16, z: -0.58, s: 0.95, yaw: -0.35 }; // kompromi ukur: stock menjauh dari kamera (tak menutupi tangan), telapak di frame
 let sleeveMat = null;
@@ -196,7 +193,7 @@ function forearm(slim, wristR, wristZ) {
 }
 function robotHand(cfg, isLeft, armRot) {
   const g = new THREE.Group();
-  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.085, 0.055), PAL.hand)); // telapak metal TERANG (bukan kotak hitam)
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.088, 0.075, 0.045), PAL.hand)); // telapak ramping
   const hand = [], tips = [];
   for (let i = 0; i < 4; i++) {
     const bx = -0.033 + i * 0.022;
@@ -206,16 +203,14 @@ function robotHand(cfg, isLeft, armRot) {
       tips.push(part(new THREE.BoxGeometry(0.02, 0.022, 0.032), PAL.accP, 0.055, 0.008, -0.122, -0.15, -0.5, 0));
       continue;
     }
-    // 3 jari BESAR melingkar di depan grip (muka grip di z lokal -0,08): ruas
-    // maju-turun, ruas 2 turun di depan muka grip, ujung balik ke telapak di bawah grip
-    hand.push(part(new THREE.BoxGeometry(0.021, 0.023, 0.05), PAL.hand, bx, -0.02, -0.082, -0.5));
-    hand.push(part(new THREE.BoxGeometry(0.021, 0.023, 0.042), PAL.hand, bx, -0.046, -0.098, -1.15));
-    tips.push(part(new THREE.BoxGeometry(0.026, 0.026, 0.036), PAL.accP, bx, -0.076, -0.088, -1.85));
+    // ruas tengah VERTIKAL di muka grip (z -0,082): terbaca dari belakang.
+    const dy = (2 - i) * 0.004; // tengah terpanjang, kelingking terpendek
+    hand.push(part(new THREE.BoxGeometry(0.019, 0.02, 0.038), PAL.hand, bx, -0.028 + dy, -0.055, -0.6));
+    hand.push(part(new THREE.BoxGeometry(0.019, 0.052, 0.02), PAL.hand, bx, -0.062 + dy, -0.082));
+    tips.push(part(new THREE.BoxGeometry(0.02, 0.02, 0.034), PAL.accP, bx, -0.088 + dy, -0.068, -1.2));
+    hand.push(part(new THREE.BoxGeometry(0.02, 0.018, 0.014), PAL.hand, bx, -0.002, -0.03)); // buku jari
   }
-  // buku jari di tepi depan telapak
-  for (let i = 1; i < 4; i++) hand.push(part(new THREE.BoxGeometry(0.022, 0.02, 0.016), PAL.hand, -0.033 + i * 0.022, -0.005, -0.028));
-  // ibu jari menekan sisi grip (sisi kamera)
-  const tx = isLeft ? -0.062 : 0.062;
+  const tx = isLeft ? -0.058 : 0.058; // ibu jari menekan sisi grip (sisi kamera)
   hand.push(part(new THREE.BoxGeometry(0.022, 0.022, 0.06), PAL.hand, tx, -0.015, -0.05, -0.3, isLeft ? 0.5 : -0.5, 0));
   g.add(...mergeParts(hand, false), ...mergeParts(tips, false));
   const arm = forearm(cfg.slim, cfg.wristR || 0.03, cfg.wristZ || 0.004);
@@ -273,10 +268,10 @@ function buildGun(key) {
 }
 const VM_CFG = {
   // rhZ/lhZ: posisi tangan agar muka grip/foregrip di z lokal tangan -0,08 (jari membungkus)
-  P9: { slim: 0.88, left: 'support', rRot: 0.38, lRot: -0.62, rhZ: 0.07, lhZ: -0.02 },
+  P9: { slim: 0.8, left: 'support', rRot: 0.38, lRot: -0.62, rhZ: 0.07, lhZ: -0.02 },
   Breacher: { slim: 1, left: 'fore', rRot: 0.15, lRot: -0.6, rhZ: 0.13, lhZ: -0.26 },
   Kestrel: { slim: 0.95, left: 'fore', rRot: 0.22, lRot: -0.62, rhZ: 0.11, lhZ: -0.3 },
-  VK47: { slim: 1, left: 'fore', rRot: 0.02, lRot: -0.8, wristR: 0.038, wristZ: 0.01, rhZ: 0.15, lhZ: -0.33 },
+  VK47: { slim: 0.9, left: 'fore', rRot: 0.02, lRot: -0.8, wristR: 0.038, wristZ: 0.01, rhZ: 0.15, lhZ: -0.33 },
   Longbow: { slim: 1, left: 'fore', rRot: 0.1, lRot: -0.6, rhZ: 0.15, lhZ: -0.3 },
 };
 export function buildViewmodel(camera, key) {
