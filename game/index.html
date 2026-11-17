@@ -43,11 +43,14 @@
   #scope { left: 50%; top: 50%; transform: translate(-50%,-50%); width: 100vmin; height: 100vmin; border-radius: 50%; border: 90vmax solid rgba(0,0,0,.92); display: none; }
   #minimap { right: 14px; bottom: 110px; border: 2px solid rgba(255,255,255,.5); border-radius: 6px; background: rgba(0,0,0,.4); }
   .overlay { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: linear-gradient(160deg, rgba(20,60,110,.92), rgba(120,30,90,.88)); text-align: center; padding: 20px; }
-  #start-overlay { justify-content: space-between; padding: 30px 20px 26px; background: linear-gradient(180deg, rgba(12,35,70,.94) 0%, rgba(12,35,70,.55) 24%, rgba(12,35,70,.12) 44%, rgba(12,35,70,.12) 60%, rgba(12,35,70,.92) 100%); }
+  #start-overlay { justify-content: space-between; padding: 22px 26px 20px; background: linear-gradient(180deg, rgba(10,25,45,.62) 0%, rgba(10,25,45,.18) 16%, rgba(10,25,45,0) 32%, rgba(10,25,45,0) 68%, rgba(10,25,45,.5) 86%, rgba(10,25,45,.78) 100%); text-align: left; }
   #start-overlay .spacer { flex: 1; }
   body.menu .hud { display: none !important; }
-  #start-overlay .menu-top, #start-overlay .menu-bottom { display: flex; flex-direction: column; align-items: center; gap: 14px; }
-  .overlay h1 { font-size: 54px; letter-spacing: 6px; color: #ffd23c; text-shadow: 0 3px 0 #e83a2f, 0 6px 18px #000; }
+  #start-overlay .menu-top { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; width: 100%; }
+  #start-overlay .menu-bottom { display: flex; justify-content: space-between; align-items: flex-end; width: 100%; }
+  #start-overlay .nv { width: 196px; padding: 8px 12px; border-left: 3px solid #0000; background: rgba(8,20,30,.55); color: #fff; font-size: 15px; }
+  #start-overlay .nv.on { color: #ffd23c; border-color: #ffd23c; }
+  .overlay h1 { font-size: 40px; letter-spacing: 6px; color: #ffd23c; text-shadow: 0 3px 0 #e83a2f, 0 6px 18px #000; }
   .overlay h2 { font-size: 30px; letter-spacing: 3px; }
   .overlay p { max-width: 560px; font-size: 15px; line-height: 1.5; }
   .overlay .controls { font-size: 13px; background: rgba(0,0,0,.4); padding: 10px 16px; border-radius: 8px; line-height: 1.8; text-align: left; }
@@ -77,16 +80,22 @@
 <div class="hud" id="hitmarker">✕</div>
 <div class="hud" id="dmg-ind"></div>
 <div class="hud" id="scope"></div>
-<canvas class="hud" id="minimap" width="180" height="120"></canvas>
+<canvas class="hud" id="minimap" width="192" height="144"></canvas>
 <div id="buy-menu"><h3>🛒 BELI <span id="buy-money">$800</span></h3><div id="buy-list"></div><div id="buy-hint">Klik item atau tekan 1–8 • B tutup • hanya di fase beli &amp; di spawn</div></div>
 <div class="overlay" id="start-overlay">
   <div class="menu-top">
     <h1>EMBERLINE</h1>
-    <p><b>5v5 Bomb Defuse.</b> Penyerang: tanam bom di Site A atau B, atau eliminasi semua defender. Defender: cegah plant, atau defuse bom sebelum meledak. Pertama sampai <b>8 ronde</b> menang.</p>
+    <p><b>5v5 Bomb Defuse</b> — tanam/defuse bom atau eliminasi. Pertama ke <b>8 ronde</b> menang.</p>
+    <button class="nv on" onclick="document.getElementById('start-btn').click()">▶ PLAY</button>
+    <button class="nv">OPERATORS</button>
+    <button class="nv">LOADOUT</button>
+    <button class="nv">BATTLE PASS</button>
+    <button class="nv">EVENT</button>
+    <button class="nv">STORE</button>
   </div>
   <div class="spacer"></div>
   <div class="menu-bottom">
-    <div class="controls">WASD gerak • Mouse bidik • Klik tembak • R reload • Ctrl crouch • Space lompat<br>B menu beli • E tahan plant/defuse • F ambil senjata • G jatuhkan primer<br>1 primer • 2 P9 • 3 Frag • 4 Smoke • 5 Flash • Klik kanan scope Longbow</div>
+    <div class="controls">WASD gerak • Mouse bidik • Klik tembak • R reload • Ctrl crouch • Space lompat<br>B beli • E plant/defuse • F ambil • G jatuhkan primer<br>1 primer • 2 P9 • 3 Frag • 4 Smoke • 5 Flash • Klik kanan scope</div>
     <button id="start-btn">▶ &nbsp;MULAI</button>
   </div>
 </div>

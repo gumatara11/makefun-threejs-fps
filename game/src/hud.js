@@ -12,7 +12,6 @@ const BUY_ROWS = [
 export function createHud(state, onBuyOpen) {
   const mm = $('minimap').getContext('2d');
   let lastFeed = 0, lastMm = 0, dmgAt = 0, dmgAng = 0, hitAt = 0, hitKill = false, buyOpen = false, stickyBanner = false;
-  // bangun daftar buy sekali
   const list = $('buy-list');
   BUY_ROWS.forEach((r, i) => {
     const d = document.createElement('div');
@@ -32,14 +31,19 @@ export function createHud(state, onBuyOpen) {
     if (onBuyOpen) onBuyOpen(buyOpen);
   }
   function drawMinimap() {
-    const W = 180, H = 120, sx = W / 72, sz = H / 48;
+    const W = 192, H = 144, sx = W / 72, sz = H / 48;
     mm.clearRect(0, 0, W, H);
-    mm.fillStyle = 'rgba(10,20,28,0.72)'; mm.fillRect(0, 0, W, H);
-    mm.fillStyle = '#ff7a1a'; mm.fillRect(56 * sx, 32 * sz, 13 * sx, 12 * sz);
-    mm.fillStyle = '#2f9dff'; mm.fillRect(56 * sx, 4 * sz, 13 * sx, 12 * sz);
-    mm.fillStyle = '#3a6a4a'; mm.fillRect(28 * sx, 14 * sz, 4 * sx, 22 * sz); // service tunnel
-    mm.fillStyle = '#c9a06a'; mm.fillRect(29.7 * sx, 21 * sz, 0.6 * sx, 8 * sz); // pintu Mid
-    mm.fillStyle = '#e8e8e8'; mm.fillRect(29.7 * sx, (21 + 2 * state.door.open) * sz, 0.6 * sx, (4 - 4 * state.door.open + 2) * sz);
+    const R = (x, y, w, h, c) => { mm.fillStyle = c; mm.fillRect(x * sx, y * sz, w * sx, h * sz); };
+    R(0, 0, 72, 48, 'rgba(10,20,28,0.72)');
+    mm.strokeStyle = 'rgba(255,255,255,.65)'; mm.lineWidth = 1.5;
+    for (const z of [10, 25, 40]) { mm.beginPath(); mm.moveTo(4 * sx, z * sz); mm.lineTo(68 * sx, z * sz); mm.stroke(); }
+    R(56, 32, 13, 12, '#ff7a1a'); R(56, 4, 13, 12, '#2f9dff');
+    R(28, 14, 4, 22, '#3a6a4a'); R(29.7, 21, 0.6, 8, '#c9a06a');
+    R(29.7, 21 + 2 * state.door.open, 0.6, 6 - 4 * state.door.open, '#e8e8e8');
+    mm.font = 'bold 17px sans-serif'; mm.textAlign = 'center'; mm.textBaseline = 'middle';
+    mm.lineWidth = 3; mm.strokeStyle = 'rgba(0,0,0,.85)'; mm.fillStyle = '#fff';
+    const T = (t, x, y) => { mm.strokeText(t, x * sx, y * sz); mm.fillText(t, x * sx, y * sz); };
+    T('A', 62.5, 38); T('B', 62.5, 10);
     const b = state.bomb;
     if (b && b.status === 'planted') { mm.fillStyle = '#ff2222'; mm.beginPath(); mm.arc(b.x * sx, b.z * sz, 5, 0, 7); mm.fill(); }
     else if (b && b.status === 'dropped') { mm.fillStyle = '#ffcc00'; mm.fillRect(b.x * sx - 3, b.z * sz - 3, 6, 6); }
@@ -59,30 +63,26 @@ export function createHud(state, onBuyOpen) {
     $('ammo-res').textContent = w ? '/' + w.reserve : '';
     $('weapon-value').textContent = w ? (WEAPONS[w.key].name + (p.reloadUntil > state.now ? ' • RELOAD' : '')) : '—';
     const t = Math.max(0, state.round.timer);
-    $('timer').textContent = state.round.phase === 'bomb' && state.bomb ? '💣 ' + state.bomb.timer.toFixed(1) : formatT(t);
+    $('timer').textContent = state.round.phase === 'bomb' && state.bomb ? '💣 ' + state.bomb.timer.toFixed(1) : String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(Math.floor(t % 60)).padStart(2, '0');
     $('score-atk').textContent = state.match.scoreAtk;
     $('score-def').textContent = state.match.scoreDef;
     $('money').textContent = '$' + p.money;
     $('round-num').textContent = 'RONDE ' + state.match.round;
-    // ikon tim hidup
     for (const team of ['atk', 'def']) {
       const el = $(team === 'atk' ? 'team-atk' : 'team-def');
       el.textContent = state.agents.filter((a) => a.team === team).map((a) => a.alive ? '●' : '○').join(' ');
     }
-    // status bom / plant / defuse
     const bs = $('bomb-status');
     if (state.round.phase === 'bomb' && state.bomb) bs.textContent = 'BOM TERPLANT — SITE ' + state.bomb.site + ' • ' + state.bomb.timer.toFixed(1) + ' dtk';
     else if (p.planting) bs.textContent = 'PLANTING… ' + (p.plantProg / CONFIG.timePlant * 100).toFixed(0) + '%';
     else if (p.defusing) bs.textContent = 'DEFUSING… ' + (p.defuseProg / CONFIG.timeDefuse * 100).toFixed(0) + '%';
     else if (state.bomb && state.bomb.status === 'dropped') bs.textContent = 'BOM JATUH — ambil!';
     else bs.textContent = state.round.phase === 'buy' ? 'FASE BELI — tekan B' : '';
-    // crosshair dinamis: membesar saat bergerak / menembak
     const moving = Math.hypot(p.vx, p.vz) > 1, fired = state.now - p.lastShotAt < 0.12;
     const gap = 6 + (moving ? 8 : 0) + (fired ? 6 : 0) + (p.crouch ? -2 : 0);
     $('crosshair').style.setProperty('--gap', gap + 'px');
     $('crosshair').style.display = p.scoped ? 'none' : 'block';
     $('scope').style.display = p.scoped ? 'block' : 'none';
-    // killfeed dari events
     for (let i = lastFeed; i < state.events.length; i++) {
       const ev = state.events[i];
       if (ev.type === 'kill') {
@@ -94,7 +94,7 @@ export function createHud(state, onBuyOpen) {
         while ($('killfeed').children.length > 5) $('killfeed').firstChild.remove();
         setTimeout(() => d.remove(), 6000);
       }
-      if (ev.type === 'hit' && ev.target === 0) { // pemain kena damage
+      if (ev.type === 'hit' && ev.target === 0) {
         const from = state.agents[ev.from];
         if (from) { dmgAt = now; dmgAng = Math.atan2(from.z - p.z, from.x - p.x) - p.yaw; }
       }
@@ -102,14 +102,12 @@ export function createHud(state, onBuyOpen) {
       if (ev.type === 'round-end' && !stickyBanner) showBanner(ev);
     }
     lastFeed = state.events.length;
-    // hitmarker + arah damage (fade)
     const hm = $('hitmarker');
     hm.style.opacity = now - hitAt < 0.18 ? 1 : 0;
     hm.style.color = hitKill ? '#ff2222' : '#fff';
     const di = $('dmg-ind');
     if (now - dmgAt < 0.9) { di.style.opacity = 1; di.style.transform = `translate(-50%,-50%) rotate(${dmgAng}rad)`; }
     else di.style.opacity = 0;
-    // buy menu affordability
     if (buyOpen) {
       $('buy-money').textContent = '$' + p.money;
       list.querySelectorAll('.buy-row').forEach((el) => {
@@ -131,6 +129,5 @@ export function createHud(state, onBuyOpen) {
     if (sticky) { stickyBanner = true; return; }
     setTimeout(() => { b.style.display = 'none'; }, 4000);
   }
-  function formatT(t) { const m = Math.floor(t / 60), s = Math.floor(t % 60); return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0'); }
   return { update, setBuy, tryBuy, isBuyOpen: () => buyOpen, showBanner, buyKeys: BUY_ROWS.map((r) => r.key) };
 }
