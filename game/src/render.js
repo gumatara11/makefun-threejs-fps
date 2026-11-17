@@ -258,18 +258,18 @@ export function createRender(canvas) {
   // drone kecil melayang di atas Mid (prop ambient, foto menu)
   const drone = buildDrone();
   drone.group.position.set(30, 6.8, 25); scene.add(drone.group);
-  // menu: 5 robot di dalam map, kota + menara jadi latar
+  // menu: 5 robot + menara
   let menuMode = false;
   const menuRobots = [];
   for (let i = 0; i < 5; i++) {
     const r = buildRobot(i, 'atk');
-    r.group.position.set(33.2 + i * 1.4, 0, 29.5);
-    r.group.rotation.y = -Math.PI / 2;
+    r.group.position.set(44, 0, 20.5 + i * 1.4);
+    r.group.rotation.y = Math.PI;
     r.group.visible = false;
     scene.add(r.group); menuRobots.push(r);
   }
   const menuDrone = buildDrone();
-  menuDrone.group.position.set(34.8, 3, 30.2); menuDrone.group.visible = false;
+  menuDrone.group.position.set(46, 3.2, 23); menuDrone.group.visible = false;
   scene.add(menuDrone.group);
   const tracerGeo = new THREE.BoxGeometry(0.03, 0.03, 1);
   const tracers = [];
@@ -328,7 +328,7 @@ export function createRender(canvas) {
   function render(state, dt, now) {
     const p = state.agents[0];
     if (menuMode) { // menu: robot + kota + menara
-      camera.position.set(36, 2.1, 34.3); camera.lookAt(36, 1.93, 29.5);
+      camera.position.set(38.5, 2, 23.3); camera.lookAt(44, 1.6, 23.3);
       if (Math.abs(camera.fov - 60) > 0.1) { camera.fov = 60; camera.updateProjectionMatrix(); }
     } else {
       const eyeH = p.crouch ? 1.08 : 1.68;
